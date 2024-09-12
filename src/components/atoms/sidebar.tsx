@@ -18,6 +18,7 @@ export const Sidebar = () => {
             </div>
             <div className='pl-4 pb-4 '>
                 <Label className='text-2xl'>Username Username Username</Label>
+                <Label className='text-2xl'>Hospital</Label>
             </div>
             <Separator />
             <DoctorSidebar />
