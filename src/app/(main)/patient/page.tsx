@@ -19,7 +19,14 @@ const Patient = () => {
         <div className='w-1/2 flex flex-col pb-20'>
           <Label className='text-xl font-normal'>Why choose CSS?</Label>
           <Label className='text-6xl py-8 font-normal'>We are patient-centered</Label>
-          <Label className='text-2xl font-normal'>Choose the Cancer Surveillance System (CSS) for a smarter, more supportive approach to your healthcare. Our system brings everything you need into one easy-to-use application, making it simple to stay on top of your treatment and connect with your healthcare team. Experience a streamlined, personalized care journey that puts you at the center of your health management.</Label>
+          <Label className='text-2xl font-normal'>
+            Choose the Cancer Surveillance System (CSS) for a smarter,
+            more supportive approach to your healthcare. Our system brings
+            everything you need into one easy-to-use application, making it
+            simple to stay on top of your treatment and connect with your
+            healthcare team. Experience a streamlined, personalized care
+            journey that puts you at the center of your health management.
+          </Label>
         </div>
       </div>
       <div className='flex flex-col py-16'>
