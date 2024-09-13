@@ -73,7 +73,7 @@ const Patient = () => {
       <Label className='text-xl font-normal'>Interested? Learn more.</Label>
       <div className='flex pt-10 gap-8'>
         <Button className='bg-red-700 hover:bg-red-900 rounded-none h-11 shadow-md text-xl'>How to use CSS</Button>
-        <Button className='bg-red-700 hover:bg-red-900 rounded-none h-11 shadow-md text-xl'>How to use CSS</Button>
+        <Button className='bg-red-700 hover:bg-red-900 rounded-none h-11 shadow-md text-xl'>Why Patients Use CSS</Button>
       </div>
     </div>
   )
