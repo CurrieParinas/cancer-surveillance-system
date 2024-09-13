@@ -11,7 +11,7 @@ import { Input } from '../ui/input'
 
 export const Login = () => {
   return (
-    <div className='w-full flex h-full px-10'>
+    <div className='w-full flex px-10 py-[73px]'>
       <div className='flex flex-col w-1/2 justify-center items-center'>
         <div className='flex px-16 justify-center items-center gap-10 py-10'>
           <Image src={Logo} width={250} height={250} className='shrink-0 object-contain' alt='upm-logo' />
@@ -28,7 +28,7 @@ export const Login = () => {
 
 export const LoginForm = () => {
   return (
-    <div className='h-4/6 w-3/6 bg-red-100 text-red-800 flex justify-center items-center border-4 border-red-200 flex-col'>
+    <div className='w-3/6 bg-red-100 text-red-800 flex justify-center items-center border-4 border-red-200 flex-col'>
       <div className='flex flex-col items-center justify-center'>
         <Label className='text-5xl py-8'>LOGIN</Label>
         <form className='space-y-5 py-8'>
@@ -60,7 +60,7 @@ export const LoginNavbar = () => {
   const isActive = (path: string) => pathname === path;
 
   return (
-    <div className='h-1/6 w-full bg-red-900 flex justify-center items-center'>
+    <div className='w-full h-28 bg-red-900 flex justify-center items-center'>
       <Button
         onClick={() => router.push("/")}
         className={`w-44 bg-transparent shadow-none text-xl py-6 hover:bg-transparent hover:underline underline-offset-4 ${isActive("/") ? 'underline' : ''}`}
@@ -103,7 +103,7 @@ export const LoginNavbar = () => {
 
 export const LoginFooter = () => {
   return (
-    <div className='h-16 w-full bg-red-900 flex justify-center items-center'>
+    <div className='w-full h-20 bg-red-900 flex justify-center items-center'>
       <Label>Copyright (c) 2024. <b>UPM-HI Inc.</b> All Rights Reserved.</Label>
     </div>
   )

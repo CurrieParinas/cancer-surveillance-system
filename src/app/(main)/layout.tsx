@@ -1,19 +1,19 @@
 import { Sidebar } from "@/components/atoms/sidebar";
-import { LoginFooter, Login, LoginNavbar } from "@/components/organisms/login";
+import { LoginFooter, LoginNavbar } from "@/components/organisms/login";
 
 interface RootLayoutProps {
   children: React.ReactNode;
 }
 
-const hasUser = false;
+export const hasUser = false;
 
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
-    <div className="flex h-screen bg-white ">
+    <div className="flex bg-white">
       {!hasUser ? (
-        <div className="h-full w-full flex flex-col items-center">
+        <div className="w-full">
           <LoginNavbar />
-          <Login />
+          {children}
           <LoginFooter />
         </div>
       ) : (
@@ -21,7 +21,8 @@ export default function RootLayout({ children }: RootLayoutProps) {
           <Sidebar />
           {children}
         </>
-      )}
-    </div>
+      )
+      }
+    </div >
   );
 }

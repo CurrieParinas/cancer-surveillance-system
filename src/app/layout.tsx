@@ -1,5 +1,12 @@
 import "./globals.css";
 import type { Metadata } from "next";
+import { Kalam } from "next/font/google"
+
+const kalam = Kalam({
+  subsets: ["latin"],
+  weight: "400",
+  variable: "--font-kalam",
+});
 
 export const metadata: Metadata = {
   title: "Home - Cancer Surveillance System",
@@ -12,7 +19,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="en" className={`${kalam.variable}`}>
       <body>{children}</body>
     </html>
   );
