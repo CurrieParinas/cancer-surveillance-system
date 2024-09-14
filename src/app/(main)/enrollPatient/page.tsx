@@ -4,10 +4,10 @@ const EnrollPatient = () => {
   return (
     <div className="w-full bg-white flex flex-col items-center justify-center gap-4">
       <div className="w-6/12 h-auto p-2 text-center">
-        <p className="mt-10 font-bold text-6xl text-red-900">PATIENT INFORMATION</p>
+        <p className="mt-10 font-bold text-5xl text-red-900">PATIENT ENROLLMENT</p>
       </div>
 
-      <div className="w-6/12 h-auto p-4 bg-zinc-100">
+      <div className="w-7/12 h-auto pb-2 pt-4 bg-zinc-100">
       <form className=" gap-2">
           <div className="grid grid-cols-2 gap-1">
             <label className="pl-20 pt-1 font-bold text-left text-left text-sm text-black">LASTNAME:</label>
@@ -103,11 +103,11 @@ const EnrollPatient = () => {
             />
           </div>
 
-          <div className="flex justify-between mt-8 mb-8">
-            <button type="submit" className="bg-red-900 text-white font-semibold shadow py-2 px-8 text-sm mr-20 ml-20 ">
+          <div className="flex justify-center mt-8 mb-6">
+            <button type="submit" className="bg-red-900 text-white font-semibold shadow py-2 px-8 text-sm mr-40 ml-20 hover:bg-primary/90">
               SUBMIT
             </button>
-            <button type="button" className="bg-red-900 text-white font-semibold shadow py-2 px-6 mr-20 text-sm ">SUBMIT & ADD DISEASE PROFILE
+            <button type="button" className="bg-red-900 text-white font-semibold shadow py-2 px-8 mr-20 text-sm hover:bg-primary/90">SUBMIT & ADD DISEASE PROFILE
             </button>
           </div>
         </form>
