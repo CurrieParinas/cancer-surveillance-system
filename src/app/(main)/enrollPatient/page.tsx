@@ -8,7 +8,7 @@ const EnrollPatient = () => {
       </div>
 
       <div className="w-6/12 h-auto p-4 bg-zinc-100">
-      <form className=" gap-2">
+        <form className=" gap-2">
           <div className="grid grid-cols-2 gap-1">
             <label className="pl-20 pt-1 font-bold text-left text-left text-sm text-black">LASTNAME:</label>
             <input
@@ -114,7 +114,7 @@ const EnrollPatient = () => {
       </div>
 
 
-      
+
     </div>
   );
 };

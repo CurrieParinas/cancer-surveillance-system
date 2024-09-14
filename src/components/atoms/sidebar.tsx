@@ -16,9 +16,9 @@ export const Sidebar = () => {
             <div className='py-4 '>
                 <Label className='text-3xl italic'>Welcome,</Label>
             </div>
-            <div className='pl-4 pb-4 '>
-                <Label className='text-2xl'>Username Username Username</Label>
-                <Label className='text-2xl'>Hospital</Label>
+            <div className='pl-4 pb-4 flex flex-col'>
+                <Label className='text-2xl'>Username Username</Label>
+                <Label className='text-xl font-normal'>Hospital</Label>
             </div>
             <Separator />
             <DoctorSidebar />

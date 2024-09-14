@@ -5,11 +5,11 @@ interface RootLayoutProps {
   children: React.ReactNode;
 }
 
-export const hasUser = false;
+export const hasUser = true;
 
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
-    <div className="flex bg-white">
+    <div className="flex bg-white ">
       {!hasUser ? (
         <div className="w-full">
           <LoginNavbar />
@@ -17,10 +17,10 @@ export default function RootLayout({ children }: RootLayoutProps) {
           <LoginFooter />
         </div>
       ) : (
-        <>
+        <div className="w-screen flex">
           <Sidebar />
           {children}
-        </>
+        </div>
       )
       }
     </div >
