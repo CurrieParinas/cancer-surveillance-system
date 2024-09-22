@@ -2,15 +2,15 @@ import React from "react";
 
 const EnrollPatient = () => {
   return (
-    <div className="w-full bg-white flex flex-col items-center justify-center gap-4">
+    <div className="w-screen-minus-1-6 bg-white flex flex-col items-center justify-center gap-4">
       <div className="w-6/12 h-auto p-2 text-center">
         <p className="mt-10 font-bold text-5xl text-red-900">PATIENT ENROLLMENT</p>
       </div>
 
       <div className="w-7/12 h-auto pb-2 pt-4 bg-zinc-100">
-      <form className=" gap-2">
+        <form className=" gap-2">
           <div className="grid grid-cols-2 gap-1">
-            <label className="pl-20 pt-1 font-bold text-left text-left text-sm text-black">LASTNAME:</label>
+            <label className="pl-20 pt-1 font-bold text-left text-sm text-black">LASTNAME:</label>
             <input
               type="text"
               className="p-1 border border-gray-300 rounded w-3/4 text-sm h-8"
@@ -114,7 +114,7 @@ const EnrollPatient = () => {
       </div>
 
 
-      
+
     </div>
   );
 };

@@ -31,7 +31,7 @@ const DiseaseProfile = () => {
   };
 
   return (
-    <div className="w-full bg-white flex flex-col items-center justify-center gap-4">
+    <div className="w-screen-minus-1-6 bg-white flex flex-col items-center justify-center gap-4">
       <div className="w-6/12 h-auto p-2 text-center">
         <p className="mt-10 font-bold text-6xl text-red-900">DISEASE PROFILE</p>
       </div>
