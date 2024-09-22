@@ -96,3 +96,13 @@ body {
 .kalam-font {
   font-family: var(--font-kalam);
 }
+
+.h-screen-minus-48 {
+  height: calc(100vh - 12rem);
+  /* 48 is 12rem in Tailwind's sizing */
+}
+
+.w-screen-minus-1-6 {
+  width: calc(100vw - 16.666667%);
+  /* 48 is 12rem in Tailwind's sizing */
+}

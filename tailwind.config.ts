@@ -9,6 +9,9 @@ const config: Config = {
   ],
   theme: {
   	extend: {
+			height: {
+        'screen-minus-48': 'calc(100vh - 12rem)',
+      },
   		colors: {
   			background: 'hsl(var(--background))',
   			foreground: 'hsl(var(--foreground))',

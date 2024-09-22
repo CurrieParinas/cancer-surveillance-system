@@ -24,7 +24,7 @@ export const Dashboard = () => {
       </div>
 
       <div className="px-16 w-4/6 flex gap-12">
-        <div className="w-1/2 p-2 rounded-lg bg-red-100">
+        <div className="w-1/2 p-2 rounded-lg bg-red-50">
           <Table className='w-full border-y border-black'>
             <TableHeader>
               <TableRow className='border-black w-full'>
@@ -64,7 +64,7 @@ export const Dashboard = () => {
         </div>
         <div className="w-1/2">
           <Calendar
-            className="h-full w-full flex text-black bg-red-100 rounded-xl"
+            className="h-full w-full flex text-black bg-red-50 rounded-xl"
             classNames={{
               months:
                 "flex w-full flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0 flex-1",
@@ -73,6 +73,7 @@ export const Dashboard = () => {
               head_row: "",
               row: "w-full mt-2",
               head_cell: "rounded-none",
+              day_today: "bg-red-200",
             }}
           />
         </div>

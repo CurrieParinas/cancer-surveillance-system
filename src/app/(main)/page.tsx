@@ -8,7 +8,7 @@ const HomePage = () => {
   return (
     <div className={`${hasUser ? "w-5/6" : ""}`}>
       {!hasUser ? (
-        <div className="w-full flex flex-col items-center">
+        <div className="w-full h-full flex flex-col items-center justify-center">
           <Login />
         </div>
       ) : (
