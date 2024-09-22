@@ -1,6 +1,6 @@
 "use client"
 
-import React from 'react'
+import React, { useState } from 'react'
 import { Button } from '../ui/button'
 import { useRouter, usePathname } from 'next/navigation'
 import { Label } from '../ui/label'
@@ -11,15 +11,15 @@ import { Input } from '../ui/input'
 
 export const Login = () => {
   return (
-    <div className='w-full flex px-10 py-[73px]'>
-      <div className='flex flex-col w-1/2 justify-center items-center'>
-        <div className='flex px-16 justify-center items-center gap-10 py-10'>
-          <Image src={Logo} width={250} height={250} className='shrink-0 object-contain' alt='upm-logo' />
-          <Label className='text-8xl text-black pb-4'>Cancer Surveillance System</Label>
+    <div className='w-full text-black h-screen-minus-48 flex py-28'>
+      <div className='w-3/5 flex flex-col items-center'>
+        <div className='w-full flex justify-center items-center px-32'>
+          <Image src={Logo} width={300} height={300} className='shrink-0 object-contain' alt='upm-logo' />
+          <Label className='text-8xl px-2'>Cancer Surveillance System</Label>
         </div>
-        <Label className='italic text-black font-bold py-20 text-3xl'>&quot;Magkasama natin puksain ang kanser&quot;</Label>
+        <Label className='pt-20 text-5xl kalam-font'>&quot;Magkasama natin puksain ang kanser&quot;</Label>
       </div>
-      <div className='flex w-1/2 justify-center items-center'>
+      <div className='w-2/5'>
         <LoginForm />
       </div>
     </div>
@@ -27,31 +27,63 @@ export const Login = () => {
 }
 
 export const LoginForm = () => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    console.log({ email, password });
+  };
+
   return (
-    <div className='w-3/6 bg-red-100 text-red-800 flex justify-center items-center border-4 border-red-200 flex-col'>
-      <div className='flex flex-col items-center justify-center'>
-        <Label className='text-5xl py-8'>LOGIN</Label>
-        <form className='space-y-5 py-8'>
-          <div className='flex gap-2 items-center'>
-            <Label className='text-2xl '>Email:</Label>
-            <Input type="email" className='text-xl h-6 shadow-none border-t-0 border-x-0 border-b border-zinc-400 rounded-none focus-visible:ring-0' />
+    <div className="flex items-center justify-center">
+      <div className="bg-red-50 p-10 shadow-md max-w-sm w-full border-4 border-red-200">
+        <h2 className="text-4xl font-bold text-center py-4 text-red-800">LOGIN</h2>
+        <form onSubmit={handleSubmit} className='space-y-8 py-6'>
+          <div className="flex items-center gap-2">
+            <Label className="block text-xl font-medium text-red-800" htmlFor="email">
+              Email:
+            </Label>
+            <Input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="text-xl h-6   shadow-none border-t-0 border-x-0 border-b border-zinc-400 rounded-none focus-visible:ring-0"
+              required
+            />
           </div>
-          <div className='flex gap-2 items-center'>
-            <Label className='text-2xl '>Password:</Label>
-            <Input type="password" className='text-xl h-6 shadow-none border-t-0 border-x-0 border-b border-zinc-400 rounded-none focus-visible:ring-0' />
+          <div className="flex items-center gap-2">
+            <Label className="block text-xl font-medium text-red-800" htmlFor="password">
+              Password:
+            </Label>
+            <Input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="text-xl h-6 shadow-none border-t-0 border-x-0 border-b border-zinc-400 rounded-none focus-visible:ring-0"
+              required
+            />
           </div>
-          <div className='w-full flex justify-center py-4'>
-            <Button className='bg-red-700 hover:bg-red-900 rounded-none h-11 w-1/2 shadow-md text-xl'>SUBMIT</Button>
+          <div className="flex justify-center items-center flex-col gap-4">
+            <Button
+              type="submit"
+              className="bg-red-700 hover:bg-red-900 rounded-none h-11 w-1/2 shadow-md text-xl"
+            >
+              SUBMIT
+            </Button>
+            <div className="text-center">
+              <a href="#" className="text-sm text-gray-600 hover:underline">
+                Forgot password?
+              </a>
+            </div>
           </div>
         </form>
-
-      </div>
-      <div className='w-full flex justify-end pr-4'>
-        <Button className='bg-transparent text-zinc-400 italic shadow-none hover:bg-transparent hover:text-black'>Forgot password?</Button>
       </div>
     </div>
-  )
-}
+  );
+};
 
 export const LoginNavbar = () => {
   const router = useRouter();

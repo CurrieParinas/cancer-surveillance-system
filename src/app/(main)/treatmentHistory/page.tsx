@@ -31,7 +31,7 @@ const TreatmentHistory = () => {
   };
 
   return (
-    <div className="w-full bg-white flex flex-col items-center justify-center gap-4">
+    <div className="w-screen-minus-1-6 bg-white flex flex-col items-center justify-center gap-4">
 
       <div className="w-6/12 h-auto p-2 text-center">
         <p className="mt-10 font-bold text-6xl text-red-900">TREATMENT HISTORY</p>
@@ -40,7 +40,7 @@ const TreatmentHistory = () => {
 
       <div className="w-10/12 h-auto p-4 grid bg-zinc-100">
         <form className="gap-2" onSubmit={handleSubmit}>
-          
+
           <div className="grid grid-cols-2 gap-4 bg-zinc-100 p-4 mb-4">
             <label className="pl-36 pt-1 font-bold text-left text-sm text-black">
               LASTNAME:
@@ -114,14 +114,14 @@ const TreatmentHistory = () => {
                 className="p-1 border border-gray-300 rounded w-3/5 text-sm h-8 text-gray-950"
                 placeholder="Enter surgical operation"
               />
-             <label className="pl-36 pt-1 font-bold text-left text-sm text-black">
+              <label className="pl-36 pt-1 font-bold text-left text-sm text-black">
                 OPERATION DATE:
-             </label>
-             <input
+              </label>
+              <input
                 type="date"
                 name="operation_date"
                 className="p-1 border border-gray-300 rounded w-3/5 text-sm h-8 text-gray-950"
-        />
+              />
 
             </div>
           </div>
