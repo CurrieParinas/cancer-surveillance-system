@@ -13,7 +13,7 @@ export const Login = () => {
   return (
     <div className='w-full text-black h-screen-minus-48 flex py-28'>
       <div className='w-3/5 flex flex-col items-center'>
-        <div className='w-full flex justify-center items-center px-32'>
+        <div className='w-full flex justify-center items-center px-32 gap-6'>
           <Image src={Logo} width={300} height={300} className='shrink-0 object-contain' alt='upm-logo' />
           <Label className='text-8xl px-2'>Cancer Surveillance System</Label>
         </div>
@@ -30,9 +30,33 @@ export const LoginForm = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log({ email, password });
+
+    const loginData = {
+      EMAIL: email,
+      PASSWORD: password,
+    };
+
+    try {
+      const response = await fetch('http://localhost:8080/css/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(loginData),
+      });
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Login successful:', data);
+        localStorage.setItem('user', JSON.stringify(data));
+        window.location.reload();
+      } else {
+        console.log('Login failed');
+      }
+    } catch (error) {
+      console.log('Error:', error);
+    }
   };
 
   return (
