@@ -51,12 +51,10 @@ export const LoginForm = () => {
       if (response.ok) {
         const data = await response.json();
 
-        // Validate the response with Zod schema
         try {
           const parsedData = DoctorSchema.parse(data);
           console.log('Login successful and data is valid:', parsedData);
 
-          // Store the validated data in localStorage
           localStorage.setItem('user', JSON.stringify(parsedData));
           window.location.reload();
         } catch (validationError) {
