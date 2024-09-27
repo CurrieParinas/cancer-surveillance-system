@@ -11,21 +11,28 @@ import { Search } from 'lucide-react'
 
 
 export const Sidebar = () => {
-    const [user, setUser] = useState({
+    const [doctorInfo, setDoctorInfo] = useState({
         userFirstname: '',
         userLastname: '',
+        departmentName: '',
+        hospitalName: '',
     });
 
     useEffect(() => {
         const userData = localStorage.getItem('user');
         if (userData) {
             const parsedUserData = JSON.parse(userData);
-            setUser({
-                userFirstname: parsedUserData.userFirstname,
-                userLastname: parsedUserData.userLastname,
+
+            // Ensure the structure matches your API response
+            setDoctorInfo({
+                userFirstname: parsedUserData.user.userFirstname,
+                userLastname: parsedUserData.user.userLastname,
+                departmentName: parsedUserData.department.departmentName,
+                hospitalName: parsedUserData.hospital.hospitalName,
             });
         }
     }, []);
+
 
     return (
         <div className='flex flex-col w-1/6 h-screen px-6 bg-red-900 py-4'>
@@ -34,10 +41,10 @@ export const Sidebar = () => {
             </div>
             <div className='pl-4 pb-4 flex flex-col'>
                 <Label className='text-2xl'>
-                    {user.userFirstname} {user.userLastname}
+                    Dr. {doctorInfo.userFirstname} {doctorInfo.userLastname}
                 </Label>
-                <Label className='text-xl font-normal'>Department</Label>
-                <Label className='text-xl font-normal'>Hospital</Label>
+                <Label className='text-xl font-normal'>{doctorInfo.departmentName}</Label>
+                <Label className='text-xl font-normal'>{doctorInfo.hospitalName}</Label>
             </div>
             <Separator />
             <DoctorSidebar />

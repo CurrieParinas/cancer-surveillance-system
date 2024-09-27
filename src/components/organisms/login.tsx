@@ -8,6 +8,7 @@ import Image from 'next/image'
 import Logo from '/public/logo/upm-colored.png'
 import { Input } from '../ui/input'
 // import Logo from '/public/logo/upm-seal-no-color.svg'
+import DoctorSchema from '@/packages/api/doctor'
 
 export const Login = () => {
   return (
@@ -46,11 +47,21 @@ export const LoginForm = () => {
         },
         body: JSON.stringify(loginData),
       });
+
       if (response.ok) {
         const data = await response.json();
-        console.log('Login successful:', data);
-        localStorage.setItem('user', JSON.stringify(data));
-        window.location.reload();
+
+        // Validate the response with Zod schema
+        try {
+          const parsedData = DoctorSchema.parse(data);
+          console.log('Login successful and data is valid:', parsedData);
+
+          // Store the validated data in localStorage
+          localStorage.setItem('user', JSON.stringify(parsedData));
+          window.location.reload();
+        } catch (validationError) {
+          console.error('Validation failed:', validationError);
+        }
       } else {
         console.log('Login failed');
       }
