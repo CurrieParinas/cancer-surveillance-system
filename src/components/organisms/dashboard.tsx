@@ -15,8 +15,6 @@ import React from "react"
 
 
 export const Dashboard = () => {
-  const [date, setDate] = React.useState<Date | undefined>(new Date())
-
   return (
     <div className="flex flex-col justify-center items-center">
       <div className="p-16 text-black flex justify-center">
