@@ -9,6 +9,8 @@ import Logo from '/public/logo/upm-colored.png'
 import { Input } from '../ui/input'
 // import Logo from '/public/logo/upm-seal-no-color.svg'
 import DoctorSchema from '@/packages/api/doctor'
+import { Separator } from '../ui/separator'
+import Link from 'next/link'
 
 export const Login = () => {
   return (
@@ -113,6 +115,11 @@ export const LoginForm = () => {
             </div>
           </div>
         </form>
+        <Separator />
+        <div className="flex gap-2 justify-center pt-6">
+          <Label className='font-normal text-base'>Not yet registered?</Label>
+          <Link href="/doctorRegistration" className='text-red-900 hover:underline'>Sign Up!</Link>
+        </div>
       </div>
     </div>
   );
