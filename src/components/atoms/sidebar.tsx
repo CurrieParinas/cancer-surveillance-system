@@ -35,7 +35,7 @@ export const Sidebar = () => {
 
 
     return (
-        <div className='flex flex-col w-1/6 h-screen px-6 bg-red-900 py-4'>
+        <div className='flex flex-col w-1/6 h-screen px-6 bg-red-900 py-4 sticky top-0'>
             <div className='py-4'>
                 <Label className='text-3xl italic'>Welcome,</Label>
             </div>
