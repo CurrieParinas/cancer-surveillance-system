@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from "zod";
 
 const AddressSchema = z.object({
   addressId: z.number(),
@@ -9,40 +9,59 @@ const AddressSchema = z.object({
   addressZipcode: z.string(),
 });
 
+const UserAccessSchema = z.object({
+  accessId: z.number(),
+  accessCanenrollpatient: z.string(),
+  accessCaneditpatientinfo: z.string(),
+  accessCanviewpatientinfo: z.string(),
+  accessCandeleteuser: z.string(),
+  accessCandeletepatientinfo: z.string(),
+});
+
 const UserRoleSchema = z.object({
   roleId: z.number(),
   roleName: z.string(),
   roleDescription: z.string(),
 });
 
-const UserAccessSchema = z.object({
-  accessId: z.number(),
-  accessCanenrollpatient: z.enum(["Y", "N"]),
-  accessCaneditpatientinfo: z.enum(["Y", "N"]),
-  accessCanviewpatientinfo: z.enum(["Y", "N"]),
-  accessCandeleteuser: z.enum(["Y", "N"]),
-  accessCandeletepatientinfo: z.enum(["Y", "N"]),
-});
-
 const UserSchema = z.object({
   userId: z.number(),
   userLastname: z.string(),
   userFirstname: z.string(),
-  userMiddlename: z.string(),
-  userEmail: z.string(),
+  userMiddlename: z.string().nullable(),
+  userEmail: z.string().email(),
   userPassword: z.string(),
-  userGender: z.enum(["Male", "Female"]),
+  userGender: z.string(),
   userMaritalStatus: z.string(),
   userBirthdate: z.string(),
   userBirthplace: z.string(),
   userAddress: AddressSchema,
   userRole: UserRoleSchema,
   userAccess: UserAccessSchema,
-  userIsVerified: z.enum(["Y", "N"]),
+  userIsVerified: z.string(),
   userStatus: z.string(),
   userCreatedOn: z.string(),
   userUpdatedOn: z.string(),
-  userEncoder: z.string().nullable(),
+  userEncoder: z.object({
+    userId: z.number(),
+    userLastname: z.string(),
+    userFirstname: z.string(),
+    userMiddlename: z.string().nullable(),
+    userEmail: z.string().email(),
+    userPassword: z.string(),
+    userGender: z.string(),
+    userMaritalStatus: z.string(),
+    userBirthdate: z.string(),
+    userBirthplace: z.string(),
+    userAddress: AddressSchema,
+    userRole: UserRoleSchema,
+    userAccess: UserAccessSchema,
+    userIsVerified: z.string(),
+    userStatus: z.string(),
+    userCreatedOn: z.string(),
+    userUpdatedOn: z.string(),
+    userEncoder: z.null(), // Assuming the encoder for the encoder is null
+  }).nullable(),
 });
 
 const PatientSchema = z.object({
@@ -76,17 +95,19 @@ const DoctorSchema = z.object({
   hospital: HospitalSchema,
   department: DepartmentSchema,
   specialty: SpecialtySchema,
-  doctorESignature: z.string().nullable(),
+  doctorESignature: z.null(), // Assuming it's nullable
   doctorLicenseNumber: z.string(),
   doctorLicenseExpDate: z.string(),
   doctorSchedule: z.number(),
 });
 
-const RelationSchema = z.object({
-  relationId: z.number(),
-  patient: PatientSchema,
-  doctor: DoctorSchema,
-  doctorRole: z.string().nullable(),
-});
+const PatientsResponseSchema = z.array(
+  z.object({
+    relationId: z.number(),
+    patient: PatientSchema,
+    doctor: DoctorSchema,
+    doctorRole: z.null(),
+  })
+);
 
-export const PatientsResponseSchema = z.array(RelationSchema);
+export { PatientsResponseSchema };

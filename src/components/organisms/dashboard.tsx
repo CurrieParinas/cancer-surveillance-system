@@ -25,7 +25,7 @@ type PatientsResponse = z.infer<typeof PatientsResponseSchema>;
 export const Dashboard = () => {
   const [patients, setPatients] = useState<PatientsResponse>([]);
   const [loading, setLoading] = useState(true);
-  const [doctorInfo, setDoctorInfo] = useState({ userId: '' });
+  const [doctorInfo, setDoctorInfo] = useState({ doctorId: '' });
 
   useEffect(() => {
     const userData = localStorage.getItem('user');
@@ -34,7 +34,7 @@ export const Dashboard = () => {
 
       // Ensure the structure matches your API response
       setDoctorInfo({
-        userId: parsedUserData.user.userId
+        doctorId: parsedUserData.doctorId
       });
     }
   }, []);
@@ -50,14 +50,14 @@ export const Dashboard = () => {
 
   useEffect(() => {
     if (user) {
-      fetchPatients(doctorInfo.userId);
+      fetchPatients(doctorInfo.doctorId);
     }
   }, [user]);
 
-  const fetchPatients = async (userId: string) => {
+  const fetchPatients = async (doctorId: string) => {
     try {
       const response = await fetch(
-        `http://localhost:8080/css/onboard/getPatientsByDoctor/${userId}`
+        `http://localhost:8080/css/onboard/getPatientsByDoctor/${doctorId}`
       );
       if (response.ok) {
         const data = await response.json();
