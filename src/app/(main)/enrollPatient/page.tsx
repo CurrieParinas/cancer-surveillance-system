@@ -114,6 +114,23 @@ const EnrollPatient: React.FC = () => {
         if (response.ok) {
           const data = await response.json();
           console.log("Patient added successfully:", data);
+          setFormData({
+            lastname: "",
+            firstname: "",
+            middle_name: "",
+            email: "",
+            password: "",
+            birthdate: "",
+            birthplace: "",
+            gender: "male",
+            marital_status: "single",
+            addressNumber: "",
+            addressStreet: "",
+            addressCity: "",
+            addressRegion: "",
+            addressZipcode: ""
+          })
+          setConfirmPassword("")
         } else {
           console.error("Failed to add patient:", response.status);
         }

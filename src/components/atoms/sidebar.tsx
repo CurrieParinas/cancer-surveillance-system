@@ -57,6 +57,7 @@ export const DoctorSidebar = () => {
     const handleLogout = () => {
         localStorage.removeItem('user');
         window.location.reload();
+        router.push("/")
     }
 
     return (
