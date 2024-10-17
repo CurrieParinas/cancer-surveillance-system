@@ -42,26 +42,6 @@ const UserSchema = z.object({
   userStatus: z.string(),
   userCreatedOn: z.string(),
   userUpdatedOn: z.string(),
-  userEncoder: z.object({
-    userId: z.number(),
-    userLastname: z.string(),
-    userFirstname: z.string(),
-    userMiddlename: z.string().nullable(),
-    userEmail: z.string().email(),
-    userPassword: z.string(),
-    userGender: z.string(),
-    userMaritalStatus: z.string(),
-    userBirthdate: z.string(),
-    userBirthplace: z.string(),
-    userAddress: AddressSchema,
-    userRole: UserRoleSchema,
-    userAccess: UserAccessSchema,
-    userIsVerified: z.string(),
-    userStatus: z.string(),
-    userCreatedOn: z.string(),
-    userUpdatedOn: z.string(),
-    userEncoder: z.null(), // Assuming the encoder for the encoder is null
-  }).nullable(),
 });
 
 const PatientSchema = z.object({
@@ -106,7 +86,7 @@ const PatientsResponseSchema = z.array(
     relationId: z.number(),
     patient: PatientSchema,
     doctor: DoctorSchema,
-    doctorRole: z.null(),
+    doctorRole: z.null(), // Assuming it's nullable
   })
 );
 
