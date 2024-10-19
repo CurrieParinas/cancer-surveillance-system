@@ -44,7 +44,6 @@ const EnrollPatient: React.FC = () => {
     const userData = localStorage.getItem('user')
     if (userData) {
       const parsedUserData = JSON.parse(userData);
-      console.log(parsedUserData.doctorId)
     }
   })
 
@@ -69,7 +68,6 @@ const EnrollPatient: React.FC = () => {
     e.preventDefault();
 
     const result = EnrollPatientSchema.safeParse(formData);
-    console.log(formData);
 
     if (!result.success) {
       const errorMap: Record<string, string> = {};
@@ -113,7 +111,6 @@ const EnrollPatient: React.FC = () => {
 
         if (response.ok) {
           const data = await response.json();
-          console.log("Patient added successfully:", data);
           setFormData({
             lastname: "",
             firstname: "",
