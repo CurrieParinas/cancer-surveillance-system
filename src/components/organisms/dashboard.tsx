@@ -42,7 +42,6 @@ export const Dashboard = () => {
   const user: User | null = (() => {
     if (typeof window !== "undefined") {
       const storedUser = localStorage.getItem("user");
-      console.log(storedUser);
       return storedUser ? JSON.parse(storedUser) : null;
     }
     return null;
