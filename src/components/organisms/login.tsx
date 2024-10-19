@@ -32,6 +32,7 @@ export const Login = () => {
 export const LoginForm = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -59,6 +60,7 @@ export const LoginForm = () => {
 
           localStorage.setItem('user', JSON.stringify(parsedData));
           window.location.reload();
+          router.push("/dashboard")
         } catch (validationError) {
           console.error('Validation failed:', validationError);
         }

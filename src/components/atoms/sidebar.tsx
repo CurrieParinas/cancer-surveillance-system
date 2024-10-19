@@ -63,7 +63,7 @@ export const DoctorSidebar = () => {
     return (
         <div className='py-4 justify-between h-full flex flex-col'>
             <div>
-                <Button onClick={() => router.push("/")} className='w-full bg-transparent shadow-none justify-start text-xl py-6'>Dashboard</Button>
+                <Button onClick={() => router.push("/dashboard")} className='w-full bg-transparent shadow-none justify-start text-xl py-6'>Dashboard</Button>
                 <Button onClick={() => router.push("/enrollPatient")} className='w-full bg-transparent shadow-none justify-start text-xl py-6'>Enroll Patient</Button>
                 <Button onClick={() => router.push("/diseaseProfile")} className='w-full bg-transparent shadow-none justify-start text-xl py-6'>Disease Profile</Button>
                 <Button onClick={() => router.push("/treatmentHistory")} className='w-full bg-transparent shadow-none justify-start text-xl py-6'>Treatment History</Button>
