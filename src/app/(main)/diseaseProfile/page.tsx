@@ -351,6 +351,62 @@ const DiseaseProfile = () => {
 
       const result = await response.json();
       console.log("Form submitted successfully", result);
+
+      setFormData({
+        patientId: "",
+        lastname: "",
+        email: "",
+        primary_site: "",
+        date_of_diagnosis: "",
+        basis_of_diagnosis: "",
+        basis_of_diagnosis_option: "Non-Microscopic",
+        basis_of_diagnosis_suboption: "",
+        laterality: "1",
+        histo_pathology: "",
+        histo_tumorSize: "",
+        histo_tumorExtension: "",
+        histo_tumorGrade: "",
+        histo_nodePositive: "",
+        histo_nodeHarvest: "",
+        histo_negativeMargins: "",
+        histo_stage: "I",
+        histo_positiveMargins: "",
+        disease_extent: "1",
+        disease_tumor_size: "",
+        disease_lymph_node: "",
+        disease_metastatic: "",
+        metastatic_distant_ln: "N",
+        metastatic_bone: "N",
+        metastatic_liver: "N",
+        metastatic_lung: "N",
+        metastatic_brain: "N",
+        metastatic_ovary: "N",
+        metastatic_skin: "N",
+        metastatic_intestine: "N",
+        metastatic_others: "N",
+        metastatic_unknown: "N",
+        metastatic_notes: "",
+        multiple_primaries: [],
+        stage: "I",
+        stage_type: "",
+        disease_tstage: "",
+        disease_nstage: "",
+        disease_mstage: "",
+        disease_gstage: "",
+        dxstatus_alive: "N",
+        dxstatus_symptoms: "N",
+        dxstatus_recurrence: "N",
+        dxstatus_metastatic: "N",
+        dxstatus_curative: "N",
+        disease_encoder: "",
+      });
+      setErrors({});
+      setSelectedSites([]);
+      setPrimarySearchTerm("");
+      setMultipleSearchTerm("");
+      setPathologySearchTerm("");
+      setPatientSearchTerm("");
+
     } catch (error) {
       console.error("Error submitting form:", error);
     }
