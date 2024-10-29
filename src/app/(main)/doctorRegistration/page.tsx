@@ -1,5 +1,6 @@
 "use client";
 
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import Link from "next/link";
@@ -16,7 +17,6 @@ interface Specialty {
   specialtyDescription: string;
 }
 
-// Define the structure of the address
 interface Address {
   addressId: number;
   addressNumber: string;
@@ -26,7 +26,6 @@ interface Address {
   addressZipcode: string;
 }
 
-// Define the structure of a hospital
 interface Hospital {
   hospitalId: number;
   hospitalName: string;
@@ -34,7 +33,7 @@ interface Hospital {
   hospitalContactNo: string | null;
 }
 
-const EnrollPatient: React.FC = () => {
+const DoctorRegistration: React.FC = () => {
   const [formData, setFormData] = useState({
     lastname: "",
     firstname: "",
@@ -58,13 +57,13 @@ const EnrollPatient: React.FC = () => {
     specialty_id: 1,
   });
 
+  const [doctorESig, setDoctorESig] = useState<File | null>(null); // New state for the e-signature
   const [errors, setErrors] = useState<any>({});
   const [passwordMatch, setPasswordMatch] = useState(true);
 
   const validateForm = () => {
     const newErrors: any = {};
 
-    // Validate required fields
     if (!formData.lastname) newErrors.lastname = "Last name is required";
     if (!formData.firstname) newErrors.firstname = "First name is required";
     if (!formData.email) newErrors.email = "Email is required";
@@ -73,14 +72,13 @@ const EnrollPatient: React.FC = () => {
     if (!formData.doctor_license_number) newErrors.doctor_license_number = "License number is required";
     if (!formData.doctor_license_exp_date) newErrors.doctor_license_exp_date = "License expiration date is required";
     if (!formData.addressZipcode) newErrors.addressZipcode = "Zipcode is required";
+    if (!doctorESig) newErrors.doctorESig = "Doctor's e-signature is required"; // Validate e-signature
 
-    // Validate email format (simple regex example)
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (formData.email && !emailRegex.test(formData.email)) {
       newErrors.email = "Invalid email address";
     }
 
-    // Validate password match
     if (formData.password !== formData.confirmPassword) {
       newErrors.confirmPassword = "Passwords do not match";
       setPasswordMatch(false);
@@ -89,19 +87,17 @@ const EnrollPatient: React.FC = () => {
     }
 
     setErrors(newErrors);
-    return Object.keys(newErrors).length === 0; // Return true if no errors
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
 
-    // Update formData state
     setFormData((prev) => ({
       ...prev,
       [name]: value,
     }));
 
-    // Real-time validation for password match
     if (name === "password" || name === "confirmPassword") {
       if (name === "confirmPassword") {
         setPasswordMatch(value === formData.password);
@@ -109,6 +105,12 @@ const EnrollPatient: React.FC = () => {
         setPasswordMatch(value === formData.confirmPassword);
       }
     }
+  };
+
+  // Handle file input change
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null; // Get the first file
+    setDoctorESig(file);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -121,6 +123,9 @@ const EnrollPatient: React.FC = () => {
       const licenseDateParts = formData.doctor_license_exp_date.split("-");
       const formattedLicenseDateParts = `${licenseDateParts[2]}/${licenseDateParts[1]}/${licenseDateParts[0]}`;
 
+      const formDataToSend = new FormData(); // Create a FormData object
+
+      // Create the request object and append it as a JSON string
       const requestBody = {
         hospital_id: formData.hospital_id,
         department_id: formData.department_id,
@@ -143,15 +148,18 @@ const EnrollPatient: React.FC = () => {
         ADDRESS_ZIPCODE: formData.addressZipcode
       };
 
-      console.log(requestBody)
+      // Append the JSON string as a single part
+      formDataToSend.append("addDoctorRequest", new Blob([JSON.stringify(requestBody)], { type: "application/json" }));
+
+      // Append the e-signature file
+      if (doctorESig) {
+        formDataToSend.append("doctorESig", doctorESig);
+      }
 
       try {
         const response = await fetch('http://localhost:8080/css/doctor/add', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(requestBody),
+          body: formDataToSend, // Use FormData without setting Content-Type
         });
 
         if (!response.ok) {
@@ -163,7 +171,7 @@ const EnrollPatient: React.FC = () => {
 
         window.location.href = "/";
 
-        // Optionally, reset formData or redirect the user
+        // Reset the form state
         setFormData({
           lastname: "",
           firstname: "",
@@ -185,10 +193,10 @@ const EnrollPatient: React.FC = () => {
           hospital_id: 1,
           department_id: 1,
           specialty_id: 1,
-        })
+        });
+        setDoctorESig(null); // Reset the e-signature state
       } catch (error) {
         console.error('Error submitting form:', error);
-        // Optionally set error state to display an error message to the user
       }
     } else {
       console.log("Form has errors");
@@ -202,11 +210,10 @@ const EnrollPatient: React.FC = () => {
   });
 
   useEffect(() => {
-    // Fetch departments from the API
     const fetchDepartments = async () => {
       try {
         const response = await fetch('http://localhost:8080/css/department/all');
-        const data: Department[] = await response.json(); // Specify the expected type here
+        const data: Department[] = await response.json();
         setDepartments(data);
       } catch (error) {
         console.error('Error fetching departments:', error);
@@ -229,11 +236,10 @@ const EnrollPatient: React.FC = () => {
   });
 
   useEffect(() => {
-    // Fetch specialties from the API
     const fetchSpecialties = async () => {
       try {
         const response = await fetch('http://localhost:8080/css/specialty/all');
-        const data: Specialty[] = await response.json(); // Specify the expected type here
+        const data: Specialty[] = await response.json();
         setSpecialties(data);
       } catch (error) {
         console.error('Error fetching specialties:', error);
@@ -256,11 +262,10 @@ const EnrollPatient: React.FC = () => {
   });
 
   useEffect(() => {
-    // Fetch hospitals from the API
     const fetchHospitals = async () => {
       try {
         const response = await fetch('http://localhost:8080/css/hospital/all');
-        const data: Hospital[] = await response.json(); // Specify the expected type here
+        const data: Hospital[] = await response.json();
         setHospitals(data);
       } catch (error) {
         console.error('Error fetching hospitals:', error);
@@ -280,7 +285,7 @@ const EnrollPatient: React.FC = () => {
   return (
     <div className="w-full h-screen-minus-48">
       <div className="w-full h-full flex items-center justify-center bg-gray-50 p-6">
-        <div className="w-full h-full flex flex-col max-w-7xl bg-white shadow-lg rounded-lg p-8">
+        <div className="w-full h-full flex flex-col max-w-7xl bg-white rounded-lg p-8">
           <div className="text-center">
             <h1 className="text-4xl font-bold text-red-900 mb-8">Doctor Registration</h1>
           </div>
@@ -340,7 +345,6 @@ const EnrollPatient: React.FC = () => {
                 {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
               </div>
 
-              {/* Password fields */}
               <div className="flex gap-4">
                 <div className="flex flex-col w-1/2">
                   <label htmlFor="password" className="text-sm font-semibold text-gray-700">Password</label>
@@ -369,7 +373,6 @@ const EnrollPatient: React.FC = () => {
                 </div>
               </div>
 
-              {/* Date and place of birth */}
               <div className="flex gap-4">
                 <div className="flex flex-col w-1/4">
                   <label htmlFor="birthdate" className="text-sm font-semibold text-gray-700">Birthdate</label>
@@ -424,7 +427,6 @@ const EnrollPatient: React.FC = () => {
                 </div>
               </div>
 
-              {/* Address fields */}
               <div className="flex gap-3">
                 <div className="flex flex-col w-[32%]">
                   <label htmlFor="addressNumber" className="text-sm font-semibold text-gray-700">Address Number</label>
@@ -495,10 +497,8 @@ const EnrollPatient: React.FC = () => {
 
 
 
-            {/* Additional form fields */}
             <div className="w-1/2 flex flex-col gap-5">
               <div className="flex gap-4">
-                {/* Doctor License Number */}
                 <div className="flex flex-col w-1/2">
                   <label htmlFor="doctor_license_number" className="text-sm font-semibold text-gray-700">Doctor License Number</label>
                   <input
@@ -513,7 +513,6 @@ const EnrollPatient: React.FC = () => {
                   {errors.doctor_license_number && <p className="text-red-500 text-xs mt-1">{errors.doctor_license_number}</p>}
                 </div>
 
-                {/* Doctor License Expiration Date */}
                 <div className="flex flex-col w-1/2">
                   <label htmlFor="doctor_license_exp_date" className="text-sm font-semibold text-gray-700">Doctor License Expiration Date</label>
                   <input
@@ -525,6 +524,18 @@ const EnrollPatient: React.FC = () => {
                   />
                   {errors.doctor_license_exp_date && <p className="text-red-500 text-xs mt-1">{errors.doctor_license_exp_date}</p>}
                 </div>
+              </div>
+
+              <div className="flex flex-col">
+                <label htmlFor="doctorESig" className="text-sm font-semibold text-gray-700">Doctor's E-Signature</label>
+                <Input
+                  type="file"
+                  id="doctorESig"
+                  name="doctorESig"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                  className={`h-10 file:border-r file:border-zinc-100 mt-1 p-2 border ${errors.doctorESig ? "border-red-500" : "border-gray-300"} rounded focus:outline-none focus:border-red-500 text-black`} />
+                {errors.doctorESig && <p>{errors.doctorESig}</p>}
               </div>
 
               <div className="flex flex-col">
@@ -575,8 +586,7 @@ const EnrollPatient: React.FC = () => {
                 </select>
               </div>
 
-              {/* Additional fields and submit button */}
-              <div className="col-span-2 flex justify-center mt-8">
+              <div className="col-span-2 flex justify-center">
                 <button
                   type="submit"
                   className="bg-red-900 text-white px-6 py-3 rounded-md hover:bg-red-800 focus:outline-none focus:ring focus:ring-red-300"
@@ -585,7 +595,7 @@ const EnrollPatient: React.FC = () => {
                 </button>
               </div>
               <Separator />
-              <div className="flex gap-2 justify-center pt-6">
+              <div className="flex gap-2 justify-center">
                 <Label className='font-normal text-base text-black'>Already registered?</Label>
                 <Link href="/" className='text-red-900 hover:underline'>Sign In!</Link>
               </div>
@@ -597,4 +607,4 @@ const EnrollPatient: React.FC = () => {
   );
 };
 
-export default EnrollPatient;
+export default DoctorRegistration;
