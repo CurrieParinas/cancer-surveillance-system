@@ -3,6 +3,7 @@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import { UserSchema } from "@/packages/api/user";
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
 
@@ -33,6 +34,19 @@ interface Hospital {
   hospitalContactNo: string | null;
 }
 
+type Errors = {
+  lastname?: string;
+  firstname?: string;
+  email?: string;
+  password?: string;
+  confirmPassword?: string;
+  doctor_license_number?: string;
+  doctor_license_exp_date?: string;
+  addressZipcode?: string;
+  doctorESig?: string;
+  emailNotUnique?: string;
+};
+
 const DoctorRegistration: React.FC = () => {
   const [formData, setFormData] = useState({
     lastname: "",
@@ -57,12 +71,13 @@ const DoctorRegistration: React.FC = () => {
     specialty_id: 1,
   });
 
-  const [doctorESig, setDoctorESig] = useState<File | null>(null); // New state for the e-signature
+  const [doctorESig, setDoctorESig] = useState<File | null>(null);
   const [errors, setErrors] = useState<any>({});
   const [passwordMatch, setPasswordMatch] = useState(true);
 
   const validateForm = () => {
     const newErrors: any = {};
+
 
     if (!formData.lastname) newErrors.lastname = "Last name is required";
     if (!formData.firstname) newErrors.firstname = "First name is required";
@@ -107,9 +122,8 @@ const DoctorRegistration: React.FC = () => {
     }
   };
 
-  // Handle file input change
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0] || null; // Get the first file
+    const file = e.target.files?.[0] || null;
     setDoctorESig(file);
   };
 
@@ -117,15 +131,62 @@ const DoctorRegistration: React.FC = () => {
     e.preventDefault();
 
     if (validateForm()) {
+      // Check if birth year is not greater than the current year
+      const currentYear = new Date().getFullYear();
+      const datePartsCheck = formData.birthdate.split("-");
+      const birthYear = parseInt(datePartsCheck[0], 10);
+
+      if (birthYear > currentYear) {
+        setErrors((prevErrors: Errors) => ({
+          ...prevErrors,
+          birthdate: "The birth year cannot be in the future."
+        }));
+        return;
+      } else {
+        setErrors((prevErrors: Errors) => ({ ...prevErrors, birthdate: undefined }));
+      }
+
+      const licenseDatePartsCheck = formData.doctor_license_exp_date.split("-");
+      const licenseYear = parseInt(licenseDatePartsCheck[0], 10);
+      if (licenseYear < currentYear) {
+        setErrors((prevErrors: Errors) => ({
+          ...prevErrors,
+          doctor_license_exp_date_expired: "The expiration date must be this year or later."
+        }));
+        return;
+      } else {
+        setErrors((prevErrors: Errors) => ({ ...prevErrors, doctor_license_exp_date_expired: undefined }));
+      }
+
+      try {
+        const response = await fetch('http://localhost:8080/css/user/allUsers');
+        const data = await response.json();
+
+        const users = UserSchema.array().parse(data);
+        const emailList = users.map((user) => user.userEmail);
+
+        if (emailList.includes(formData.email)) {
+          setErrors((prevErrors: Errors) => ({
+            ...prevErrors,
+            emailNotUnique: "The email must be unique. Please use a different email address."
+          }));
+          return;
+        } else {
+          setErrors((prevErrors: Errors) => ({ ...prevErrors, emailNotUnique: undefined }));
+        }
+      } catch (error) {
+        console.error("Email uniqueness check failed:", error);
+        return;
+      }
+
       const dateParts = formData.birthdate.split("-");
       const formattedBirthdate = `${dateParts[2]}/${dateParts[1]}/${dateParts[0]}`;
 
       const licenseDateParts = formData.doctor_license_exp_date.split("-");
       const formattedLicenseDateParts = `${licenseDateParts[2]}/${licenseDateParts[1]}/${licenseDateParts[0]}`;
 
-      const formDataToSend = new FormData(); // Create a FormData object
+      const formDataToSend = new FormData();
 
-      // Create the request object and append it as a JSON string
       const requestBody = {
         hospital_id: formData.hospital_id,
         department_id: formData.department_id,
@@ -148,10 +209,8 @@ const DoctorRegistration: React.FC = () => {
         ADDRESS_ZIPCODE: formData.addressZipcode
       };
 
-      // Append the JSON string as a single part
       formDataToSend.append("addDoctorRequest", new Blob([JSON.stringify(requestBody)], { type: "application/json" }));
 
-      // Append the e-signature file
       if (doctorESig) {
         formDataToSend.append("doctorESig", doctorESig);
       }
@@ -159,7 +218,7 @@ const DoctorRegistration: React.FC = () => {
       try {
         const response = await fetch('http://localhost:8080/css/doctor/add', {
           method: 'POST',
-          body: formDataToSend, // Use FormData without setting Content-Type
+          body: formDataToSend,
         });
 
         if (!response.ok) {
@@ -169,9 +228,19 @@ const DoctorRegistration: React.FC = () => {
         const result = await response.json();
         console.log("Form submitted successfully:", result);
 
+        const verificationResponse = await fetch(`http://localhost:8080/css/verification/createVerification?userId=${result.user.userId}`, {
+          method: 'GET',
+        });
+
+        if (!verificationResponse.ok) {
+          throw new Error('Verification email request failed');
+        }
+
+        const verificationResult = await verificationResponse;
+        console.log("Verification email sent successfully:", verificationResult);
+
         window.location.href = "/";
 
-        // Reset the form state
         setFormData({
           lastname: "",
           firstname: "",
@@ -194,7 +263,7 @@ const DoctorRegistration: React.FC = () => {
           department_id: 1,
           specialty_id: 1,
         });
-        setDoctorESig(null); // Reset the e-signature state
+        setDoctorESig(null);
       } catch (error) {
         console.error('Error submitting form:', error);
       }
@@ -343,6 +412,7 @@ const DoctorRegistration: React.FC = () => {
                   placeholder="juandelacruz@mail.com"
                 />
                 {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
+                {errors.emailNotUnique && <p className="text-red-500 text-xs mt-1">{errors.emailNotUnique}</p>}
               </div>
 
               <div className="flex gap-4">
@@ -383,6 +453,7 @@ const DoctorRegistration: React.FC = () => {
                     onChange={handleChange}
                     className="mt-1 p-2 border border-gray-300 rounded focus:outline-none focus:border-red-500 text-black"
                   />
+                  {errors.birthdate && <p className="text-red-500 text-xs mt-1">{errors.birthdate}</p>}
                 </div>
 
                 <div className="flex flex-col w-1/4">
@@ -523,6 +594,7 @@ const DoctorRegistration: React.FC = () => {
                     className={`mt-1 p-2 border ${errors.doctor_license_exp_date ? "border-red-500" : "border-gray-300"} rounded focus:outline-none focus:border-red-500 text-black`}
                   />
                   {errors.doctor_license_exp_date && <p className="text-red-500 text-xs mt-1">{errors.doctor_license_exp_date}</p>}
+                  {errors.doctor_license_exp_date_expired && <p className="text-red-500 text-xs mt-1">{errors.doctor_license_exp_date_expired}</p>}
                 </div>
               </div>
 

@@ -155,6 +155,7 @@ const EnrollPatient: React.FC = () => {
                 <input
                   type="text"
                   name="lastname"
+                  required
                   value={formData.lastname}
                   onChange={handleChange}
                   className={`mt-1 p-2 border ${errors.lastname ? "border-red-500" : "border-gray-300"} rounded focus:outline-none focus:border-red-500 text-black`}
@@ -168,6 +169,7 @@ const EnrollPatient: React.FC = () => {
                 <input
                   type="text"
                   name="firstname"
+                  required
                   value={formData.firstname}
                   onChange={handleChange}
                   className={`mt-1 p-2 border ${errors.firstname ? "border-red-500" : "border-gray-300"} rounded focus:outline-none focus:border-red-500 text-black`}
@@ -181,6 +183,7 @@ const EnrollPatient: React.FC = () => {
                 <input
                   type="text"
                   name="middle_name"
+                  required
                   value={formData.middle_name}
                   onChange={handleChange}
                   className="mt-1 p-2 border border-gray-300 rounded focus:outline-none focus:border-red-500 text-black"
@@ -194,6 +197,7 @@ const EnrollPatient: React.FC = () => {
               <input
                 type="email"
                 name="email"
+                required
                 value={formData.email}
                 onChange={handleChange}
                 className={`mt-1 p-2 border ${errors.email ? "border-red-500" : "border-gray-300"} rounded focus:outline-none focus:border-red-500 text-black`}
@@ -208,6 +212,7 @@ const EnrollPatient: React.FC = () => {
                 <input
                   type="password"
                   name="password"
+                  required
                   value={formData.password}
                   onChange={handleChange}
                   className={`mt-1 p-2 border ${errors.password ? "border-red-500" : "border-gray-300"} rounded focus:outline-none focus:border-red-500 text-black`}
@@ -221,6 +226,7 @@ const EnrollPatient: React.FC = () => {
                 <input
                   type="password"
                   name="confirmPassword"
+                  required
                   value={confirmPassword}
                   onChange={handleConfirmPasswordChange}
                   className={`mt-1 p-2 border ${passwordMatch ? "border-gray-300" : "border-red-500"} rounded focus:outline-none focus:border-red-500 text-black`}
@@ -236,6 +242,7 @@ const EnrollPatient: React.FC = () => {
                 <input
                   type="date"
                   name="birthdate"
+                  required
                   value={formData.birthdate}
                   onChange={handleChange}
                   className="mt-1 p-2 border border-gray-300 rounded focus:outline-none focus:border-red-500 text-black"
@@ -247,6 +254,7 @@ const EnrollPatient: React.FC = () => {
                 <input
                   type="text"
                   name="birthplace"
+                  required
                   value={formData.birthplace}
                   onChange={handleChange}
                   className="mt-1 p-2 border border-gray-300 rounded focus:outline-none focus:border-red-500 text-black"
@@ -260,6 +268,7 @@ const EnrollPatient: React.FC = () => {
                 <label htmlFor="gender" className="text-sm font-semibold text-gray-700">Gender</label>
                 <select
                   name="gender"
+                  required
                   value={formData.gender}
                   onChange={handleChange}
                   className="mt-1 p-2 border border-gray-300 rounded focus:outline-none focus:border-red-500 text-black"
@@ -274,6 +283,7 @@ const EnrollPatient: React.FC = () => {
                 <label htmlFor="marital_status" className="text-sm font-semibold text-gray-700">Marital Status</label>
                 <select
                   name="marital_status"
+                  required
                   value={formData.marital_status}
                   onChange={handleChange}
                   className="mt-1 p-2 border border-gray-300 rounded focus:outline-none focus:border-red-500 text-black"
@@ -292,6 +302,7 @@ const EnrollPatient: React.FC = () => {
                 <input
                   type="text"
                   name="addressNumber"
+                  required
                   value={formData.addressNumber}
                   onChange={handleChange}
                   className="mt-1 p-2 border border-gray-300 rounded focus:outline-none focus:border-red-500 text-black"
@@ -304,6 +315,7 @@ const EnrollPatient: React.FC = () => {
                 <input
                   type="text"
                   name="addressStreet"
+                  required
                   value={formData.addressStreet}
                   onChange={handleChange}
                   className="mt-1 p-2 border border-gray-300 rounded focus:outline-none focus:border-red-500 text-black"
@@ -316,6 +328,7 @@ const EnrollPatient: React.FC = () => {
                 <input
                   type="text"
                   name="addressCity"
+                  required
                   value={formData.addressCity}
                   onChange={handleChange}
                   className="mt-1 p-2 border border-gray-300 rounded focus:outline-none focus:border-red-500 text-black"
@@ -330,6 +343,7 @@ const EnrollPatient: React.FC = () => {
                 <input
                   type="text"
                   name="addressRegion"
+                  required
                   value={formData.addressRegion}
                   onChange={handleChange}
                   className="mt-1 p-2 border border-gray-300 rounded focus:outline-none focus:border-red-500 text-black"
@@ -342,6 +356,7 @@ const EnrollPatient: React.FC = () => {
                 <input
                   type="text"
                   name="addressZipcode"
+                  required
                   value={formData.addressZipcode}
                   onChange={handleChange}
                   className={`mt-1 p-2 border ${errors.addressZipcode ? "border-red-500" : "border-gray-300"} rounded focus:outline-none focus:border-red-500 text-black`}
@@ -356,7 +371,7 @@ const EnrollPatient: React.FC = () => {
                 <button
                   type="submit"
                   disabled={!passwordMatch} // Disable submit if passwords don't match
-                  className={`bg-red-900 hover:bg-red-800 text-white font-semibold py-2 px-6 rounded transition ${!passwordMatch ? "opacity-50 cursor-not-allowed" : ""}`}
+                  className={`bg-red-900 hover:bg-red-800 text-white py-2 px-6 rounded-3xl transition ${!passwordMatch ? "opacity-50 cursor-not-allowed" : ""}`}
                 >
                   Submit
                 </button>
@@ -365,7 +380,7 @@ const EnrollPatient: React.FC = () => {
                 <button
                   type="button"
                   disabled={!passwordMatch} // Disable submit if passwords don't match
-                  className={`bg-red-900 hover:bg-red-800 text-white font-semibold py-2 px-6 rounded transition ${!passwordMatch ? "opacity-50 cursor-not-allowed" : ""}`}
+                  className={`bg-red-900 hover:bg-red-800 text-white py-2 px-6 rounded-3xl transition ${!passwordMatch ? "opacity-50 cursor-not-allowed" : ""}`}
                 >
                   Submit & Add Disease Profile
                 </button>
