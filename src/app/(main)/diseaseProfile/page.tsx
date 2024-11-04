@@ -16,6 +16,38 @@ interface FilteredPatient {
 type FormData = z.infer<typeof DiseaseFormDataSchema>;
 type Errors = z.infer<typeof DiseaseErrorsSchema>;
 
+type Site = {
+  siteId: string;
+  siteName: string;
+};
+
+const metastaticSites: Site[] = [
+  { siteId: "metastatic_distant_ln", siteName: "Distant Lymph Node" },
+  { siteId: "metastatic_bone", siteName: "Bone" },
+  { siteId: "metastatic_liver", siteName: "Liver" },
+  { siteId: "metastatic_lung", siteName: "Lung" },
+  { siteId: "metastatic_brain", siteName: "Brain" },
+  { siteId: "metastatic_ovary", siteName: "Ovary" },
+  { siteId: "metastatic_skin", siteName: "Skin" },
+  { siteId: "metastatic_intestine", siteName: "Intestine" },
+  { siteId: "metastatic_others", siteName: "Others" },
+  { siteId: "metastatic_unknown", siteName: "Unknown" },
+];
+
+// Define the type for each status
+type Status = {
+  id: string;
+  label: string;
+};
+
+// Status options
+const statusOptions: Status[] = [
+  { id: 'dxstatus_alive', label: 'Alive' },
+  { id: 'dxstatus_symptoms', label: 'Symptoms' },
+  { id: 'dxstatus_recurrence', label: 'Recurrence' },
+  { id: 'dxstatus_metastatic', label: 'Metastatic' },
+  { id: 'dxstatus_curative', label: 'Curative' },
+];
 
 const DiseaseProfile = () => {
   const [doctorInfo, setDoctorInfo] = useState("");
@@ -236,11 +268,14 @@ const DiseaseProfile = () => {
 
   const validateForm = (): Errors => {
     const newErrors: Errors = {};
+    const skipValidationKeys = ["histo_pathology", "disease_tstage", "disease_nstage", "disease_mstage", "disease_gstage"];
+
     Object.keys(formData).forEach((key) => {
-      if (!formData[key as keyof FormData] && key !== "other_primary") {
+      if (!skipValidationKeys.includes(key) && !formData[key as keyof FormData] && key !== "other_primary") {
         newErrors[key as keyof Errors] = `${key} is required`;
       }
     });
+
     return newErrors;
   };
 
@@ -496,6 +531,9 @@ const DiseaseProfile = () => {
       if (dropdownRefPathology.current && !dropdownRefPathology.current.contains(event.target as Node)) {
         setPathologyDropdownOpen(false)
       }
+      if (dropdownRefMetastatic.current && !dropdownRefMetastatic.current.contains(event.target as Node)) {
+        setMetastaticDropdownOpen(false)
+      }
     };
 
     document.addEventListener("mousedown", handleClickOutside);
@@ -504,6 +542,87 @@ const DiseaseProfile = () => {
     };
   }, []);
 
+  const dropdownRefMetastatic = useRef<HTMLDivElement>(null);
+  const [selectedMetastaticSites, setSelectedMetastaticSites] = useState<Site[]>([]);
+  const [metastaticSearchTerm, setMetastaticSearchTerm] = useState<string>("");
+  const [metastaticDropdownOpen, setMetastaticDropdownOpen] = useState<boolean>(false);
+  const [filteredMetastaticSites, setFilteredMetastaticSites] = useState<Site[]>(metastaticSites);
+
+  const handleSelectMetastaticSite = (siteId: string, siteName: string) => {
+    const exists = selectedMetastaticSites.find((site) => site.siteId === siteId);
+    if (!exists) {
+      setSelectedMetastaticSites((prev) => [...prev, { siteId, siteName }]);
+
+      setFormData((prevData) => ({
+        ...prevData,
+        [siteId]: "Y",
+      }));
+    }
+    setMetastaticSearchTerm("");
+    setMetastaticDropdownOpen(false);
+  };
+
+  const handleRemoveMetastaticSite = (siteId: string) => {
+    setSelectedMetastaticSites((prev) => prev.filter((site) => site.siteId !== siteId));
+
+    setFormData((prevData) => ({
+      ...prevData,
+      [siteId]: "N",
+    }));
+  };
+
+  const handleMetastaticSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const search = e.target.value.toLowerCase();
+    setMetastaticSearchTerm(search);
+    setMetastaticDropdownOpen(true);
+    const filtered = metastaticSites.filter((site) =>
+      site.siteName.toLowerCase().includes(search)
+    );
+    setFilteredMetastaticSites(filtered);
+  };
+
+  useEffect(() => {
+    console.log(formData)
+  })
+
+  const dropdownRefStatus = useRef<HTMLDivElement>(null);
+  const [selectedStatuses, setSelectedStatuses] = useState<Status[]>([]);
+  const [statusSearchTerm, setStatusSearchTerm] = useState<string>("");
+  const [statusDropdownOpen, setStatusDropdownOpen] = useState<boolean>(false);
+  const [filteredStatusOptions, setFilteredStatusOptions] = useState<Status[]>(statusOptions);
+
+  const handleSelectStatus = (id: string, label: string) => {
+    const exists = selectedStatuses.find((status) => status.id === id);
+    if (!exists) {
+      setSelectedStatuses((prev) => [...prev, { id, label }]);
+
+      setFormData((prevData) => ({
+        ...prevData,
+        [id]: "Y",
+      }));
+    }
+    setStatusSearchTerm("");
+    setStatusDropdownOpen(false);
+  };
+
+  const handleRemoveStatus = (id: string) => {
+    setSelectedStatuses((prev) => prev.filter((status) => status.id !== id));
+
+    setFormData((prevData) => ({
+      ...prevData,
+      [id]: "N",
+    }));
+  };
+
+  const handleStatusSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const search = e.target.value.toLowerCase();
+    setStatusSearchTerm(search);
+    setStatusDropdownOpen(true);
+    const filtered = statusOptions.filter((status) =>
+      status.label.toLowerCase().includes(search)
+    );
+    setFilteredStatusOptions(filtered);
+  };
 
   return (
     <div className="w-5/6">
@@ -513,7 +632,7 @@ const DiseaseProfile = () => {
             <h1 className="text-6xl font-bold text-red-900 mb-16 tracking-wide">DISEASE PROFILE</h1>
           </div>
 
-          <form className="gap-2" onSubmit={handleSubmit}>
+          <form className="gap-2 pb-20" onSubmit={handleSubmit}>
             <div className="flex flex-col gap-6">
               <div className="flex gap-4">
                 <div className="flex flex-col w-full relative" ref={dropdownRefPatient}>
@@ -727,7 +846,7 @@ const DiseaseProfile = () => {
 
 
               <div className="flex justify-center mt-8">
-                <label className="text-lg text-black font-bold">HISTOLOGY</label>
+                <label className="text-lg text-black font-bold tracking-widest">HISTOLOGY</label>
               </div>
               <Separator className="" />
 
@@ -943,7 +1062,7 @@ const DiseaseProfile = () => {
 
 
               <div className="flex justify-center mt-8">
-                <label className="text-lg text-black font-bold">DISEASE</label>
+                <label className="text-lg text-black font-bold tracking-widest">DISEASE</label>
               </div>
               <Separator className="" />
 
@@ -1027,200 +1146,60 @@ const DiseaseProfile = () => {
               </div>
 
               <div className="flex justify-center mt-8">
-                <label className="text-lg text-black font-bold">METASTATIC</label>
+                <label className="text-lg text-black font-bold tracking-widest">METASTATIC</label>
               </div>
               <Separator className="" />
 
-              <div className="flex h-full">
-                <div className="flex flex-col w-1/2">
-                  <label htmlFor="disease_extent" className="text-sm font-semibold text-gray-700">Metastatic Involvement</label>
-                  <div className="flex py-4">
-                    <div className="flex flex-col w-1/2 gap-4">
-                      <div className="flex flex-col">
-                        <label htmlFor="metastatic_distant_ln" className="text-sm font-normal pl-4 text-gray-700">
-                          <input
-                            id="metastatic_distant_ln"
-                            type="checkbox"
-                            name="metastatic_distant_ln"
-                            checked={formData.metastatic_distant_ln === "Y"}
-                            onChange={(e) =>
-                              setFormData({
-                                ...formData,
-                                metastatic_distant_ln: e.target.checked ? "Y" : "N",
-                              })
-                            }
-                            className="mr-2"
-                          />
-                          Distant Lymph Node
-                        </label>
-                      </div>
-                      <div className="flex flex-col">
-                        <label htmlFor="metastatic_bone" className="text-sm font-normal pl-4 text-gray-700">
-                          <input
-                            id="metastatic_bone"
-                            type="checkbox"
-                            name="metastatic_bone"
-                            checked={formData.metastatic_bone === "Y"}
-                            onChange={(e) =>
-                              setFormData({
-                                ...formData,
-                                metastatic_bone: e.target.checked ? "Y" : "N",
-                              })
-                            }
-                            className="mr-2"
-                          />
-                          Bone
-                        </label>
-                      </div>
-                      <div className="flex flex-col">
-                        <label htmlFor="metastatic_liver" className="text-sm font-normal pl-4 text-gray-700">
-                          <input
-                            id="metastatic_liver"
-                            type="checkbox"
-                            name="metastatic_liver"
-                            checked={formData.metastatic_liver === "Y"}
-                            onChange={(e) =>
-                              setFormData({
-                                ...formData,
-                                metastatic_liver: e.target.checked ? "Y" : "N",
-                              })
-                            }
-                            className="mr-2"
-                          />
-                          Liver
-                        </label>
-                      </div>
-                      <div className="flex flex-col">
-                        <label htmlFor="metastatic_lung" className="text-sm font-normal pl-4 text-gray-700">
-                          <input
-                            id="metastatic_lung"
-                            type="checkbox"
-                            name="metastatic_lung"
-                            checked={formData.metastatic_lung === "Y"}
-                            onChange={(e) =>
-                              setFormData({
-                                ...formData,
-                                metastatic_lung: e.target.checked ? "Y" : "N",
-                              })
-                            }
-                            className="mr-2"
-                          />
-                          Lung
-                        </label>
-                      </div>
-                      <div className="flex flex-col">
-                        <label htmlFor="metastatic_brain" className="text-sm font-normal pl-4 text-gray-700">
-                          <input
-                            id="metastatic_brain"
-                            type="checkbox"
-                            name="metastatic_brain"
-                            checked={formData.metastatic_brain === "Y"}
-                            onChange={(e) =>
-                              setFormData({
-                                ...formData,
-                                metastatic_brain: e.target.checked ? "Y" : "N",
-                              })
-                            }
-                            className="mr-2"
-                          />
-                          Brain
-                        </label>
-                      </div>
-                    </div>
-
-                    <div className="flex flex-col w-1/2 gap-4">
-                      <div className="flex flex-col">
-                        <label htmlFor="metastatic_ovary" className="text-sm font-normal pl-4 text-gray-700">
-                          <input
-                            id="metastatic_ovary"
-                            type="checkbox"
-                            name="metastatic_ovary"
-                            checked={formData.metastatic_ovary === "Y"}
-                            onChange={(e) =>
-                              setFormData({
-                                ...formData,
-                                metastatic_ovary: e.target.checked ? "Y" : "N",
-                              })
-                            }
-                            className="mr-2"
-                          />
-                          Ovary
-                        </label>
-                      </div>
-                      <div className="flex flex-col">
-                        <label htmlFor="metastatic_skin" className="text-sm font-normal pl-4 text-gray-700">
-                          <input
-                            id="metastatic_skin"
-                            type="checkbox"
-                            name="metastatic_skin"
-                            checked={formData.metastatic_skin === "Y"}
-                            onChange={(e) =>
-                              setFormData({
-                                ...formData,
-                                metastatic_skin: e.target.checked ? "Y" : "N",
-                              })
-                            }
-                            className="mr-2"
-                          />
-                          Skin
-                        </label>
-                      </div>
-                      <div className="flex flex-col">
-                        <label htmlFor="metastatic_intestine" className="text-sm font-normal pl-4 text-gray-700">
-                          <input
-                            id="metastatic_intestine"
-                            type="checkbox"
-                            name="metastatic_intestine"
-                            checked={formData.metastatic_intestine === "Y"}
-                            onChange={(e) =>
-                              setFormData({
-                                ...formData,
-                                metastatic_intestine: e.target.checked ? "Y" : "N",
-                              })
-                            }
-                            className="mr-2"
-                          />
-                          Intestine
-                        </label>
-                      </div>
-                      <div className="flex flex-col">
-                        <label htmlFor="metastatic_others" className="text-sm font-normal pl-4 text-gray-700">
-                          <input
-                            id="metastatic_others"
-                            type="checkbox"
-                            name="metastatic_others"
-                            checked={formData.metastatic_others === "Y"}
-                            onChange={(e) =>
-                              setFormData({
-                                ...formData,
-                                metastatic_others: e.target.checked ? "Y" : "N",
-                              })
-                            }
-                            className="mr-2"
-                          />
-                          Others
-                        </label>
-                      </div>
-                    </div>
+              <div className="flex flex-col h-full gap-4">
+                <div className="relative" ref={dropdownRefMetastatic}>
+                  <label htmlFor="metastatic_sites" className="text-sm font-semibold text-gray-700">
+                    Metastatic Involvement
+                  </label>
+                  <div className="flex flex-wrap border border-gray-300 rounded mt-1 p-2 items-center">
+                    {selectedMetastaticSites.map((site) => (
+                      <span
+                        key={site.siteId}
+                        className="bg-red-200 text-black px-2 py-1 rounded mr-2 flex items-center"
+                      >
+                        {site.siteName}
+                        <button
+                          className="ml-2 text-red-600 hover:text-red-800"
+                          onClick={() => handleRemoveMetastaticSite(site.siteId)}
+                        >
+                          &times;
+                        </button>
+                      </span>
+                    ))}
+                    <input
+                      type="text"
+                      name="metastatic_sites"
+                      placeholder="Select Metastatic Sites"
+                      value={metastaticSearchTerm}
+                      onChange={handleMetastaticSearchChange}
+                      onClick={() => setMetastaticDropdownOpen(true)}
+                      className="border-0 outline-none flex-1 text-black"
+                    />
                   </div>
-
-                  <div className="flex flex-wrap mb-4">
-                    <div className="flex flex-col w-full">
-                      <label htmlFor="check_all" className="text-sm font-normal pl-4 text-gray-700">
-                        <input
-                          id="check_all"
-                          type="checkbox"
-                          checked={allChecked}
-                          onChange={handleCheckAll}
-                          className="mr-2"
-                        />
-                        Check/Uncheck All Metastatic Sites
-                      </label>
-                    </div>
-                  </div>
+                  {metastaticDropdownOpen && (
+                    <ul className="absolute z-10 bg-white border border-gray-300 w-full mt-1 rounded shadow-lg max-h-40 overflow-y-auto">
+                      {filteredMetastaticSites.length > 0 ? (
+                        filteredMetastaticSites.map((site) => (
+                          <li
+                            key={site.siteId}
+                            className="p-2 hover:bg-gray-200 text-black cursor-pointer"
+                            onClick={() => handleSelectMetastaticSite(site.siteId, site.siteName)}
+                          >
+                            {site.siteName}
+                          </li>
+                        ))
+                      ) : (
+                        <li className="p-2 text-gray-500">No sites found</li>
+                      )}
+                    </ul>
+                  )}
                 </div>
 
-                <div className="flex flex-col w-1/2 h-60">
+                <div className="flex flex-col max-h-44">
                   <label htmlFor="metastatic_notes" className="text-sm font-semibold text-gray-700">
                     Notes
                   </label>
@@ -1229,12 +1208,13 @@ const DiseaseProfile = () => {
                     value={formData.metastatic_notes}
                     onChange={handleChange}
                     className={`mt-1 p-2 border h-full ${errors.metastatic_notes ? "border-red-500" : "border-gray-300"} rounded focus:outline-none focus:border-red-500 text-black`}
+                    rows={4}
                   />
                 </div>
               </div>
 
               <div className="flex justify-center mt-8">
-                <label className="text-lg text-black font-bold">MULTIPLE DISEASE</label>
+                <label className="text-lg text-black font-bold tracking-widest">MULTIPLE DISEASE</label>
               </div>
               <Separator className="" />
 
@@ -1372,122 +1352,76 @@ const DiseaseProfile = () => {
               </div>
 
               <div className="flex justify-center mt-8">
-                <label className="text-lg text-black font-bold">PATIENT STATUS</label>
+                <label className="text-lg text-black font-bold tracking-widest">PATIENT STATUS</label>
               </div>
               <Separator className="" />
 
               <div className="flex flex-col">
-                <div className="flex py-4">
-                  <div className="flex gap-4">
-                    <div className="flex flex-col">
-                      <label htmlFor="dxstatus_alive" className="text-sm font-normal pl-4 text-gray-700">
-                        <input
-                          id="dxstatus_alive"
-                          type="checkbox"
-                          name="dxstatus_alive"
-                          checked={formData.dxstatus_alive === "Y"}
-                          onChange={(e) =>
-                            setFormData({
-                              ...formData,
-                              dxstatus_alive: e.target.checked ? "Y" : "N",
-                            })
-                          }
-                          className="mr-2"
-                        />
-                        Alive
-                      </label>
-                    </div>
-                    <div className="flex flex-col">
-                      <label htmlFor="dxstatus_symptoms" className="text-sm font-normal pl-4 text-gray-700">
-                        <input
-                          id="dxstatus_symptoms"
-                          type="checkbox"
-                          name="dxstatus_symptoms"
-                          checked={formData.dxstatus_symptoms === "Y"}
-                          onChange={(e) =>
-                            setFormData({
-                              ...formData,
-                              dxstatus_symptoms: e.target.checked ? "Y" : "N",
-                            })
-                          }
-                          className="mr-2"
-                        />
-                        Symptoms
-                      </label>
-                    </div>
-                    <div className="flex flex-col">
-                      <label htmlFor="dxstatus_recurrence" className="text-sm font-normal pl-4 text-gray-700">
-                        <input
-                          id="dxstatus_recurrence"
-                          type="checkbox"
-                          name="dxstatus_recurrence"
-                          checked={formData.dxstatus_recurrence === "Y"}
-                          onChange={(e) =>
-                            setFormData({
-                              ...formData,
-                              dxstatus_recurrence: e.target.checked ? "Y" : "N",
-                            })
-                          }
-                          className="mr-2"
-                        />
-                        Recurrence
-                      </label>
-                    </div>
-                    <div className="flex flex-col">
-                      <label htmlFor="dxstatus_metastatic" className="text-sm font-normal pl-4 text-gray-700">
-                        <input
-                          id="dxstatus_metastatic"
-                          type="checkbox"
-                          name="dxstatus_metastatic"
-                          checked={formData.dxstatus_metastatic === "Y"}
-                          onChange={(e) =>
-                            setFormData({
-                              ...formData,
-                              dxstatus_metastatic: e.target.checked ? "Y" : "N",
-                            })
-                          }
-                          className="mr-2"
-                        />
-                        Metastatic
-                      </label>
-                    </div>
-                    <div className="flex flex-col">
-                      <label htmlFor="dxstatus_curative" className="text-sm font-normal pl-4 text-gray-700">
-                        <input
-                          id="dxstatus_curative"
-                          type="checkbox"
-                          name="dxstatus_curative"
-                          checked={formData.dxstatus_curative === "Y"}
-                          onChange={(e) =>
-                            setFormData({
-                              ...formData,
-                              dxstatus_curative: e.target.checked ? "Y" : "N",
-                            })
-                          }
-                          className="mr-2"
-                        />
-                        Curative
-                      </label>
-                    </div>
+                (
+                <div className="relative" ref={dropdownRefStatus}>
+                  <label htmlFor="patient_status" className="text-sm font-semibold text-gray-700">
+                    Patient Status
+                  </label>
+                  <div className="flex flex-wrap border border-gray-300 rounded mt-1 p-2 items-center">
+                    {selectedStatuses.map((status) => (
+                      <span
+                        key={status.id}
+                        className="bg-red-200 text-black px-2 py-1 rounded mr-2 flex items-center"
+                      >
+                        {status.label}
+                        <button
+                          className="ml-2 text-red-600 hover:text-red-800"
+                          onClick={() => handleRemoveStatus(status.id)}
+                        >
+                          &times;
+                        </button>
+                      </span>
+                    ))}
+                    <input
+                      type="text"
+                      name="patient_status"
+                      placeholder="Select Patient Status"
+                      value={statusSearchTerm}
+                      onChange={handleStatusSearchChange}
+                      onClick={() => setStatusDropdownOpen(true)}
+                      className="border-0 outline-none flex-1 text-black"
+                    />
                   </div>
+                  {statusDropdownOpen && (
+                    <ul className="absolute z-10 bg-white border border-gray-300 w-full mt-1 rounded shadow-lg max-h-40 overflow-y-auto">
+                      {filteredStatusOptions.length > 0 ? (
+                        filteredStatusOptions.map((status) => (
+                          <li
+                            key={status.id}
+                            className="p-2 hover:bg-gray-200 text-black cursor-pointer"
+                            onClick={() => handleSelectStatus(status.id, status.label)}
+                          >
+                            {status.label}
+                          </li>
+                        ))
+                      ) : (
+                        <li className="p-2 text-gray-500">No statuses found</li>
+                      )}
+                    </ul>
+                  )}
                 </div>
               </div>
             </div>
 
 
-            <div className="flex mt-8 mb-8">
+            <div className="flex mt-20 mb-8">
               <div className="w-1/2 flex justify-center">
                 <button type="submit"
-                  className={`bg-red-900 hover:bg-red-800 text-white font-semibold py-2 px-6 rounded transition`}
+                  className={`bg-red-900 hover:bg-red-800 text-white py-2 px-6 rounded-3xl transition`}
                 >
-                  SUBMIT
+                  Submit
                 </button>
               </div>
               <div className="w-1/2 flex justify-center">
                 <button type="button"
-                  className={`bg-red-900 hover:bg-red-800 text-white font-semibold py-2 px-6 rounded transition`}
+                  className={`bg-red-900 hover:bg-red-800 text-white py-2 px-6 rounded-3xl transition`}
                 >
-                  SUBMIT & ADD TREATMENT HISTORY
+                  Submit & Add Treatment History
                 </button>
               </div>
             </div>
