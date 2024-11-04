@@ -43,7 +43,7 @@ export const Sidebar = () => {
                 <CircleUserIcon size={130} strokeWidth={1} />
             </div>
             <div className='pl-4 flex flex-col'>
-                <Label className='text-2xl font-medium'>
+                <Label className='text-2xl font-[700]'>
                     Dr. {doctorInfo.userFirstname} {doctorInfo.userLastname}
                 </Label>
                 <Label className='text-xl font-thin'>{doctorInfo.departmentName}</Label>
@@ -81,49 +81,49 @@ export const DoctorSidebar = () => {
 
                 <Button
                     onClick={() => navigateTo("/dashboard")}
-                    className={`w-full h-12 hover:bg-white hover:text-black  rounded-none rounded-l-lg font-normal bg-transparent shadow-none justify-start text-xl flex gap-3 transition-all ease-in-out duration-100 ${isActive("/dashboard") ? "font-medium pl-8 bg-white text-black" : ""}`}
+                    className={`w-full h-12 hover:bg-white hover:text-black  rounded-3xl font-normal bg-transparent shadow-none justify-start text-xl flex gap-3 transition-all ease-in-out duration-100 ${isActive("/dashboard") || isActive("/") ? "font-medium pl-8 bg-white text-black" : ""}`}
                 >
                     <LayoutDashboard /> Dashboard
                 </Button>
 
                 <Button
                     onClick={() => navigateTo("/enrollPatient")}
-                    className={`w-full h-12 hover:bg-white hover:text-black  rounded-none rounded-l-lg font-normal bg-transparent shadow-none justify-start text-xl flex gap-3 transition-all ease-in-out duration-100 ${isActive("/enrollPatient") ? "font-medium pl-8 bg-white text-black" : ""}`}
+                    className={`w-full h-12 hover:bg-white hover:text-black  rounded-3xl font-normal bg-transparent shadow-none justify-start text-xl flex gap-3 transition-all ease-in-out duration-100 ${isActive("/enrollPatient") ? "font-medium pl-8 bg-white text-black" : ""}`}
                 >
                     <ContactRound /> Enroll Patient
                 </Button>
 
                 <Button
                     onClick={() => navigateTo("/diseaseProfile")}
-                    className={`w-full h-12 hover:bg-white hover:text-black  rounded-none rounded-l-lg font-normal bg-transparent shadow-none justify-start text-xl flex gap-3 transition-all ease-in-out duration-100 ${isActive("/diseaseProfile") ? "font-medium pl-8 bg-white text-black" : ""}`}
+                    className={`w-full h-12 hover:bg-white hover:text-black  rounded-3xl font-normal bg-transparent shadow-none justify-start text-xl flex gap-3 transition-all ease-in-out duration-100 ${isActive("/diseaseProfile") ? "font-medium pl-8 bg-white text-black" : ""}`}
                 >
                     <Microscope /> Disease Profile
                 </Button>
 
                 <Button
                     onClick={() => navigateTo("/treatmentHistory")}
-                    className={`w-full h-12 hover:bg-white hover:text-black  rounded-none rounded-l-lg font-normal bg-transparent shadow-none justify-start text-xl flex gap-3 transition-all ease-in-out duration-100 ${isActive("/treatmentHistory") ? "font-medium pl-8 bg-white text-black" : ""}`}
+                    className={`w-full h-12 hover:bg-white hover:text-black  rounded-3xl font-normal bg-transparent shadow-none justify-start text-xl flex gap-3 transition-all ease-in-out duration-100 ${isActive("/treatmentHistory") ? "font-medium pl-8 bg-white text-black" : ""}`}
                 >
                     <Syringe /> Treatment History
                 </Button>
 
                 <Button
                     onClick={() => navigateTo("/consult")}
-                    className={`w-full h-12 hover:bg-white hover:text-black  rounded-none rounded-l-lg font-normal bg-transparent shadow-none justify-start text-xl flex gap-3 transition-all ease-in-out duration-100 ${isActive("/consult") ? "font-medium pl-8 bg-white text-black" : ""}`}
+                    className={`w-full h-12 hover:bg-white hover:text-black  rounded-3xl font-normal bg-transparent shadow-none justify-start text-xl flex gap-3 transition-all ease-in-out duration-100 ${isActive("/consult") ? "font-medium pl-8 bg-white text-black" : ""}`}
                 >
                     <Stethoscope /> Consult
                 </Button>
 
                 <Button
                     onClick={() => navigateTo("/notification")}
-                    className={`w-full h-12 hover:bg-white hover:text-black  rounded-none rounded-l-lg font-normal bg-transparent shadow-none justify-start text-xl flex gap-3 transition-all ease-in-out duration-100 ${isActive("/notification") ? "font-medium pl-8 bg-white text-black" : ""}`}
+                    className={`w-full h-12 hover:bg-white hover:text-black  rounded-3xl font-normal bg-transparent shadow-none justify-start text-xl flex gap-3 transition-all ease-in-out duration-100 ${isActive("/notification") ? "font-medium pl-8 bg-white text-black" : ""}`}
                 >
                     <Bell /> Notification
                 </Button>
 
                 <Button
                     onClick={() => navigateTo("/message")}
-                    className={`w-full h-12 hover:bg-white hover:text-black  rounded-none rounded-l-lg font-normal bg-transparent shadow-none justify-start text-xl flex gap-3 transition-all ease-in-out duration-100 ${isActive("/message") ? "font-medium pl-8 bg-white text-black" : ""}`}
+                    className={`w-full h-12 hover:bg-white hover:text-black  rounded-3xl font-normal bg-transparent shadow-none justify-start text-xl flex gap-3 transition-all ease-in-out duration-100 ${isActive("/message") ? "font-medium pl-8 bg-white text-black" : ""}`}
                 >
                     <Mail /> Message
                 </Button>
@@ -132,7 +132,7 @@ export const DoctorSidebar = () => {
             <div>
                 <Button
                     onClick={handleLogout}
-                    className='w-full h-12 hover:bg-white hover:text-black  rounded-none rounded-l-lg font-normal bg-transparent shadow-none justify-start text-xl flex gap-3 transition-all ease-in-out duration-100'
+                    className='w-full h-12 hover:bg-white hover:text-black  rounded-3xl font-normal bg-transparent shadow-none justify-start text-xl flex gap-3 transition-all ease-in-out duration-100'
                 >
                     <LogOut /> Logout
                 </Button>

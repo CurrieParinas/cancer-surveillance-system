@@ -93,14 +93,6 @@ const DiseaseProfile = () => {
   };
 
   useEffect(() => {
-    const userData = localStorage.getItem("user");
-    if (userData) {
-      const parsedUserData = JSON.parse(userData);
-      setDoctorInfo(parsedUserData.doctorId);
-    }
-  }, []);
-
-  useEffect(() => {
     setFormData(prevData => ({
       ...prevData,
       disease_encoder: doctorInfo,
@@ -190,29 +182,6 @@ const DiseaseProfile = () => {
   };
 
 
-  useEffect(() => {
-    console.log(formData);
-  }, [formData]);
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        dropdownRefPrimary.current && !dropdownRefPrimary.current.contains(event.target as Node)
-      ) {
-        setPrimaryDropdownOpen(false);
-      }
-      if (
-        dropdownRefMultiple.current && !dropdownRefMultiple.current.contains(event.target as Node)
-      ) {
-        setMultipleDropdownOpen(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
 
   const handleDiagnosisChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const { value } = e.target;
@@ -465,19 +434,23 @@ const DiseaseProfile = () => {
   useEffect(() => {
     const fetchPatients = async () => {
       try {
-        const response = await fetch("http://localhost:8080/css/onboard/getPatientsByDoctor/8");
-        const data = await response.json();
+        const userData = localStorage.getItem('user');
+        if (userData) {
+          const parsedUserData = JSON.parse(userData);
+          const response = await fetch(`http://localhost:8080/css/onboard/getPatientsByDoctor/${parsedUserData.doctorId}`);
+          const data = await response.json();
 
-        const parsedData = PatientsResponseSchema.parse(data);
+          const parsedData = PatientsResponseSchema.parse(data);
 
-        const patients = parsedData.map(relation => ({
-          patientId: relation.patient.patientId,
-          userFirstname: relation.patient.user.userFirstname,
-          userLastname: relation.patient.user.userLastname,
-          userEmail: relation.patient.user.userEmail,
-        }));
+          const patients = parsedData.map(relation => ({
+            patientId: relation.patient.patientId,
+            userFirstname: relation.patient.user.userFirstname,
+            userLastname: relation.patient.user.userLastname,
+            userEmail: relation.patient.user.userEmail,
+          }));
 
-        setFilteredPatients(patients);
+          setFilteredPatients(patients);
+        }
       } catch (error) {
         console.error("Error fetching patients:", error);
         if (error instanceof z.ZodError) {
@@ -507,8 +480,21 @@ const DiseaseProfile = () => {
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRefPrimary.current && !dropdownRefPrimary.current.contains(event.target as Node)
+      ) {
+        setPrimaryDropdownOpen(false);
+      }
+      if (
+        dropdownRefMultiple.current && !dropdownRefMultiple.current.contains(event.target as Node)
+      ) {
+        setMultipleDropdownOpen(false);
+      }
       if (dropdownRefPatient.current && !dropdownRefPatient.current.contains(event.target as Node)) {
         setPatientDropdownOpen(false);
+      }
+      if (dropdownRefPathology.current && !dropdownRefPathology.current.contains(event.target as Node)) {
+        setPathologyDropdownOpen(false)
       }
     };
 
@@ -524,7 +510,7 @@ const DiseaseProfile = () => {
       <div className="min-h-screen flex items-center justify-center p-6">
         <div className="w-full max-w-5xl bg-white rounded-lg p-8">
           <div className="text-center">
-            <h1 className="text-4xl font-bold text-red-900 mb-16 tracking-wide">DISEASE PROFILE</h1>
+            <h1 className="text-6xl font-bold text-red-900 mb-16 tracking-wide">DISEASE PROFILE</h1>
           </div>
 
           <form className="gap-2" onSubmit={handleSubmit}>
