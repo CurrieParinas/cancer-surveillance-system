@@ -142,10 +142,10 @@ const EnrollPatient: React.FC = () => {
 
   return (
     <div className="w-5/6">
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 p-6">
-        <div className="w-full max-w-3xl bg-white shadow-lg rounded-lg p-8">
+      <div className="min-h-screen flex items-center justify-center p-6">
+        <div className="w-full max-w-3xl rounded-lg p-8">
           <div className="text-center">
-            <h1 className="text-4xl font-bold text-red-900 mb-8">PATIENT ENROLLMENT</h1>
+            <h1 className="text-6xl font-bold text-red-900 mb-8">PATIENT ENROLLMENT</h1>
           </div>
 
           <form className="flex flex-col gap-6" onSubmit={handleSubmit}>
