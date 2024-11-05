@@ -111,7 +111,7 @@ export const LoginForm = () => {
               SUBMIT
             </Button>
             <div className="text-center">
-              <a href="#" className="text-sm text-gray-600 hover:underline">
+              <a href="/forgotPassword" className="text-sm text-gray-600 hover:underline">
                 Forgot password?
               </a>
             </div>
