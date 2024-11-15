@@ -232,6 +232,7 @@ const TreatmentHistoryForm = () => {
           RXTYPE_NOTES: "",
           RXTYPE_ENCODER: 1,
         })
+        setSelectedTreatments([]);
       } else {
         console.log("An error occured in treatment information submission.")
       }
@@ -759,6 +760,7 @@ const TreatmentHistoryForm = () => {
   const [patientSearchTerm, setPatientSearchTerm] = useState("");
   const [patientDropdownOpen, setPatientDropdownOpen] = useState(false);
   const [filteredPatients, setFilteredPatients] = useState<FilteredPatient[]>([]);
+  const [allPatients, setAllPatients] = useState<FilteredPatient[]>([]); // Store all patients initially
   const [doctorInfo, setDoctorInfo] = useState("");
 
   const dropdownRefPatient = useRef<HTMLDivElement>(null);
@@ -776,10 +778,14 @@ const TreatmentHistoryForm = () => {
     const search = e.target.value.toLowerCase();
     setPatientSearchTerm(search);
     setPatientDropdownOpen(true);
-    const filtered = filteredPatients.filter(patient =>
-      patient.userLastname.toLowerCase().includes(search)
-    );
-    setFilteredPatients(filtered);
+    if (search === "") {
+      setFilteredPatients(allPatients); // Show all patients if the search term is empty
+    } else {
+      const filtered = allPatients.filter((patient) =>
+        patient.userLastname.toLowerCase().includes(search)
+      );
+      setFilteredPatients(filtered);
+    }
   };
 
   const handleSelectPatient = (patientId: number, firstname: string, lastname: string, email: string) => {
@@ -824,7 +830,8 @@ const TreatmentHistoryForm = () => {
             userEmail: relation.patient.user.userEmail,
           }));
 
-          setFilteredPatients(patients);
+          setAllPatients(patients); // Store all patients
+          setFilteredPatients(patients); // Initially display all patients
         }
       } catch (error) {
         console.error("Error fetching patients:", error);
@@ -1920,7 +1927,7 @@ const TreatmentHistoryForm = () => {
 
   return (
     <div className="w-5/6 flex flex-col items-center justify-start gap-4">
-      <div className="flex w-4/6 justify-between items-center h-20 p-2 text-center mt-20">
+      <div className="flex w-4/6 justify-between items-center h-20 p-2 text-center mt-12">
         <button
           type="button"
           onClick={handleBack}
@@ -1930,7 +1937,7 @@ const TreatmentHistoryForm = () => {
         >
           <ChevronLeft /> Back
         </button>
-        <p className="font-bold text-6xl text-red-900 text-nowrap	">{renderPageTitle()}</p>
+        <p className="font-bold text-6xl text-red-900 text-nowrap	tracking-wide">{renderPageTitle()}</p>
         <button
           type="button"
           onClick={handleNext}
