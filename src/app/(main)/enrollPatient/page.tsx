@@ -1,10 +1,15 @@
 "use client";
 
 import EnrollPatientSchema from "@/packages/api/enroll-patient";
+import { UserSchema } from "@/packages/api/user";
 import React, { useState, useEffect } from "react";
 import { z } from "zod";
 
 type PatientFormData = z.infer<typeof EnrollPatientSchema>;
+
+type Errors = Partial<PatientFormData> & {
+  emailNotUnique?: string;
+};
 
 const EnrollPatient: React.FC = () => {
   const [formData, setFormData] = useState<PatientFormData>({
@@ -12,7 +17,6 @@ const EnrollPatient: React.FC = () => {
     firstname: "",
     middle_name: "",
     email: "",
-    password: "",
     birthdate: "",
     birthplace: "",
     gender: "male",
@@ -40,16 +44,7 @@ const EnrollPatient: React.FC = () => {
     }
   }, []);
 
-  useEffect(() => {
-    const userData = localStorage.getItem('user')
-    if (userData) {
-      const parsedUserData = JSON.parse(userData);
-    }
-  })
-
-  const [confirmPassword, setConfirmPassword] = useState<string>("");
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [passwordMatch, setPasswordMatch] = useState<boolean>(true);
+  const [errors, setErrors] = useState<Errors>({});
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -59,10 +54,6 @@ const EnrollPatient: React.FC = () => {
     });
   };
 
-  const handleConfirmPasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setConfirmPassword(e.target.value);
-    setPasswordMatch(e.target.value === formData.password);
-  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -80,33 +71,71 @@ const EnrollPatient: React.FC = () => {
     } else {
       setErrors({});
 
+      try {
+        const response = await fetch('http://localhost:8080/css/user/allUsers');
+        const data = await response.json();
+
+        const users = UserSchema.array().parse(data);
+        const emailList = users.map((user) => user.userEmail);
+
+        if (emailList.includes(formData.email)) {
+          setErrors((prevErrors) => ({
+            ...prevErrors,
+            emailNotUnique: "The email must be unique. Please use a different email address."
+          }));
+          return;
+        } else {
+          setErrors((prevErrors) => ({ ...prevErrors, emailNotUnique: undefined }));
+        }
+      } catch (error) {
+        console.error("Email uniqueness check failed:", error);
+        return;
+      }
+
+      const today = new Date();
+      const [birthYear, birthMonth, birthDay] = formData.birthdate.split("-").map(Number);
+      const birthDate = new Date(birthYear, birthMonth - 1, birthDay); // Month is 0-based in JavaScript
+
+      if (birthDate >= today) {
+        setErrors((prevErrors: Errors) => ({
+          ...prevErrors,
+          birthdate: "The birthdate cannot be today or in the future."
+        }));
+        return;
+      } else {
+        setErrors((prevErrors: Errors) => ({ ...prevErrors, birthdate: undefined }));
+      }
+
       // Convert the birthdate format from yyyy-mm-dd to dd/mm/yyyy
       const dateParts = formData.birthdate.split("-");
       const formattedBirthdate = `${dateParts[2]}/${dateParts[1]}/${dateParts[0]}`;
+
+      const requestBody = JSON.stringify({
+        USER_LASTNAME: formData.lastname,
+        USER_FIRSTNAME: formData.firstname,
+        USER_MIDDLENAME: formData.middle_name,
+        USER_EMAIL: formData.email,
+        USER_GENDER: formData.gender.charAt(0).toUpperCase() + formData.gender.slice(1),
+        USER_MARITAL_STATUS: formData.marital_status.charAt(0).toUpperCase() + formData.marital_status.slice(1),
+        USER_BIRTHDATE: formattedBirthdate,
+        USER_BIRTHPLACE: formData.birthplace,
+        ADDRESS_NUMBER: formData.addressNumber,
+        ADDRESS_STREET: formData.addressStreet,
+        ADDRESS_CITY: formData.addressCity,
+        ADDRESS_REGION: formData.addressRegion,
+        ADDRESS_ZIPCODE: formData.addressZipcode,
+        USER_ENCODER: doctorInfo.userId,
+      })
+
+      console.log(requestBody)
 
       try {
         const response = await fetch("http://localhost:8080/css/patient/add", {
           method: "POST",
           headers: {
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
           },
-          body: JSON.stringify({
-            USER_LASTNAME: formData.lastname,
-            USER_FIRSTNAME: formData.firstname,
-            USER_MIDDLENAME: formData.middle_name,
-            USER_EMAIL: formData.email,
-            USER_PASSWORD: formData.password,
-            USER_GENDER: formData.gender.charAt(0).toUpperCase() + formData.gender.slice(1),
-            USER_MARITAL_STATUS: formData.marital_status.charAt(0).toUpperCase() + formData.marital_status.slice(1),
-            USER_BIRTHDATE: formattedBirthdate,
-            USER_BIRTHPLACE: formData.birthplace,
-            ADDRESS_NUMBER: formData.addressNumber,
-            ADDRESS_STREET: formData.addressStreet,
-            ADDRESS_CITY: formData.addressCity,
-            ADDRESS_REGION: formData.addressRegion,
-            ADDRESS_ZIPCODE: formData.addressZipcode,
-            USER_ENCODER: doctorInfo.userId,
-          })
+          body: requestBody
         });
 
         if (response.ok) {
@@ -116,7 +145,6 @@ const EnrollPatient: React.FC = () => {
             firstname: "",
             middle_name: "",
             email: "",
-            password: "",
             birthdate: "",
             birthplace: "",
             gender: "male",
@@ -127,7 +155,6 @@ const EnrollPatient: React.FC = () => {
             addressRegion: "",
             addressZipcode: ""
           })
-          setConfirmPassword("")
         } else {
           console.error("Failed to add patient:", response.status);
         }
@@ -136,16 +163,13 @@ const EnrollPatient: React.FC = () => {
       }
     }
   };
-  useEffect(() => {
-    setPasswordMatch(confirmPassword === formData.password);
-  }, [formData.password]);
 
   return (
     <div className="w-5/6">
-      <div className="min-h-screen flex items-center justify-center p-6">
+      <div className="min-h-screen flex justify-center p-6">
         <div className="w-full max-w-3xl rounded-lg p-8">
           <div className="text-center">
-            <h1 className="text-6xl font-bold text-red-900 mb-8">PATIENT ENROLLMENT</h1>
+            <h1 className="text-6xl font-bold text-red-900 mb-16 tracking-wide text-nowrap">PATIENT ENROLLMENT</h1>
           </div>
 
           <form className="flex flex-col gap-6" onSubmit={handleSubmit}>
@@ -155,7 +179,7 @@ const EnrollPatient: React.FC = () => {
                 <input
                   type="text"
                   name="lastname"
-                  required
+
                   value={formData.lastname}
                   onChange={handleChange}
                   className={`mt-1 p-2 border ${errors.lastname ? "border-red-500" : "border-gray-300"} rounded focus:outline-none focus:border-red-500 text-black`}
@@ -169,7 +193,7 @@ const EnrollPatient: React.FC = () => {
                 <input
                   type="text"
                   name="firstname"
-                  required
+
                   value={formData.firstname}
                   onChange={handleChange}
                   className={`mt-1 p-2 border ${errors.firstname ? "border-red-500" : "border-gray-300"} rounded focus:outline-none focus:border-red-500 text-black`}
@@ -183,7 +207,7 @@ const EnrollPatient: React.FC = () => {
                 <input
                   type="text"
                   name="middle_name"
-                  required
+
                   value={formData.middle_name}
                   onChange={handleChange}
                   className="mt-1 p-2 border border-gray-300 rounded focus:outline-none focus:border-red-500 text-black"
@@ -197,43 +221,14 @@ const EnrollPatient: React.FC = () => {
               <input
                 type="email"
                 name="email"
-                required
+
                 value={formData.email}
                 onChange={handleChange}
                 className={`mt-1 p-2 border ${errors.email ? "border-red-500" : "border-gray-300"} rounded focus:outline-none focus:border-red-500 text-black`}
                 placeholder="juandelacruz@mail.com"
               />
               {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
-            </div>
-
-            <div className="flex gap-3">
-              <div className="flex flex-col w-1/2">
-                <label htmlFor="password" className="text-sm font-semibold text-gray-700">Password</label>
-                <input
-                  type="password"
-                  name="password"
-                  required
-                  value={formData.password}
-                  onChange={handleChange}
-                  className={`mt-1 p-2 border ${errors.password ? "border-red-500" : "border-gray-300"} rounded focus:outline-none focus:border-red-500 text-black`}
-                  placeholder="Password"
-                />
-                {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password}</p>}
-              </div>
-
-              <div className="flex flex-col w-1/2">
-                <label htmlFor="confirmPassword" className="text-sm font-semibold text-gray-700">Re-enter Password</label>
-                <input
-                  type="password"
-                  name="confirmPassword"
-                  required
-                  value={confirmPassword}
-                  onChange={handleConfirmPasswordChange}
-                  className={`mt-1 p-2 border ${passwordMatch ? "border-gray-300" : "border-red-500"} rounded focus:outline-none focus:border-red-500 text-black`}
-                  placeholder="Re-enter Password"
-                />
-                {!passwordMatch && <p className="text-red-500 text-xs mt-1">Passwords do not match</p>}
-              </div>
+              {errors.emailNotUnique && <p className="text-red-500 text-xs mt-1">{errors.emailNotUnique}</p>}
             </div>
 
             <div className="flex gap-3">
@@ -242,11 +237,12 @@ const EnrollPatient: React.FC = () => {
                 <input
                   type="date"
                   name="birthdate"
-                  required
+
                   value={formData.birthdate}
                   onChange={handleChange}
                   className="mt-1 p-2 border border-gray-300 rounded focus:outline-none focus:border-red-500 text-black"
                 />
+                {errors.birthdate && <p className="text-red-500 text-xs mt-1">{errors.birthdate}</p>}
               </div>
 
               <div className="flex flex-col w-1/2">
@@ -254,7 +250,7 @@ const EnrollPatient: React.FC = () => {
                 <input
                   type="text"
                   name="birthplace"
-                  required
+
                   value={formData.birthplace}
                   onChange={handleChange}
                   className="mt-1 p-2 border border-gray-300 rounded focus:outline-none focus:border-red-500 text-black"
@@ -268,7 +264,7 @@ const EnrollPatient: React.FC = () => {
                 <label htmlFor="gender" className="text-sm font-semibold text-gray-700">Gender</label>
                 <select
                   name="gender"
-                  required
+
                   value={formData.gender}
                   onChange={handleChange}
                   className="mt-1 p-2 border border-gray-300 rounded focus:outline-none focus:border-red-500 text-black"
@@ -283,7 +279,7 @@ const EnrollPatient: React.FC = () => {
                 <label htmlFor="marital_status" className="text-sm font-semibold text-gray-700">Marital Status</label>
                 <select
                   name="marital_status"
-                  required
+
                   value={formData.marital_status}
                   onChange={handleChange}
                   className="mt-1 p-2 border border-gray-300 rounded focus:outline-none focus:border-red-500 text-black"
@@ -302,7 +298,7 @@ const EnrollPatient: React.FC = () => {
                 <input
                   type="text"
                   name="addressNumber"
-                  required
+
                   value={formData.addressNumber}
                   onChange={handleChange}
                   className="mt-1 p-2 border border-gray-300 rounded focus:outline-none focus:border-red-500 text-black"
@@ -315,7 +311,7 @@ const EnrollPatient: React.FC = () => {
                 <input
                   type="text"
                   name="addressStreet"
-                  required
+
                   value={formData.addressStreet}
                   onChange={handleChange}
                   className="mt-1 p-2 border border-gray-300 rounded focus:outline-none focus:border-red-500 text-black"
@@ -328,7 +324,7 @@ const EnrollPatient: React.FC = () => {
                 <input
                   type="text"
                   name="addressCity"
-                  required
+
                   value={formData.addressCity}
                   onChange={handleChange}
                   className="mt-1 p-2 border border-gray-300 rounded focus:outline-none focus:border-red-500 text-black"
@@ -343,7 +339,7 @@ const EnrollPatient: React.FC = () => {
                 <input
                   type="text"
                   name="addressRegion"
-                  required
+
                   value={formData.addressRegion}
                   onChange={handleChange}
                   className="mt-1 p-2 border border-gray-300 rounded focus:outline-none focus:border-red-500 text-black"
@@ -356,7 +352,7 @@ const EnrollPatient: React.FC = () => {
                 <input
                   type="text"
                   name="addressZipcode"
-                  required
+
                   value={formData.addressZipcode}
                   onChange={handleChange}
                   className={`mt-1 p-2 border ${errors.addressZipcode ? "border-red-500" : "border-gray-300"} rounded focus:outline-none focus:border-red-500 text-black`}
@@ -370,8 +366,7 @@ const EnrollPatient: React.FC = () => {
               <div className="w-1/2 flex justify-center">
                 <button
                   type="submit"
-                  disabled={!passwordMatch} // Disable submit if passwords don't match
-                  className={`bg-red-900 hover:bg-red-800 text-white py-2 px-6 rounded-3xl transition ${!passwordMatch ? "opacity-50 cursor-not-allowed" : ""}`}
+                  className={`bg-red-900 hover:bg-red-800 text-white py-2 px-6 rounded-3xl transition`}
                 >
                   Submit
                 </button>
@@ -379,8 +374,7 @@ const EnrollPatient: React.FC = () => {
               <div className="w-1/2 flex justify-center">
                 <button
                   type="button"
-                  disabled={!passwordMatch} // Disable submit if passwords don't match
-                  className={`bg-red-900 hover:bg-red-800 text-white py-2 px-6 rounded-3xl transition ${!passwordMatch ? "opacity-50 cursor-not-allowed" : ""}`}
+                  className={`bg-red-900 hover:bg-red-800 text-white py-2 px-6 rounded-3xl transition`}
                 >
                   Submit & Add Disease Profile
                 </button>

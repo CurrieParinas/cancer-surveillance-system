@@ -247,25 +247,6 @@ const DiseaseProfile = () => {
     });
   };
 
-  const handleCheckAll = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const checked = e.target.checked;
-    setCheckAll(checked);
-
-    const newValue = checked ? "Y" : "N";
-    setFormData((prevData) => ({
-      ...prevData,
-      metastatic_distant_ln: newValue,
-      metastatic_bone: newValue,
-      metastatic_liver: newValue,
-      metastatic_lung: newValue,
-      metastatic_brain: newValue,
-      metastatic_ovary: newValue,
-      metastatic_skin: newValue,
-      metastatic_intestine: newValue,
-      metastatic_others: newValue,
-    }));
-  };
-
   const validateForm = (): Errors => {
     const newErrors: Errors = {};
     const skipValidationKeys = ["histo_pathology", "disease_tstage", "disease_nstage", "disease_mstage", "disease_gstage"];
@@ -410,24 +391,12 @@ const DiseaseProfile = () => {
       setMultipleSearchTerm("");
       setPathologySearchTerm("");
       setPatientSearchTerm("");
-
+      setSelectedStatuses([]);
+      setSelectedMetastaticSites([])
     } catch (error) {
       console.error("Error submitting form:", error);
     }
   };
-
-
-  const allChecked = [
-    formData.metastatic_distant_ln,
-    formData.metastatic_bone,
-    formData.metastatic_liver,
-    formData.metastatic_lung,
-    formData.metastatic_brain,
-    formData.metastatic_ovary,
-    formData.metastatic_skin,
-    formData.metastatic_intestine,
-    formData.metastatic_others,
-  ].every(value => value === "Y");
 
   useEffect(() => {
     const fetchPathologies = async () => {
@@ -463,6 +432,7 @@ const DiseaseProfile = () => {
   const [patientSearchTerm, setPatientSearchTerm] = useState("");
   const [patientDropdownOpen, setPatientDropdownOpen] = useState(false);
   const [filteredPatients, setFilteredPatients] = useState<FilteredPatient[]>([]);
+  const [allPatients, setAllPatients] = useState<FilteredPatient[]>([]);
 
   const dropdownRefPatient = useRef<HTMLDivElement>(null);
 
@@ -484,6 +454,7 @@ const DiseaseProfile = () => {
             userEmail: relation.patient.user.userEmail,
           }));
 
+          setAllPatients(patients);
           setFilteredPatients(patients);
         }
       } catch (error) {
@@ -501,10 +472,14 @@ const DiseaseProfile = () => {
     const search = e.target.value.toLowerCase();
     setPatientSearchTerm(search);
     setPatientDropdownOpen(true);
-    const filtered = filteredPatients.filter(patient =>
-      patient.userLastname.toLowerCase().includes(search)
-    );
-    setFilteredPatients(filtered);
+    if (search === "") {
+      setFilteredPatients(allPatients); // Show all patients if the search term is empty
+    } else {
+      const filtered = allPatients.filter((patient) =>
+        patient.userLastname.toLowerCase().includes(search)
+      );
+      setFilteredPatients(filtered);
+    }
   };
 
   const handleSelectPatient = (patientId: number, firstname: string, lastname: string, email: string) => {
@@ -643,7 +618,7 @@ const DiseaseProfile = () => {
                     value={patientSearchTerm}
                     onChange={handlePatientSearchChange}
                     onClick={() => setPatientDropdownOpen(true)}
-                    className={`mt-1 p-2 border ${errors.lastname ? "border-red-500" : "border-gray-300"} rounded focus:outline-none focus:border-red-500 text-black`}
+                    className={`mt-1 min-h-12 p-2 border ${errors.lastname ? "border-red-500" : "border-gray-300"} rounded focus:outline-none focus:border-red-500 text-black`}
                     placeholder="Select or search Last Name"
                   />
                   {patientDropdownOpen && (
@@ -675,7 +650,7 @@ const DiseaseProfile = () => {
                     name="date_of_diagnosis"
                     value={formData.date_of_diagnosis}
                     onChange={handleChange}
-                    className={`mt-1 p-2 border ${errors.date_of_diagnosis ? "border-red-500" : "border-gray-300"} rounded focus:outline-none focus:border-red-500 text-black`}
+                    className={`mt-1 min-h-12 p-2 border ${errors.date_of_diagnosis ? "border-red-500" : "border-gray-300"} rounded focus:outline-none focus:border-red-500 text-black`}
                   />
                   {errors.date_of_diagnosis && <p className="text-red-500 text-xs mt-1">{errors.date_of_diagnosis}</p>}
                 </div>
@@ -688,7 +663,7 @@ const DiseaseProfile = () => {
                     name="basis_of_diagnosis_option"
                     value={formData.basis_of_diagnosis_option}
                     onChange={handleDiagnosisChange}
-                    className={`mt-1 p-2 border ${errors.basis_of_diagnosis_option ? "border-red-500" : "border-gray-300"} rounded focus:outline-none focus:border-red-500 text-black`}
+                    className={`mt-1 min-h-12 p-2 border ${errors.basis_of_diagnosis_option ? "border-red-500" : "border-gray-300"} rounded focus:outline-none focus:border-red-500 text-black`}
                   >
                     <option value="Non-Microscopic">Non-Microscopic</option>
                     <option value="Microscopic">Microscopic</option>
@@ -707,7 +682,7 @@ const DiseaseProfile = () => {
                     value={primarySearchTerm}
                     onChange={handlePrimarySearchChange}
                     onClick={() => setPrimaryDropdownOpen(true)}
-                    className={`mt-1 p-2 border ${errors.primary_site ? "border-red-500" : "border-gray-300"} rounded focus:outline-none focus:border-red-500 text-black`}
+                    className={`mt-1 min-h-12 p-2 border ${errors.primary_site ? "border-red-500" : "border-gray-300"} rounded focus:outline-none focus:border-red-500 text-black`}
                   />
                   {primaryDropdownOpen && (
                     <ul className="absolute z-10 top-16 bg-white border border-gray-300 w-full mt-1 rounded shadow-lg max-h-40 overflow-y-auto">
@@ -735,7 +710,7 @@ const DiseaseProfile = () => {
                     name="laterality"
                     value={formData.laterality}
                     onChange={handleChange}
-                    className={`mt-1 p-2 border ${errors.laterality ? "border-red-500" : "border-gray-300"} rounded focus:outline-none focus:border-red-500 text-black`}
+                    className={`mt-1 min-h-12 p-2 border ${errors.laterality ? "border-red-500" : "border-gray-300"} rounded focus:outline-none focus:border-red-500 text-black`}
                   >
                     <option value="1">Left</option>
                     <option value="2">Right</option>
@@ -862,7 +837,7 @@ const DiseaseProfile = () => {
                     value={pathologySearchTerm}
                     onChange={handlePathologySearchChange}
                     onClick={() => setPathologyDropdownOpen(true)}
-                    className={`mt-1 p-2 border ${errors.histo_pathology ? "border-red-500" : "border-gray-300"} rounded focus:outline-none focus:border-red-500 text-black`}
+                    className={`mt-1 min-h-12 p-2 border ${errors.histo_pathology ? "border-red-500" : "border-gray-300"} rounded focus:outline-none focus:border-red-500 text-black`}
                   />
                   {pathologyDropdownOpen && (
                     <ul className="absolute z-10 top-16 bg-white border border-gray-300 w-full mt-1 rounded shadow-lg max-h-40 overflow-y-auto">
@@ -894,7 +869,7 @@ const DiseaseProfile = () => {
                     name="histo_tumorSize"
                     value={formData.histo_tumorSize}
                     onChange={handleChange}
-                    className={`mt-1 p-2 border ${errors.histo_tumorSize ? "border-red-500" : "border-gray-300"} rounded focus:outline-none focus:border-red-500 text-black`}
+                    className={`mt-1 min-h-12 p-2 border ${errors.histo_tumorSize ? "border-red-500" : "border-gray-300"} rounded focus:outline-none focus:border-red-500 text-black`}
                     placeholder="Tumor Size"
                   />
                   {errors.histo_tumorSize && <p className="text-red-500 text-xs mt-1">{errors.histo_tumorSize}</p>}
@@ -909,7 +884,7 @@ const DiseaseProfile = () => {
                     name="histo_tumorGrade"
                     value={formData.histo_tumorGrade}
                     onChange={handleChange}
-                    className={`mt-1 p-2 border ${errors.histo_tumorGrade ? "border-red-500" : "border-gray-300"} rounded focus:outline-none focus:border-red-500 text-black`}
+                    className={`mt-1 min-h-12 p-2 border ${errors.histo_tumorGrade ? "border-red-500" : "border-gray-300"} rounded focus:outline-none focus:border-red-500 text-black`}
                     placeholder="Tumor Grade"
                   />
                   {errors.histo_tumorGrade && <p className="text-red-500 text-xs mt-1">{errors.histo_tumorGrade}</p>}
@@ -958,7 +933,7 @@ const DiseaseProfile = () => {
                     name="histo_nodePositive"
                     value={formData.histo_nodePositive}
                     onChange={handleChange}
-                    className={`mt-1 p-2 border ${errors.histo_nodePositive ? "border-red-500" : "border-gray-300"} rounded focus:outline-none focus:border-red-500 text-black`}
+                    className={`mt-1 min-h-12 p-2 border ${errors.histo_nodePositive ? "border-red-500" : "border-gray-300"} rounded focus:outline-none focus:border-red-500 text-black`}
                     placeholder="Node Positive"
                   />
                   {errors.histo_nodePositive && <p className="text-red-500 text-xs mt-1">{errors.histo_nodePositive}</p>}
@@ -973,7 +948,7 @@ const DiseaseProfile = () => {
                     name="histo_nodeHarvest"
                     value={formData.histo_nodeHarvest}
                     onChange={handleChange}
-                    className={`mt-1 p-2 border ${errors.histo_nodeHarvest ? "border-red-500" : "border-gray-300"} rounded focus:outline-none focus:border-red-500 text-black`}
+                    className={`mt-1 min-h-12 p-2 border ${errors.histo_nodeHarvest ? "border-red-500" : "border-gray-300"} rounded focus:outline-none focus:border-red-500 text-black`}
                     placeholder="Node Harvest"
                   />
                   {errors.histo_nodeHarvest && <p className="text-red-500 text-xs mt-1">{errors.histo_nodeHarvest}</p>}
@@ -987,7 +962,7 @@ const DiseaseProfile = () => {
                     name="histo_stage"
                     value={formData.histo_stage}
                     onChange={handleChange}
-                    className={`mt-1 p-2 border ${errors.histo_stage ? "border-red-500" : "border-gray-300"} rounded focus:outline-none focus:border-red-500 text-black`}
+                    className={`mt-1 min-h-12 p-2 border ${errors.histo_stage ? "border-red-500" : "border-gray-300"} rounded focus:outline-none focus:border-red-500 text-black`}
                   >
                     <option value="I">I</option>
                     <option value="II">II</option>
@@ -1073,7 +1048,7 @@ const DiseaseProfile = () => {
                     name="disease_extent"
                     value={formData.disease_extent}
                     onChange={handleChange}
-                    className={`mt-1 p-2 border ${errors.disease_extent ? "border-red-500" : "border-gray-300"} rounded focus:outline-none focus:border-red-500 text-black`}
+                    className={`mt-1 min-h-12 p-2 border ${errors.disease_extent ? "border-red-500" : "border-gray-300"} rounded focus:outline-none focus:border-red-500 text-black`}
                   >
                     <option value="1">In-Situ</option>
                     <option value="2">Localized</option>
@@ -1094,7 +1069,7 @@ const DiseaseProfile = () => {
                     name="disease_tumor_size"
                     value={formData.disease_tumor_size}
                     onChange={handleChange}
-                    className={`mt-1 p-2 border ${errors.disease_tumor_size ? "border-red-500" : "border-gray-300"} rounded focus:outline-none focus:border-red-500 text-black`}
+                    className={`mt-1 min-h-12 p-2 border ${errors.disease_tumor_size ? "border-red-500" : "border-gray-300"} rounded focus:outline-none focus:border-red-500 text-black`}
                     placeholder="Enter tumor size"
                   />
                   {errors.disease_tumor_size && <p className="text-red-500 text-xs mt-1">{errors.disease_tumor_size}</p>}
@@ -1107,7 +1082,7 @@ const DiseaseProfile = () => {
                     name="disease_lymph_node"
                     value={formData.disease_lymph_node}
                     onChange={handleChange}
-                    className={`mt-1 p-2 border ${errors.disease_lymph_node ? "border-red-500" : "border-gray-300"} rounded focus:outline-none focus:border-red-500 text-black`}
+                    className={`mt-1 min-h-12 p-2 border ${errors.disease_lymph_node ? "border-red-500" : "border-gray-300"} rounded focus:outline-none focus:border-red-500 text-black`}
                     placeholder="Lymph Node"
                   />
                   {errors.disease_lymph_node && <p className="text-red-500 text-xs mt-1">{errors.disease_lymph_node}</p>}
@@ -1177,7 +1152,7 @@ const DiseaseProfile = () => {
                       value={metastaticSearchTerm}
                       onChange={handleMetastaticSearchChange}
                       onClick={() => setMetastaticDropdownOpen(true)}
-                      className="border-0 outline-none flex-1 text-black"
+                      className="border-0 outline-none flex-1 text-black min-h-10"
                     />
                   </div>
                   {metastaticDropdownOpen && (
@@ -1207,7 +1182,7 @@ const DiseaseProfile = () => {
                     name="metastatic_notes"
                     value={formData.metastatic_notes}
                     onChange={handleChange}
-                    className={`mt-1 p-2 border h-full ${errors.metastatic_notes ? "border-red-500" : "border-gray-300"} rounded focus:outline-none focus:border-red-500 text-black`}
+                    className={`mt-1 min-h-12 p-2 border h-full ${errors.metastatic_notes ? "border-red-500" : "border-gray-300"} rounded focus:outline-none focus:border-red-500 text-black`}
                     rows={4}
                   />
                 </div>
@@ -1244,7 +1219,7 @@ const DiseaseProfile = () => {
                     value={multipleSearchTerm}
                     onChange={handleMultipleSearchChange}
                     onClick={() => setMultipleDropdownOpen(true)}
-                    className={`border-0 outline-none flex-1 text-black`}
+                    className={`border-0 outline-none flex-1 text-black min-h-10`}
                   />
                 </div>
                 {multipleDropdownOpen && (
@@ -1274,7 +1249,7 @@ const DiseaseProfile = () => {
                     name="disease_tstage"
                     value={formData.disease_tstage}
                     onChange={handleChange}
-                    className={`mt-1 p-2 border ${errors.disease_tstage ? "border-red-500" : "border-gray-300"} rounded focus:outline-none focus:border-red-500 text-black`}
+                    className={`mt-1 min-h-12 p-2 border ${errors.disease_tstage ? "border-red-500" : "border-gray-300"} rounded focus:outline-none focus:border-red-500 text-black`}
                     placeholder="T Stage"
                   />
                   {errors.disease_tstage && <p className="text-red-500 text-xs mt-1">{errors.disease_tstage}</p>}
@@ -1287,7 +1262,7 @@ const DiseaseProfile = () => {
                     name="disease_nstage"
                     value={formData.disease_nstage}
                     onChange={handleChange}
-                    className={`mt-1 p-2 border ${errors.disease_nstage ? "border-red-500" : "border-gray-300"} rounded focus:outline-none focus:border-red-500 text-black`}
+                    className={`mt-1 min-h-12 p-2 border ${errors.disease_nstage ? "border-red-500" : "border-gray-300"} rounded focus:outline-none focus:border-red-500 text-black`}
                     placeholder="N Stage"
                   />
                   {errors.disease_nstage && <p className="text-red-500 text-xs mt-1">{errors.disease_nstage}</p>}
@@ -1300,7 +1275,7 @@ const DiseaseProfile = () => {
                     name="disease_mstage"
                     value={formData.disease_mstage}
                     onChange={handleChange}
-                    className={`mt-1 p-2 border ${errors.disease_mstage ? "border-red-500" : "border-gray-300"} rounded focus:outline-none focus:border-red-500 text-black`}
+                    className={`mt-1 min-h-12 p-2 border ${errors.disease_mstage ? "border-red-500" : "border-gray-300"} rounded focus:outline-none focus:border-red-500 text-black`}
                     placeholder="M Stage"
                   />
                   {errors.disease_mstage && <p className="text-red-500 text-xs mt-1">{errors.disease_mstage}</p>}
@@ -1313,7 +1288,7 @@ const DiseaseProfile = () => {
                     name="disease_gstage"
                     value={formData.disease_gstage}
                     onChange={handleChange}
-                    className={`mt-1 p-2 border ${errors.disease_gstage ? "border-red-500" : "border-gray-300"} rounded focus:outline-none focus:border-red-500 text-black`}
+                    className={`mt-1 min-h-12 p-2 border ${errors.disease_gstage ? "border-red-500" : "border-gray-300"} rounded focus:outline-none focus:border-red-500 text-black`}
                     placeholder="G Stage"
                   />
                   {errors.disease_gstage && <p className="text-red-500 text-xs mt-1">{errors.disease_gstage}</p>}
@@ -1327,7 +1302,7 @@ const DiseaseProfile = () => {
                     name="stage"
                     value={formData.stage}
                     onChange={handleChange}
-                    className={`mt-1 p-2 border ${errors.stage ? "border-red-500" : "border-gray-300"} rounded focus:outline-none focus:border-red-500 text-black`}
+                    className={`mt-1 min-h-12 p-2 border ${errors.stage ? "border-red-500" : "border-gray-300"} rounded focus:outline-none focus:border-red-500 text-black`}
                   >
                     <option value="I">I</option>
                     <option value="II">II</option>
@@ -1344,7 +1319,7 @@ const DiseaseProfile = () => {
                     name="stage_type"
                     value={formData.stage_type}
                     onChange={handleChange}
-                    className={`mt-1 p-2 border ${errors.stage_type ? "border-red-500" : "border-gray-300"} rounded focus:outline-none focus:border-red-500 text-black`}
+                    className={`mt-1 min-h-12 p-2 border ${errors.stage_type ? "border-red-500" : "border-gray-300"} rounded focus:outline-none focus:border-red-500 text-black`}
                     placeholder="Enter stage type"
                   />
                   {errors.stage_type && <p className="text-red-500 text-xs mt-1">{errors.stage_type}</p>}
@@ -1384,7 +1359,7 @@ const DiseaseProfile = () => {
                       value={statusSearchTerm}
                       onChange={handleStatusSearchChange}
                       onClick={() => setStatusDropdownOpen(true)}
-                      className="border-0 outline-none flex-1 text-black"
+                      className="border-0 outline-none flex-1 text-black min-h-10"
                     />
                   </div>
                   {statusDropdownOpen && (

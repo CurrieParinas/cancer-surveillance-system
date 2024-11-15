@@ -131,27 +131,28 @@ const DoctorRegistration: React.FC = () => {
     e.preventDefault();
 
     if (validateForm()) {
-      // Check if birth year is not greater than the current year
-      const currentYear = new Date().getFullYear();
-      const datePartsCheck = formData.birthdate.split("-");
-      const birthYear = parseInt(datePartsCheck[0], 10);
+      // Check if birthdate is not in the future
+      const today = new Date();
+      const [birthYear, birthMonth, birthDay] = formData.birthdate.split("-").map(Number);
+      const birthDate = new Date(birthYear, birthMonth - 1, birthDay); // Month is 0-based in JavaScript
 
-      if (birthYear > currentYear) {
+      if (birthDate >= today) {
         setErrors((prevErrors: Errors) => ({
           ...prevErrors,
-          birthdate: "The birth year cannot be in the future."
+          birthdate: "The birthdate cannot be today or in the future."
         }));
         return;
       } else {
         setErrors((prevErrors: Errors) => ({ ...prevErrors, birthdate: undefined }));
       }
 
-      const licenseDatePartsCheck = formData.doctor_license_exp_date.split("-");
-      const licenseYear = parseInt(licenseDatePartsCheck[0], 10);
-      if (licenseYear < currentYear) {
+      const [licenseYear, licenseMonth, licenseDay] = formData.doctor_license_exp_date.split("-").map(Number);
+      const licenseDate = new Date(licenseYear, licenseMonth - 1, licenseDay); // Month is 0-based in JavaScript
+
+      if (licenseDate < today) {
         setErrors((prevErrors: Errors) => ({
           ...prevErrors,
-          doctor_license_exp_date_expired: "The expiration date must be this year or later."
+          doctor_license_exp_date_expired: "The expiration date must be today or a future date."
         }));
         return;
       } else {
@@ -353,7 +354,7 @@ const DoctorRegistration: React.FC = () => {
 
   return (
     <div className="w-full h-screen-minus-48">
-      <div className="w-full h-full flex items-center justify-center bg-gray-50 p-6">
+      <div className="w-full h-full flex items-center justify-center p-6">
         <div className="w-full h-full flex flex-col max-w-7xl bg-white rounded-lg p-8">
           <div className="text-center">
             <h1 className="text-4xl font-bold text-red-900 mb-8">Doctor Registration</h1>
