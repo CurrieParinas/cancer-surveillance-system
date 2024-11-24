@@ -35,6 +35,53 @@ interface FilteredPatient {
 	userEmail: string;
 }
 
+interface Diagnosis {
+	DATE: string | null;
+	LATERALITY: string | null;
+	STAGE: string | null;
+}
+
+interface HormonalTherapy {
+	YN: string;
+	COMPLIANCE: string | null;
+}
+
+interface Chemotherapy {
+	YN: string;
+	COMPLETION: string | null;
+}
+
+interface Name {
+	MIDDLENAME: string;
+	LASTNAME: string;
+	FIRSTNAME: string;
+}
+
+interface Operation {
+	SURGERY: string | null;
+	DATE: string | null;
+}
+
+interface Radiotherapy {
+	YN: string;
+	COMPLETION: string | null;
+}
+
+interface PatientConsultInfo {
+	DIAGNOSIS: Diagnosis;
+	PATIENT_SISX_REPORT: string | null;
+	PATIENT_REPORT_DATE: string | null;
+	HORMONAL_THERAPY: HormonalTherapy;
+	CHEMOTHERAPY: Chemotherapy;
+	NAME: Name;
+	STATUS: string;
+	LATEST_LAB_SUBMITTED: string | null;
+	OPERATION: Operation;
+	LATEST_LAB_DATE: string | null;
+	RADIOTHERAPY: Radiotherapy;
+	LATEST_CONSULT_DATE: string | null;
+	AGE: number;
+}
 
 const ConsultPage = () => {
 	const [formData, setFormData] = useState<ConsultFormData>({
@@ -46,6 +93,8 @@ const ConsultPage = () => {
 		CONSULT_RXPLAN: "",
 		CONSULT_PATIENTSTATUS: 1,
 	});
+
+	const [patientConsultInfo, setPatientConsultInfo] = useState<PatientConsultInfo | null>(null);
 
 	const [errors, setErrors] = useState<ValidationErrors>({});
 
@@ -161,11 +210,25 @@ const ConsultPage = () => {
 		}
 	};
 
-	const handleSelectPatient = (patientId: number, firstname: string, lastname: string, email: string) => {
+	const handleSelectPatient = async (patientId: number, firstname: string, lastname: string, email: string) => {
 		setSearchFormData({ ...searchFormData, lastname: lastname, patientId: patientId.toString(), email: email });
 		setFormData({ ...formData, PATIENT_ID: patientId })
 		setPatientSearchTerm(`${firstname} ${lastname} (${email})`);
 		setPatientDropdownOpen(false);
+
+		try {
+			const response = await fetch(`http://localhost:8080/css/patient/getConsultInfo/${patientId}`);
+			if (response.ok) {
+				const data = await response.json();
+				setPatientConsultInfo(data);
+			} else {
+				console.error("Failed to fetch consultation details.");
+				setPatientConsultInfo(null);
+			}
+		} catch (error) {
+			console.error("Error fetching consultation details:", error);
+			setPatientConsultInfo(null);
+		}
 	};
 
 	useEffect(() => {
@@ -210,14 +273,14 @@ const ConsultPage = () => {
 	}, []);
 
 	return (
-		<div className="w-screen-minus-1-6 bg-white flex flex-col items-center justify-center gap-4">
-			<div className="w-6/12 h-auto p-2 text-center">
-				<p className="mt-10 font-bold text-5xl text-red-900">CONSULT</p>
+		<div className="w-5/6 bg-white flex flex-col items-center justify-center gap-4">
+			<div className="w-6/12 h-auto mt-12 p-2 text-center">
+				<p className="font-bold text-6xl text-red-900 text-nowrap	tracking-wide">CONSULT</p>
 			</div>
 
-			<div className="h-auto flex-none">
+			<div className="flex w-8/12 flex-col">
 				<div className="flex flex-col w-full relative" ref={dropdownRefPatient}>
-					<label htmlFor="lastname" className="text-sm font-semibold text-black">Last Name</label>
+					<label htmlFor="lastname" className="text-sm font-semibold text-black">Search Patient</label>
 					<input
 						type="text"
 						name="lastname"
@@ -245,244 +308,251 @@ const ConsultPage = () => {
 						</ul>
 					)}
 				</div>
-				<div className="grid grid-cols-4 gap-4 flex-none">
-					{/* TOP LEFT box */}
-					<div className="col-span-2 bg-white p-4 text-center  rounded">
-						<div className="grid grid-cols-2 grid-flow-col ">
-							{/* label column */}
-							<div className="p-4 pl-12 grid grid-flow-row  cols-span-1 justify-items-start">
-								<div className="">
-									<label className="font-bold text-left text-sm text-black ">
-										Age:
-									</label>
+				<div className="flex flex-col w-full py-4">
+					<div className="flex flex-col w-full gap-6 p-8 my-4 rounded-3xl shadow-lg border border-zinc-100">
+						<div className="w-full">
+							<div className="flex flex-col w-full gap-6">
+								<div className="flex w-full gap-4">
+									{/* Name */}
+									<div className="w-8/12 flex flex-col">
+										<label className="text-sm font-semibold text-gray-800">Name:</label>
+										<span className="mt-1 p-2 border border-gray-300 rounded text-gray-900 bg-zinc-100">
+											{patientConsultInfo?.NAME
+												? `${patientConsultInfo.NAME.FIRSTNAME || ""} ${patientConsultInfo.NAME.MIDDLENAME || ""} ${patientConsultInfo.NAME.LASTNAME || ""}`.trim() || "Unknown Patient"
+												: "Unknown Patient"}
+										</span>
+									</div>
+									{/* Age */}
+									<div className="flex flex-col w-4/12">
+										<label className="text-sm font-semibold text-gray-800">Age:</label>
+										<span className="mt-1 p-2 border border-gray-300 rounded text-gray-900 bg-zinc-100">
+											{patientConsultInfo?.AGE || "N/A"}
+										</span>
+									</div>
 								</div>
-								<div className="">
-									<label className="font-bold text-left text-sm text-black ">
-										Diagnosis:
-									</label>
+
+								<div className="flex w-full gap-4">
+									{/* Diagnosis */}
+									<div className="flex flex-col w-1/2">
+										<label className="text-sm font-semibold text-gray-800">Diagnosis:</label>
+										<span className="mt-1 p-2 border border-gray-300 rounded text-gray-900 bg-zinc-100">
+											{patientConsultInfo?.DIAGNOSIS
+												? (!patientConsultInfo.DIAGNOSIS.DATE &&
+													!patientConsultInfo.DIAGNOSIS.STAGE &&
+													!patientConsultInfo.DIAGNOSIS.LATERALITY
+													? "No diagnosis profile"
+													: `${patientConsultInfo.DIAGNOSIS.DATE || "N/A"} - ${patientConsultInfo.DIAGNOSIS.STAGE || "N/A"} - ${patientConsultInfo.DIAGNOSIS.LATERALITY || "N/A"}`)
+												: "N/A"}
+										</span>
+									</div>
+
+									{/* Operation */}
+									<div className="flex flex-col w-1/2">
+										<label className="text-sm font-semibold text-gray-800">Operation:</label>
+										<span className="mt-1 p-2 border border-gray-300 rounded text-gray-900 bg-zinc-100">
+											{patientConsultInfo?.OPERATION
+												? (!patientConsultInfo.OPERATION.SURGERY &&
+													!patientConsultInfo.OPERATION.DATE
+													? "No scheduled surgery"
+													: `${patientConsultInfo.OPERATION.SURGERY || "N/A"} - ${patientConsultInfo.OPERATION.DATE || "N/A"}`)
+												: "N/A"}
+										</span>
+									</div>
 								</div>
-								<div className="">
-									<label className="font-bold text-left text-sm text-black ">
-										Operation:
-									</label>
-								</div>
-								<div className="">
-									<label className="font-bold text-left text-sm text-black ">
-										Chemotherapy:
-									</label>
-								</div>
-								<div className="">
-									<label className="font-bold text-left text-sm text-black ">
-										Radiotherapy:
-									</label>
-								</div>
-								<div className="">
-									<label className="font-bold text-left text-sm text-black ">
-										Hormonal Therapy:
-									</label>
+
+								<div className="flex gap-4 w-full">
+									{/* Chemotherapy */}
+									<div className="flex flex-col w-1/3">
+										<label className="text-sm font-semibold text-gray-800">Chemotherapy:</label>
+										<span className="mt-1 p-2 border border-gray-300 rounded text-gray-900 bg-zinc-100">
+											{patientConsultInfo?.CHEMOTHERAPY
+												? patientConsultInfo.CHEMOTHERAPY.YN === "No" && !patientConsultInfo.CHEMOTHERAPY.COMPLETION
+													? "No assigned chemotherapy"
+													: `${patientConsultInfo.CHEMOTHERAPY.YN}, ${patientConsultInfo.CHEMOTHERAPY.COMPLETION || "N/A"}`
+												: "N/A"}
+										</span>
+									</div>
+
+									{/* Radiotherapy */}
+									<div className="flex flex-col w-1/3">
+										<label className="text-sm font-semibold text-gray-800">Radiotherapy:</label>
+										<span className="mt-1 p-2 border border-gray-300 rounded text-gray-900 bg-zinc-100">
+											{patientConsultInfo?.RADIOTHERAPY
+												? patientConsultInfo.RADIOTHERAPY.YN === "No" && !patientConsultInfo.RADIOTHERAPY.COMPLETION
+													? "No assigned radiotherapy"
+													: `${patientConsultInfo.RADIOTHERAPY.YN}, ${patientConsultInfo.RADIOTHERAPY.COMPLETION || "N/A"}`
+												: "N/A"}
+										</span>
+									</div>
+
+									{/* Hormonal Therapy */}
+									<div className="flex flex-col w-1/3">
+										<label className="text-sm font-semibold text-gray-800">Hormonal Therapy:</label>
+										<span className="mt-1 p-2 border border-gray-300 rounded text-gray-900 bg-zinc-100">
+											{patientConsultInfo?.HORMONAL_THERAPY
+												? patientConsultInfo.HORMONAL_THERAPY.YN === "No" && !patientConsultInfo.HORMONAL_THERAPY.COMPLIANCE
+													? "No assigned hormonal therapy"
+													: `${patientConsultInfo.HORMONAL_THERAPY.YN}, ${patientConsultInfo.HORMONAL_THERAPY.COMPLIANCE || "N/A"}`
+												: "N/A"}
+										</span>
+									</div>
+
 								</div>
 							</div>
-							{/* patient info */}
-							<div className="pt-4 pb-4 pr-2 grid grid-flow-row  justify-items-start">
-								<div className="">
-									<label className="font-bold text-left text-sm text-black ">
-										Currentdate - Birthdate
-									</label>
+						</div>
+						<div className="w-full">
+							<div className="flex flex-col gap-6">
+								{/* Patient Status */}
+								<div className="flex flex-col">
+									<label className="text-sm font-semibold text-gray-800">Patient Status:</label>
+									<span className="mt-1 p-2 border border-gray-300 rounded text-gray-900 bg-zinc-100">
+										{patientConsultInfo?.STATUS || "N/A"}
+									</span>
 								</div>
-								<div className="">
-									<label className="font-bold text-left text-sm text-black ">
-										Diagnosis + Stage + Laterality
-									</label>
+
+								<div className="flex gap-4">
+									{/* Latest Consult Date */}
+									<div className="flex flex-col w-1/3">
+										<label className="text-sm font-semibold text-gray-800">Latest Consult Date:</label>
+										<span className="mt-1 p-2 border border-gray-300 rounded text-gray-900 bg-zinc-100">
+											{patientConsultInfo?.LATEST_CONSULT_DATE || "N/A"}
+										</span>
+									</div>
+
+									{/* Latest Labs Submitted */}
+									<div className="flex flex-col w-1/3">
+										<label className="text-sm font-semibold text-gray-800">Latest Labs Submitted:</label>
+										<span className="mt-1 p-2 border border-gray-300 rounded text-gray-900 bg-zinc-100">
+											{patientConsultInfo?.LATEST_LAB_SUBMITTED || "N/A"}
+										</span>
+									</div>
+
+									{/* Submission Date */}
+									<div className="flex flex-col w-1/3">
+										<label className="text-sm font-semibold text-gray-800">Submission Date:</label>
+										<span className="mt-1 p-2 border border-gray-300 rounded text-gray-900 bg-zinc-100">
+											{patientConsultInfo?.LATEST_LAB_DATE || "N/A"}
+										</span>
+									</div>
 								</div>
-								<div className="">
-									<label className="font-bold text-left text-sm text-black ">
-										Surgery + Date
-									</label>
-								</div>
-								<div className="">
-									<label className="font-bold text-left text-sm text-black ">
-										Yes/No, Completed/Not Completed
-									</label>
-								</div>
-								<div className="">
-									<label className="font-bold text-left text-sm text-black ">
-										Yes/No, Completed/Not Completed
-									</label>
-								</div>
-								<div className="">
-									<label className="font-bold text-left text-sm text-black ">
-										Yes/No, Completed/Not Completed
-									</label>
+
+								<div className="flex gap-4 w-full">
+									{/* Patient Si/Sx Report */}
+									<div className="flex flex-col w-1/2">
+										<label className="text-sm font-semibold text-gray-800">Patient Si/Sx Report:</label>
+										<span className="mt-1 p-2 border border-gray-300 rounded text-gray-900 bg-zinc-100">
+											{patientConsultInfo?.PATIENT_SISX_REPORT || "No signs and symptoms"}
+										</span>
+									</div>
+
+									{/* Patient Report Date */}
+									<div className="flex flex-col w-1/2">
+										<label className="text-sm font-semibold text-gray-800">Patient Report Date:</label>
+										<span className="mt-1 p-2 border border-gray-300 rounded text-gray-900 bg-zinc-100">
+											{patientConsultInfo?.PATIENT_REPORT_DATE || "N/A"}
+										</span>
+									</div>
 								</div>
 							</div>
 						</div>
 					</div>
 
-					{/* TOP RIGHT box*/}
-					<div className="col-span-2 bg-white p-4 text-center  rounded">
-						<div className="grid grid-cols-2 grid-flow-col ">
-							{/* Patient Status Labels */}
-							<div className="p-4 pl-12 grid grid-flow-row  cols-span-1 justify-items-start gap-1">
-								<div className="">
-									<label className="font-bold text-left text-sm text-black ">
-										Patient Status:
-									</label>
-								</div>
-								<div className="">
-									<label className="font-bold text-left text-sm text-black ">
-										Latest Consult Date:
-									</label>
-								</div>
-								<div className="">
-									<label className="font-bold text-left text-sm text-black ">
-										Latest Labs submitted:
-									</label>
-								</div>
-								<div className="">
-									<label className="font-bold text-left text-sm text-black ">
-										Submission Date:
-									</label>
-								</div>
-								<div className="">
-									<label className="font-bold text-left text-sm text-black ">
-										Patient Si/Sx Report:
-									</label>
-								</div>
-								<div className="">
-									<label className="font-bold text-left text-sm text-black ">
-										Patient Report Date:
-									</label>
-								</div>
+
+					<div className="flex w-full py-8">
+						{/* SUBMISSION box */}
+						<form className="flex flex-col gap-6 w-3/4 pb-20" onSubmit={handleSubmit}>
+							<div className="flex flex-col">
+								<label className="text-sm font-semibold text-black">Subjective</label>
+								<input
+									name="CONSULT_SUBJECTIVE"
+									value={formData.CONSULT_SUBJECTIVE}
+									onChange={handleChange}
+									className={`mt-1 p-2 text-black border ${errors.CONSULT_SUBJECTIVE ? "border-red-500" : "border-gray-300"} rounded-md bg-white text-black focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent`}
+								/>
+								{errors.CONSULT_SUBJECTIVE && <p className="text-red-500 text-xs mt-1">{errors.CONSULT_SUBJECTIVE}</p>}
 							</div>
-							{/* Patient Status infos */}
-							<div className="p-4 pl-12 grid grid-flow-row  cols-span-1 justify-items-start gap-1">
-								<div className="">
-									<label className="font-bold text-left text-sm text-black ">
-										Placeholder
-									</label>
-								</div>
-								<div className="">
-									<label className="font-bold text-left text-sm text-black ">
-										Placeholder
-									</label>
-								</div>
-								<div className="">
-									<label className="font-bold text-left text-sm text-black ">
-										Placeholder
-									</label>
-								</div>
-								<div className="">
-									<label className="font-bold text-left text-sm text-black ">
-										Placeholder
-									</label>
-								</div>
-								<div className="">
-									<label className="font-bold text-left text-sm text-black ">
-										Placeholder
-									</label>
-								</div>
-								<div className="">
-									<label className="font-bold text-left text-sm text-black ">
-										Placeholder
-									</label>
-								</div>
+							<div className="flex flex-col">
+								<label className="text-sm font-semibold text-black">Objective</label>
+								<textarea
+									name="CONSULT_OBJECTIVE"
+									value={formData.CONSULT_OBJECTIVE}
+									onChange={handleChange}
+									className={`mt-1 p-2 min-h-40 text-black border ${errors.CONSULT_OBJECTIVE ? "border-red-500" : "border-gray-300"} rounded-md bg-white text-black focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent`}
+									rows={10}
+								/>
+								{errors.CONSULT_OBJECTIVE && <p className="text-red-500 text-xs mt-1">{errors.CONSULT_OBJECTIVE}</p>}
 							</div>
-						</div>
-					</div>
+							<div className="flex flex-col">
+								<label className="text-sm font-semibold text-black">Assessment</label>
+								<input
+									name="CONSULT_ASSESSMENT"
+									value={formData.CONSULT_ASSESSMENT}
+									onChange={handleChange}
+									className={`mt-1 p-2 text-black border ${errors.CONSULT_ASSESSMENT ? "border-red-500" : "border-gray-300"} rounded-md bg-white text-black focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent`}
+								/>
+								{errors.CONSULT_ASSESSMENT && <p className="text-red-500 text-xs mt-1">{errors.CONSULT_ASSESSMENT}</p>}
+							</div>
+							<div className="flex flex-col">
+								<label className="text-sm font-semibold text-black">RX Plan</label>
+								<textarea
+									name="CONSULT_RXPLAN"
+									value={formData.CONSULT_RXPLAN}
+									onChange={handleChange}
+									className={`mt-1 p-2 min-h-40 text-black border ${errors.CONSULT_RXPLAN ? "border-red-500" : "border-gray-300"} rounded-md bg-white text-black focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent`}
+									rows={10}
+								/>
+								{errors.CONSULT_RXPLAN && <p className="text-red-500 text-xs mt-1">{errors.CONSULT_RXPLAN}</p>}
+							</div>
+							<div className="flex flex-col">
+								<label className="text-sm font-semibold text-black">Surveillance/Workup</label>
+								<input
+									name="CONSULT_SURVWORKUP"
+									value={formData.CONSULT_SURVWORKUP}
+									onChange={handleChange}
+									className={`mt-1 p-2 text-black border ${errors.CONSULT_SURVWORKUP ? "border-red-500" : "border-gray-300"} rounded-md bg-white text-black focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent`}
+								/>
+								{errors.CONSULT_SURVWORKUP && <p className="text-red-500 text-xs mt-1">{errors.CONSULT_SURVWORKUP}</p>}
+							</div>
 
-					{/* SUBMISSION box */}
-					<form className="flex flex-col gap-6 col-span-3 pb-20" onSubmit={handleSubmit}>
-						<div className="flex flex-col">
-							<label className="text-sm font-semibold text-black">Subjective</label>
-							<input
-								name="CONSULT_SUBJECTIVE"
-								value={formData.CONSULT_SUBJECTIVE}
-								onChange={handleChange}
-								className={`mt-1 p-2 text-black border ${errors.CONSULT_SUBJECTIVE ? "border-red-500" : "border-gray-300"} rounded-md bg-white text-black focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent`}
-							/>
-							{errors.CONSULT_SUBJECTIVE && <p className="text-red-500 text-xs mt-1">{errors.CONSULT_SUBJECTIVE}</p>}
-						</div>
-						<div className="flex flex-col">
-							<label className="text-sm font-semibold text-black">Objective</label>
-							<textarea
-								name="CONSULT_OBJECTIVE"
-								value={formData.CONSULT_OBJECTIVE}
-								onChange={handleChange}
-								className={`mt-1 p-2 min-h-40 text-black border ${errors.CONSULT_OBJECTIVE ? "border-red-500" : "border-gray-300"} rounded-md bg-white text-black focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent`}
-								rows={10}
-							/>
-							{errors.CONSULT_OBJECTIVE && <p className="text-red-500 text-xs mt-1">{errors.CONSULT_OBJECTIVE}</p>}
-						</div>
-						<div className="flex flex-col">
-							<label className="text-sm font-semibold text-black">Assessment</label>
-							<input
-								name="CONSULT_ASSESSMENT"
-								value={formData.CONSULT_ASSESSMENT}
-								onChange={handleChange}
-								className={`mt-1 p-2 text-black border ${errors.CONSULT_ASSESSMENT ? "border-red-500" : "border-gray-300"} rounded-md bg-white text-black focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent`}
-							/>
-							{errors.CONSULT_ASSESSMENT && <p className="text-red-500 text-xs mt-1">{errors.CONSULT_ASSESSMENT}</p>}
-						</div>
-						<div className="flex flex-col">
-							<label className="text-sm font-semibold text-black">RX Plan</label>
-							<textarea
-								name="CONSULT_RXPLAN"
-								value={formData.CONSULT_RXPLAN}
-								onChange={handleChange}
-								className={`mt-1 p-2 min-h-40 text-black border ${errors.CONSULT_RXPLAN ? "border-red-500" : "border-gray-300"} rounded-md bg-white text-black focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent`}
-								rows={10}
-							/>
-							{errors.CONSULT_RXPLAN && <p className="text-red-500 text-xs mt-1">{errors.CONSULT_RXPLAN}</p>}
-						</div>
-						<div className="flex flex-col">
-							<label className="text-sm font-semibold text-black">Surveillance/Workup</label>
-							<input
-								name="CONSULT_SURVWORKUP"
-								value={formData.CONSULT_SURVWORKUP}
-								onChange={handleChange}
-								className={`mt-1 p-2 text-black border ${errors.CONSULT_SURVWORKUP ? "border-red-500" : "border-gray-300"} rounded-md bg-white text-black focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent`}
-							/>
-							{errors.CONSULT_SURVWORKUP && <p className="text-red-500 text-xs mt-1">{errors.CONSULT_SURVWORKUP}</p>}
-						</div>
-
-						<div className="flex flex-col">
-							<label className="text-sm font-semibold text-black">Patient Status</label>
-							<select
-								name="CONSULT_PATIENTSTATUS"
-								value={formData.CONSULT_PATIENTSTATUS}
-								onChange={handleChange}
-								className={`mt-1 p-2 border ${errors.CONSULT_PATIENTSTATUS ? "border-red-500" : "border-gray-300"} rounded-md bg-white text-black focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent`}
-							>
-								<option value="1">Alive</option>
-								<option value="2">Symptoms</option>
-								<option value="3">Recurrence</option>
-								<option value="4">Metastatic</option>
-								<option value="5">Curative</option>
-								<option value="6">Recovered</option>
-								<option value="7">Improved</option>
-								<option value="8">Unimproved</option>
-								<option value="9">Died</option>
-							</select>
-							{errors.CONSULT_PATIENTSTATUS && <p className="text-red-500 text-xs mt-1">{errors.CONSULT_PATIENTSTATUS}</p>}
-						</div>
-						<div className="flex justify-center mt-6">
-							<button type="submit" className="bg-red-900 text-white py-2 px-6 rounded">
-								Submit
-							</button>
-						</div>
-					</form>
+							<div className="flex flex-col">
+								<label className="text-sm font-semibold text-black">Patient Status</label>
+								<select
+									name="CONSULT_PATIENTSTATUS"
+									value={formData.CONSULT_PATIENTSTATUS}
+									onChange={handleChange}
+									className={`mt-1 p-2 border ${errors.CONSULT_PATIENTSTATUS ? "border-red-500" : "border-gray-300"} rounded-md bg-white text-black focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent`}
+								>
+									<option value="1">Alive</option>
+									<option value="2">Symptoms</option>
+									<option value="3">Recurrence</option>
+									<option value="4">Metastatic</option>
+									<option value="5">Curative</option>
+									<option value="6">Recovered</option>
+									<option value="7">Improved</option>
+									<option value="8">Unimproved</option>
+									<option value="9">Died</option>
+								</select>
+								{errors.CONSULT_PATIENTSTATUS && <p className="text-red-500 text-xs mt-1">{errors.CONSULT_PATIENTSTATUS}</p>}
+							</div>
+							<div className="flex justify-center mt-6">
+								<button type="submit" className="bg-red-900 text-white py-2 px-6 rounded">
+									Submit
+								</button>
+							</div>
+						</form>
 
 
-					{/* BUTTONS*/}
-					<div className="col-span-1 bg-white p-4">
-						<div className="grid grid-cols-1 grid-flow-col ">
-							<div className="flex flex-col gap-4">
-								<button type="submit" className="hover:bg-primary/90 font-semibold bg-red-900 text-white p-4 rounded shadow">UPDATE PATIENT INFO</button>
-								<button type="submit" className="hover:bg-primary/90 font-semibold bg-red-900 text-white p-4 rounded shadow">PRESCRIPTION</button>
-								<button type="submit" className="hover:bg-primary/90 font-semibold bg-red-900 text-white p-4 rounded shadow">LAB REQUEST</button>
-								<button type="submit" className="hover:bg-primary/90 font-semibold bg-red-900 text-white p-4 rounded shadow">CLINICAL ABSTRACT</button>
-								<button type="submit" className="hover:bg-primary/90 font-semibold bg-red-900 text-white p-4 rounded shadow">MED CERTIFICATE</button>
-								<button type="submit" className="hover:bg-primary/90 font-semibold bg-red-900 text-white p-4 rounded shadow">REFERRAL FORM</button>
+						{/* BUTTONS*/}
+						<div className="col-span-1 bg-white p-4">
+							<div className="grid grid-cols-1 grid-flow-col ">
+								<div className="flex flex-col gap-4">
+									<button type="submit" className="hover:bg-primary/90 font-semibold bg-red-900 text-white p-4 rounded shadow">UPDATE PATIENT INFO</button>
+									<button type="submit" className="hover:bg-primary/90 font-semibold bg-red-900 text-white p-4 rounded shadow">PRESCRIPTION</button>
+									<button type="submit" className="hover:bg-primary/90 font-semibold bg-red-900 text-white p-4 rounded shadow">LAB REQUEST</button>
+									<button type="submit" className="hover:bg-primary/90 font-semibold bg-red-900 text-white p-4 rounded shadow">CLINICAL ABSTRACT</button>
+									<button type="submit" className="hover:bg-primary/90 font-semibold bg-red-900 text-white p-4 rounded shadow">MED CERTIFICATE</button>
+									<button type="submit" className="hover:bg-primary/90 font-semibold bg-red-900 text-white p-4 rounded shadow">REFERRAL FORM</button>
+								</div>
 							</div>
 						</div>
 					</div>

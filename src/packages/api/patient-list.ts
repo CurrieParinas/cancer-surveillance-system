@@ -75,7 +75,7 @@ const DoctorSchema = z.object({
   hospital: HospitalSchema,
   department: DepartmentSchema,
   specialty: SpecialtySchema,
-  doctorESignature: z.null(), // Assuming it's nullable
+  doctorESignature: z.string(), // Assuming it's nullable
   doctorLicenseNumber: z.string(),
   doctorLicenseExpDate: z.string(),
   doctorSchedule: z.number(),
