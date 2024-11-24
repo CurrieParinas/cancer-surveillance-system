@@ -8,138 +8,72 @@ import {
     TableHead,
     TableHeader,
     TableRow,
-  } from "@/components/ui/table"
-  
+} from "@/components/ui/table"
+
 
 const NotificationPage = () => {
+    return (
+        <div className="w-5/6 bg-white flex flex-col items-center px-6 h-screen">
+            <div className="w-6/12 h-auto mt-12 p-2 text-center">
+                <p className="font-bold text-6xl text-red-900 text-nowrap	tracking-wide">ALERT</p>
+            </div>
 
- // Handle form submission
- const handleSubmit = (e: any) => {
-    e.preventDefault(); // Prevent default form submission behavior
-
-    // Create a new FormData object
-    const formData = new FormData(e.target);
-
-    // Convert FormData to an object
-    const formDataObj = {};
-    formData.forEach((value, key) => {
-      formDataObj[key] = value;
-    });
-
-    // Convert the object to a JSON string
-    const jsonData = JSON.stringify(formDataObj);
-
-    // Log the JSON to the console
-    console.log(jsonData);
-
-    // Optionally, send the JSON data via fetch or axios
-    // fetch('your-api-url', {
-    //   method: 'POST',
-    //   headers: { 'Content-Type': 'application/json' },
-    //   body: jsonData,
-    // });
-  };
-
-  return (
-    <div className="w-screen-minus-1-6 bg-white flex flex-col items-center justify-center gap-4">
-        <div className="w-6/12 h-auto p-2 text-center">
-            <p className="mt-10 font-bold text-5xl text-red-900">ALERTS</p>
-        </div>
-      
-        <div className="h-1/2 w-3/5 flex-none">
-            <div className="grid grid-cols-1 gap-1 flex-none">
-
-          
-            {/* SUBMISSION box */}
-            <div className="flex-none col-span-1 bg-gray-100 p-4 h-full w-full">
-                {/* text and input */}
-                <div className="p-4 grid grid-cols-1 grid-flow-col text-black justify-center w-full">
-
-                <Table>
-                    {/* <TableCaption>A list of your recent invoices.</TableCaption> */}
+            {/* Table Section */}
+            <div className="w-full max-w-4xl h-3/6 bg-white rounded-lg shadow-md p-6 overflow-y-auto">
+                <Table className="">
                     <TableHeader>
-                        <TableRow>
-                        <TableHead className="font-bold text-sm text-black bg-gray-300">Date</TableHead>
-                        <TableHead className="font-bold text-sm text-black bg-gray-300">Sender</TableHead>
-                        <TableHead className="font-bold text-sm text-black bg-gray-300">Message</TableHead>
+                        <TableRow className="bg-red-100 hover:bg-red-100">
+                            <TableHead className="font-medium text-sm text-gray-700 py-3 w-1/5">
+                                Date
+                            </TableHead>
+                            <TableHead className="font-medium text-sm text-gray-700 py-3 w-1/5">
+                                Sender
+                            </TableHead>
+                            <TableHead className="font-medium text-sm text-gray-700 py-3 w-3/5 text-center">
+                                Message
+                            </TableHead>
                         </TableRow>
                     </TableHeader>
 
                     <TableBody>
-                        <TableRow>
-                        <TableCell className="text-left text-sm text-black bg-white">PLACEHOLDER</TableCell>
-                        <TableCell className="text-left text-sm text-black bg-white">PLACEHOLDER</TableCell>
-                        <TableCell className="text-left text-sm text-black bg-white">PLACEHOLDER</TableCell>
-                        </TableRow>
-                        <TableRow>
-                        <TableCell className="text-left text-sm text-black bg-white">PLACEHOLDER</TableCell>
-                        <TableCell className="text-left text-sm text-black bg-white">PLACEHOLDER</TableCell>
-                        <TableCell className="text-left text-sm text-black bg-white">PLACEHOLDER</TableCell>
-                        </TableRow>
-                        <TableRow>
-                        <TableCell className="text-left text-sm text-black bg-white">PLACEHOLDER</TableCell>
-                        <TableCell className="text-left text-sm text-black bg-white">PLACEHOLDER</TableCell>
-                        <TableCell className="text-left text-sm text-black bg-white">PLACEHOLDER</TableCell>
-                        </TableRow>
-                        <TableRow>
-                        <TableCell className="text-left text-sm text-black bg-white">PLACEHOLDER</TableCell>
-                        <TableCell className="text-left text-sm text-black bg-white">PLACEHOLDER</TableCell>
-                        <TableCell className="text-left text-sm text-black bg-white">PLACEHOLDER</TableCell>
-                        </TableRow>
-                        <TableRow>
-                        <TableCell className="text-left text-sm text-black bg-white">PLACEHOLDER</TableCell>
-                        <TableCell className="text-left text-sm text-black bg-white">PLACEHOLDER</TableCell>
-                        <TableCell className="text-left text-sm text-black bg-white">PLACEHOLDER</TableCell>
-                        </TableRow>
+                        {Array(12).fill(null).map((_, idx) => (
+                            <TableRow key={idx}>
+                                <TableCell className="text-sm text-gray-700 bg-white py-2">
+                                    PLACEHOLDER
+                                </TableCell>
+                                <TableCell className="text-sm text-gray-700 bg-white py-2">
+                                    PLACEHOLDER
+                                </TableCell>
+                                <TableCell className="text-sm text-gray-700 bg-white py-2">
+                                    PLACEHOLDER
+                                </TableCell>
+                            </TableRow>
+                        ))}
                     </TableBody>
                 </Table>
+            </div>
 
+            {/* System Message Section */}
+            <div className="w-full max-w-4xl mt-8 bg-white rounded-lg shadow-md p-6">
+                <div className="mb-4">
+                    <p className="font-semibold text-lg text-gray-800">
+                        SYSTEM MESSAGE:
+                    </p>
                 </div>
-
-                {/* Small submit button under both columns */}
-                <div className="grid grid-cols-2 p-4 flex justify-center">
-                <div className="col-span-2  p-4 text-center w-full">
-                            <div className="">
-                                <label className="font-bold text-left text-sm text-black justify-items-start">
-                                   SYSTEM MESSAGE:
-                                </label>
-                            </div>
-                </div>
-                
-                <div className="col-span-2 bg-red-300 p-4 text-center w-full">
-                    <div className="grid grid-cols-2 grid-flow-col ">
-            
-                    {/* input */}
-                    <div className="p-4  grid grid-flow-row  cols-span-2 justify-items-start gap-1">
-                            <div className="">
-                                <label className="font-bold text-left text-sm text-black ">
-                                    Number of Patients work-up submission:
-                                </label>
-                            </div>
-                            <div className="">
-                                <label className="font-bold text-left text-sm text-black ">
-                                Number of Patients pending work-up submission:
-                                </label>
-                            </div>
-                            
+                <div className="bg-red-100 p-4 rounded-md">
+                    <div className="space-y-4">
+                        <p className="font-medium text-sm text-gray-800">
+                            Number of Patients work-up submission:
+                        </p>
+                        <p className="font-medium text-sm text-gray-800">
+                            Number of Patients pending work-up submission:
+                        </p>
                     </div>
                 </div>
             </div>
-        </div>
-
 
         </div>
-   
-                    
-              
-            
-                
-
-        </div>
-        </div>
-        
-    </div>
-  );
+    );
 };
 
 export default NotificationPage;
