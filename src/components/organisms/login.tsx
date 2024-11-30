@@ -11,6 +11,7 @@ import { Input } from '../ui/input'
 import DoctorSchema from '@/packages/api/doctor'
 import { Separator } from '../ui/separator'
 import Link from 'next/link'
+import { PatientSchema } from '@/packages/api/patient'
 
 export const Login = () => {
   return (
@@ -53,14 +54,24 @@ export const LoginForm = () => {
 
       if (response.ok) {
         const data = await response.json();
+        console.log(data);
 
         try {
-          const parsedData = DoctorSchema.parse(data);
+          let parsedData;
+
+          if ('patientId' in data) {
+            parsedData = PatientSchema.parse(data);
+          } else if ('doctorId' in data) {
+            parsedData = DoctorSchema.parse(data);
+          } else {
+            throw new Error("Unknown user type in response");
+          }
+
           console.log('Login successful and data is valid:', parsedData);
 
           localStorage.setItem('user', JSON.stringify(parsedData));
           window.location.reload();
-          router.push("/dashboard")
+          router.push("/dashboard");
         } catch (validationError) {
           console.error('Validation failed:', validationError);
         }
@@ -71,6 +82,7 @@ export const LoginForm = () => {
       console.log('Error:', error);
     }
   };
+
 
   return (
     <div className="flex items-center justify-center">

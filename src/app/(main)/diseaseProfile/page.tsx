@@ -5,6 +5,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { DiseaseFormDataSchema, DiseaseErrorsSchema } from "@/packages/api/add-disease";
 import { PatientsResponseSchema } from "@/packages/api/patient-list";
 import { z } from "zod";
+import { useToast } from "@/hooks/use-toast";
 
 interface FilteredPatient {
   patientId: number;
@@ -260,6 +261,8 @@ const DiseaseProfile = () => {
     return newErrors;
   };
 
+  const { toast } = useToast();
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -331,11 +334,12 @@ const DiseaseProfile = () => {
       });
 
       if (!response.ok) {
+        toast({ title: "Disease Profile submission failed." })
         throw new Error("Network response was not ok");
       }
 
       const result = await response.json();
-      console.log("Form submitted successfully", result);
+      toast({ title: "Disease Profile Added Succesfully" })
 
       setFormData({
         patientId: "",

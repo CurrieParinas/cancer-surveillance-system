@@ -1,25 +1,35 @@
 "use client"
 
-import React, { useEffect, useRef, useState } from 'react'
+import React, { ChangeEvent, FormEvent, useEffect, useRef, useState } from 'react'
 import { Label } from '../ui/label'
 import { Separator } from '../ui/separator'
 import { Button } from '../ui/button'
 import { usePathname, useRouter } from 'next/navigation'
 import { Input } from '../ui/input'
-import { Bell, CircleUserIcon, ContactRound, LayoutDashboard, LogOut, Mail, Microscope, Pill, Search, Stethoscope, Syringe } from 'lucide-react'
+import { BabyIcon, Bell, Brain, ChevronRight, ChevronsUpDownIcon, ClipboardPlus, ContactRound, DnaIcon, EllipsisVertical, FileSearch, HeartPulseIcon, HospitalIcon, LayoutDashboard, LogOut, Mail, Microscope, MicroscopeIcon, PillBottleIcon, PillIcon, Radiation, RadiationIcon, Search, Slice, SquareUser, Stethoscope, Syringe, SyringeIcon, ThermometerSnowflake, UsersRoundIcon } from 'lucide-react'
 import { PatientsResponseSchema } from '@/packages/api/patient-list'
 
 import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from "@/components/ui/popover"
+import {
     Dialog,
     DialogContent,
-    DialogDescription,
     DialogHeader,
-    DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Badge } from "@/components/ui/badge"
+import { DiseaseZodSchema } from "@/packages/api/disease-response"
+import { z } from "zod";
+import usePageStore from '@/packages/stores/pageStore'
+
+type DiseaseResponse = z.infer<typeof DiseaseZodSchema>
 
 interface FilteredPatient {
+    patientUserId: number,
     patientId: number;
     userFirstname: string;
     userLastname: string;
@@ -46,9 +56,10 @@ interface Treatment {
 }
 
 export const Sidebar = () => {
-    const [doctorInfo, setDoctorInfo] = useState({
+    const [userInfo, setUserInfo] = useState({
         userFirstname: '',
         userLastname: '',
+        role: '',
         departmentName: '',
         hospitalName: '',
     });
@@ -58,37 +69,151 @@ export const Sidebar = () => {
         if (userData) {
             const parsedUserData = JSON.parse(userData);
 
-            // Ensure the structure matches your API response
-            setDoctorInfo({
-                userFirstname: parsedUserData.user.userFirstname,
-                userLastname: parsedUserData.user.userLastname,
-                departmentName: parsedUserData.department.departmentName,
-                hospitalName: parsedUserData.hospital.hospitalName,
-            });
+            if ('doctorId' in parsedUserData) {
+                setUserInfo({
+                    userFirstname: parsedUserData.user.userFirstname,
+                    userLastname: parsedUserData.user.userLastname,
+                    role: 'Doctor',
+                    departmentName: parsedUserData.department.departmentName,
+                    hospitalName: parsedUserData.hospital.hospitalName,
+                });
+            } else if ('patientId' in parsedUserData) {
+                setUserInfo({
+                    userFirstname: parsedUserData.user.userFirstname,
+                    userLastname: parsedUserData.user.userLastname,
+                    role: 'Patient',
+                    departmentName: '', // Patients don't have a department
+                    hospitalName: '', // Patients don't have a hospital
+                });
+            }
         }
     }, []);
 
+    const departmentIcons: Record<string, React.ReactNode> = {
+        Medicine: <PillIcon size={20} strokeWidth={2} />,
+        Surgery: <Slice size={20} strokeWidth={2} />,
+        Pathology: <MicroscopeIcon size={20} strokeWidth={2} />,
+        Radiology: <RadiationIcon size={20} strokeWidth={2} />,
+        "Family Medicine": <UsersRoundIcon size={20} strokeWidth={2} />,
+    };
+
+    const getDepartmentIcon = (departmentName: string) => {
+        return departmentIcons[departmentName] || <Stethoscope size={20} strokeWidth={2} />; // Default icon
+    };
+
+    const handleLogout = () => {
+        localStorage.removeItem('user');
+        window.location.reload();
+        window.location.href = "/";
+    };
 
     return (
-        <div className='flex flex-col w-1/6 h-screen px-6 bg-red-900 py-4 sticky top-0 gap-6'>
+        <div className='flex flex-col w-1/6 h-screen px-4 bg-red-900 py-4 sticky top-0 gap-4'>
             <div className=''>
-                <Label className='text-3xl font-extralight'>Welcome,</Label>
+                <Label className='text-xl'>Welcome,</Label>
             </div>
-            <div className='flex justify-center -my-3'>
-                <CircleUserIcon size={130} strokeWidth={1} />
-            </div>
-            <div className='pl-4 flex flex-col'>
-                <Label className='text-2xl font-[700]'>
-                    Dr. {doctorInfo.userFirstname} {doctorInfo.userLastname}
-                </Label>
-                <Label className='text-xl font-thin'>{doctorInfo.departmentName}</Label>
-                <Label className='text-xl font-thin'>{doctorInfo.hospitalName}</Label>
+            <div className="flex items-center">
+                <div className='pl-4 flex flex-col gap-1'>
+                    <Label className='text-xl font-[700] tracking-wide'>
+                        {userInfo.role === 'Doctor' ? 'Dr. ' : ''}
+                        {userInfo.userFirstname} {userInfo.userLastname}
+                        {/* Christopher Martinez */}
+                    </Label>
+                    {userInfo.role === 'Doctor' && (
+                        <div className='flex gap-2 flex-wrap'>
+                            <Badge className='bg-white text-black rounded-xl hover:bg-zinc-200 gap-2 text-sm font-medium'>{getDepartmentIcon(userInfo.departmentName)} {userInfo.departmentName}</Badge>
+                            <Badge className='bg-white text-black rounded-xl hover:bg-zinc-200 gap-2 text-sm font-medium'><HospitalIcon size={20} strokeWidth={2} /> {userInfo.hospitalName}</Badge>
+                        </div>
+                    )}
+                </div>
+                <div className='absolute right-2'>
+                    <Popover>
+                        <PopoverTrigger className='relative -top-3'><ChevronsUpDownIcon size={19} /></PopoverTrigger>
+                        <PopoverContent side='right' className='rounded-2xl'>
+                            <Button
+                                onClick={handleLogout}
+                                className='bg-white shadow-none flex gap-2 rounded-lg text-black w-full hover:bg-red-800 hover:text-white'
+                            >
+                                <LogOut /> Logout
+                            </Button>
+                        </PopoverContent>
+                    </Popover>
+
+                </div>
             </div>
             <Separator />
-            <DoctorSidebar />
+            {userInfo.role === 'Doctor' ? <DoctorSidebar /> : <PatientSidebar />}
         </div>
     );
 };
+
+export const PatientSidebar = () => {
+    const router = useRouter();
+    const pathname = usePathname();
+
+    const navigateTo = (route: string) => {
+        router.push(route);
+    };
+
+    const isActive = (route: string) => pathname === route;
+
+    const handleLogout = () => {
+        localStorage.removeItem('user');
+        window.location.reload();
+        window.location.href = "/";
+    };
+
+    return (
+        <div className='justify-between h-full flex flex-col overflow-hidden'>
+            <div className='flex flex-col gap-2'>
+                <Button
+                    onClick={() => navigateTo("/reportSymptoms")}
+                    className={`w-full h-12 hover:bg-zinc-300 hover:text-black  rounded-3xl font-normal bg-transparent shadow-none justify-start text-xl flex gap-3 transition-all ease-in-out duration-100 ${isActive("/enrollPatient") ? "hover:bg-white font-medium pl-8 bg-white text-black" : ""}`}
+                >
+                    <ThermometerSnowflake /> Report Symptoms
+                </Button>
+
+                <Button
+                    onClick={() => navigateTo("/requestDocuments")}
+                    className={`w-full h-12 hover:bg-zinc-300 hover:text-black  rounded-3xl font-normal bg-transparent shadow-none justify-start text-xl flex gap-3 transition-all ease-in-out duration-100 ${isActive("/diseaseProfile") ? "hover:bg-white font-medium pl-8 bg-white text-black" : ""}`}
+                >
+                    <FileSearch /> Request Documents
+                </Button>
+
+                <Button
+                    onClick={() => navigateTo("/submitLaboratory")}
+                    className={`w-full h-12 hover:bg-zinc-300 hover:text-black  rounded-3xl font-normal bg-transparent shadow-none justify-start text-xl flex gap-3 transition-all ease-in-out duration-100 ${isActive("/treatmentHistory") ? "hover:bg-white font-medium pl-8 bg-white text-black" : ""}`}
+                >
+                    <ClipboardPlus /> Submit Laboratory
+                </Button>
+
+                <Button
+                    onClick={() => navigateTo("/notification")}
+                    className={`w-full h-12 hover:bg-zinc-300 hover:text-black  rounded-3xl font-normal bg-transparent shadow-none justify-start text-xl flex gap-3 transition-all ease-in-out duration-100 ${isActive("/notification") ? "hover:bg-white font-medium pl-8 bg-white text-black" : ""}`}
+                >
+                    <Bell /> Notification
+                </Button>
+
+                <Button
+                    onClick={() => navigateTo("/message")}
+                    className={`w-full h-12 hover:bg-zinc-300 hover:text-black  rounded-3xl font-normal bg-transparent shadow-none justify-start text-xl flex gap-3 transition-all ease-in-out duration-100 ${isActive("/message") ? "hover:bg-white font-medium pl-8 bg-white text-black" : ""}`}
+                >
+                    <Mail /> Message
+                </Button>
+            </div>
+
+            <div>
+                <Button
+                    onClick={handleLogout}
+                    className='w-full h-12 hover:bg-zinc-300 hover:text-black  rounded-3xl font-normal bg-transparent shadow-none justify-start text-xl flex gap-3 transition-all ease-in-out duration-100'
+                >
+                    <LogOut /> Logout
+                </Button>
+            </div>
+        </div>
+    )
+}
+
 
 interface SurgeryData {
     surgeryOperation: string;
@@ -279,6 +404,30 @@ interface ChemotherapyData {
     chemoDoctor: ChemoDoctor;
 }
 
+interface UserFormData {
+    patientCode?: string;
+    familyName?: string;
+    contactEmail?: string;
+}
+
+interface SearchablePatient {
+    userPatientId: number;
+    patientCode: number;
+    givenName: string;
+    surname: string;
+    emailAddress: string;
+}
+
+interface NotificationFormData {
+    title: string;
+    content: string;
+    recipientId: number;
+    senderId: number;
+    recipientEmail: string;
+    senderEmail: string;
+    messageType: number;
+}
+
 export const DoctorSidebar = () => {
     const router = useRouter();
     const pathname = usePathname();
@@ -286,6 +435,17 @@ export const DoctorSidebar = () => {
     const navigateTo = (route: string) => {
         router.push(route);
     };
+
+    const [isTreatmentPage, setIsTreatmentPage] = useState(false);
+
+    useEffect(() => {
+        // Check if the current path matches the treatment history page
+        if (pathname.includes('treatmentHistory')) {
+            setIsTreatmentPage(true);
+        } else {
+            setIsTreatmentPage(false);
+        }
+    }, [pathname]);
 
     const isActive = (route: string) => pathname === route;
 
@@ -326,6 +486,7 @@ export const DoctorSidebar = () => {
     };
 
     const handleSelectPatient = async (
+        patientUserId: number,
         patientId: number,
         firstname: string,
         lastname: string,
@@ -340,6 +501,12 @@ export const DoctorSidebar = () => {
         await fetchHormonalData(patientId);
         await fetchImmunotherapyData(patientId);
         await fetchChemotherapyData(patientId);
+        await fetchDiseaseDetails(patientId)
+        setNotificationData((prevData) => ({
+            ...prevData,
+            recipientId: patientUserId,
+            recipientEmail: email
+        }))
     };
 
     useEffect(() => {
@@ -368,6 +535,7 @@ export const DoctorSidebar = () => {
                     const parsedData = PatientsResponseSchema.parse(data);
 
                     const patients = parsedData.map((relation) => ({
+                        patientUserId: relation.patient.user.userId,
                         patientId: relation.patient.patientId,
                         userFirstname: relation.patient.user.userFirstname,
                         userLastname: relation.patient.user.userLastname,
@@ -724,6 +892,128 @@ export const DoctorSidebar = () => {
         }
     };
 
+    //disease profile
+    const [diseaseData, setDiseaseData] = useState<DiseaseResponse | null>(null);
+    const [error, setError] = useState<string | null>(null);
+
+    const fetchDiseaseDetails = async (patientId: number) => {
+        try {
+            const response = await fetch(
+                `http://localhost:8080/css/disease/getbypatientid?patientID=${patientId}`
+            );
+            if (!response.ok) {
+                throw new Error(`Error: ${response.status} ${response.statusText}`);
+            }
+
+            const jsonResponse = await response.json();
+
+            // Validate the response with zod
+            const validatedData = DiseaseZodSchema.parse(jsonResponse);
+            setDiseaseData(validatedData);
+        } catch (err) {
+            if (err instanceof z.ZodError) {
+                setError("Validation Error: Invalid API Response");
+                console.error(err.errors);
+            } else if (err instanceof Error) {
+                setError(err.message);
+            } else {
+                setError("Unknown Error occurred");
+            }
+        }
+    };
+
+    const [notificationData, setNotificationData] = useState<NotificationFormData>({
+        title: "",
+        content: "",
+        recipientId: 1, // Default value
+        senderId: 1, // Default value
+        recipientEmail: "",
+        senderEmail: "",
+        messageType: 1, // Assuming a default message type
+    });
+
+    const [validationErrors, setValidationErrors] = useState<Partial<NotificationFormData>>({});
+
+    const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        const { name, value } = e.target;
+        setNotificationData((prev) => ({ ...prev, [name]: value }));
+    };
+
+    const validateForm = (): boolean => {
+        const errors: Partial<NotificationFormData> = {};
+        if (!notificationData.title) errors.title = "Title is required";
+        if (!notificationData.content) errors.content = "Content is required";
+        if (!notificationData.recipientEmail) errors.recipientEmail = "Recipient email is required";
+        if (!notificationData.senderEmail) errors.senderEmail = "Sender email is required";
+        setValidationErrors(errors);
+        return Object.keys(errors).length === 0;
+    };
+
+    // Patient search
+    useEffect(() => {
+        const user = localStorage.getItem("user");
+        if (user) {
+            const parsedUser = JSON.parse(user);
+            setNotificationData({
+                ...notificationData,
+                senderEmail: parsedUser.user.userEmail,
+                senderId: parsedUser.user.userId,
+            });
+        }
+    }, []);
+
+    const handleSubmitForm = async (e: FormEvent) => {
+        e.preventDefault();
+        if (!validateForm()) return;
+
+        const payload = { ...notificationData };
+        try {
+            const response = await fetch("http://localhost:8080/css/email/send", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(payload),
+            });
+
+            if (!response.ok) {
+                console.error("Failed to send notification");
+            } else {
+                console.log("Notification sent successfully");
+                setNotificationData({
+                    title: "",
+                    content: "",
+                    recipientId: 1,
+                    senderId: 1,
+                    recipientEmail: "",
+                    senderEmail: "",
+                    messageType: 1,
+                });
+            }
+        } catch (error) {
+            console.error("Error:", error);
+        }
+    };
+
+    const [showSubButtons, setShowSubButtons] = useState(false);
+
+    const handleClick = () => {
+        setShowSubButtons(!showSubButtons);
+        navigateTo("/treatmentHistory");
+    };
+
+    const subButtons = [
+        { label: "Surgery", icon: <Slice /> },
+        { label: "Radiotherapy", icon: <RadiationIcon /> },
+        { label: "Hormonal", icon: <PillBottleIcon /> },
+        { label: "Immunotherapy", icon: <SyringeIcon /> },
+        { label: "Chemotherapy", icon: <DnaIcon /> },
+    ];
+
+    const currentPage = usePageStore((state) => state.currentPage)
+
+    const setCurrentPage = usePageStore((state) => state.setCurrentPage);
+
     return (
         <div className='justify-between h-full flex flex-col overflow-hidden'>
             <div className='flex flex-col gap-2'>
@@ -739,515 +1029,981 @@ export const DoctorSidebar = () => {
                     <Dialog>
                         <DialogTrigger><Search className="absolute right-5 bottom-[34px] text-zinc-300" size={23} onClick={() => handleSearchIconClick(selectedUserId || 0)} /></DialogTrigger>
                         <DialogContent className='max-w-none w-3/5 h-4/5 bg-white'>
-                            <DialogHeader className='flex items-center'>
-                                <Tabs defaultValue="account" className="mt-10">
-                                    <TabsList className='py-6'>
-                                        <TabsTrigger className="w-44 py-2 data-[state=active]:text-white" value="Treatment">Treatment</TabsTrigger>
-                                        <TabsTrigger className="w-44 py-2 data-[state=active]:text-white" value="Surgery">Surgery</TabsTrigger>
-                                        <TabsTrigger className="w-44 py-2 data-[state=active]:text-white" value="Radiotherapy">Radiotherapy</TabsTrigger>
-                                        <TabsTrigger className="w-44 py-2 data-[state=active]:text-white" value="Hormonal">Hormonal</TabsTrigger>
-                                        <TabsTrigger className="w-44 py-2 data-[state=active]:text-white" value="Immunotherapy">Immunotherapy</TabsTrigger>
-                                        <TabsTrigger className="w-44 py-2 data-[state=active]:text-white" value="Chemotherapy">Chemotherapy</TabsTrigger>
+                            <DialogHeader className='flex items-start'>
+                                <Tabs defaultValue="Profile" className="h-full w-full flex py-4">
+                                    <TabsList className='flex-col h-[22rem] space-y-4 mt-4 w-48'>
+                                        <TabsTrigger className="w-44 py-2 data-[state=active]:text-white text-lg" value="Profile">Patient Profile</TabsTrigger>
+                                        <TabsTrigger className="w-44 py-2 data-[state=active]:text-white text-lg" value="Disease">Disease Profile</TabsTrigger>
+                                        <TabsTrigger className="w-44 py-2 data-[state=active]:text-white text-lg" value="Treatment">Treatment Profile</TabsTrigger>
+                                        <TabsTrigger className="w-44 py-2 data-[state=active]:text-white text-lg" value="Schedule">Schedule Consult</TabsTrigger>
+                                        <TabsTrigger className="w-44 py-2 data-[state=active]:text-white text-lg" value="Consult">Consult</TabsTrigger>
+                                        <TabsTrigger className="w-44 py-2 data-[state=active]:text-white text-lg" value="Message">Message</TabsTrigger>
                                     </TabsList>
-                                    <TabsContent value="Treatment">
-                                        {treatmentData ? (
-                                            <div className='space-y-4 py-5'>
-                                                <div className="flex flex-col w-full">
-                                                    <label className="text-sm font-semibold text-gray-700">Treatment History of Patient:</label>
-                                                    <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
-                                                        {selectedUserId}
-                                                    </label>
-                                                </div>
-                                                <div className="flex gap-4">
-                                                    <div className="flex flex-col w-2/4">
-                                                        <label className="text-sm font-semibold text-gray-700">Primary Rx Type:</label>
-                                                        <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
-                                                            {treatmentData.treatmentPrimaryRxType}
-                                                        </label>
-                                                    </div>
-                                                    <div className="flex flex-col w-2/4">
-                                                        <label className="text-sm font-semibold text-gray-700">Primary Rx Name:</label>
-                                                        <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
-                                                            {treatmentData.treatmentPrimaryRxName}
-                                                        </label>
-                                                    </div>
-                                                </div>
-                                                <div className="flex gap-4">
-                                                    <div className="flex flex-col w-2/4">
-                                                        <label className="text-sm font-semibold text-gray-700">Initial Rx Date:</label>
-                                                        <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
-                                                            {treatmentData.treatmentInitialRxDate}
-                                                        </label>
-                                                    </div>
-                                                    <div className="flex flex-col w-2/4">
-                                                        <label className="text-sm font-semibold text-gray-700">Purpose:</label>
-                                                        <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
-                                                            {treatmentData.treatmentPurpose}
-                                                        </label>
-                                                    </div>
-                                                    <div className="flex flex-col w-2/4">
-                                                        <label className="text-sm font-semibold text-gray-700">RX Plan Type ID:</label>
-                                                        <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
-                                                            {treatmentData.treatmentPlan.rxtypeId}
-                                                        </label>
-                                                    </div>
-                                                </div>
-                                                <div className="flex gap-4">
-                                                    <div className="flex flex-col w-2/4">
-                                                        <label className="text-sm font-semibold text-gray-700">Surgery:</label>
-                                                        <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
-                                                            {treatmentData.treatmentPlan.rxtypeSurgery === "1" ? "Yes" : "No"}
-                                                        </label>
-                                                    </div>
-                                                    <div className="flex flex-col w-2/4">
-                                                        <label className="text-sm font-semibold text-gray-700">Chemotherapy:</label>
-                                                        <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
-                                                            {treatmentData.treatmentPlan.rxtypeChemotherapy === "1" ? "Yes" : "No"}
-                                                        </label>
-                                                    </div>
-                                                    <div className="flex flex-col w-2/4">
-                                                        <label className="text-sm font-semibold text-gray-700">Radiotherapy:</label>
-                                                        <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
-                                                            {treatmentData.treatmentPlan.rxtypeRadiotherapy === "1" ? "Yes" : "No"}
-                                                        </label>
-                                                    </div>
-                                                    <div className="flex flex-col w-2/4">
-                                                        <label className="text-sm font-semibold text-gray-700">Immunotherapy:</label>
-                                                        <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
-                                                            {treatmentData.treatmentPlan.rxtypeImmunotherapy === "1" ? "Yes" : "No"}
-                                                        </label>
-                                                    </div>
-                                                    <div className="flex flex-col w-2/4">
-                                                        <label className="text-sm font-semibold text-gray-700">Hormonal Therapy:</label>
-                                                        <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
-                                                            {treatmentData.treatmentPlan.rxtypeHormonalTherapy === "1" ? "Yes" : "No"}
-                                                        </label>
-                                                    </div>
-                                                    <div className="flex flex-col w-2/4">
-                                                        <label className="text-sm font-semibold text-gray-700">Others:</label>
-                                                        <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
-                                                            {treatmentData.treatmentPlan.rxtypeOthers === "1" ? "Yes" : "No"}
-                                                        </label>
-                                                    </div>
-                                                </div>
-                                                <div className="flex flex-col w-full">
-                                                    <label className="text-sm font-semibold text-gray-700">Notes:</label>
-                                                    <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black h-20">
-                                                        {treatmentData.treatmentPlan.rxtypeNotes}
-                                                    </label>
-                                                </div>
-                                            </div>
+                                    <Separator orientation='vertical' className='mx-8' />
+                                    <TabsContent value="Profile" className='text-black'>{selectedUserId}</TabsContent>
+                                    <TabsContent value="Disease" className="text-black w-[76%]">
+                                        <div className="p-6">
+                                            {error ? (
+                                                <div className="text-red-500 font-semibold">Error: {error}</div>
+                                            ) : diseaseData ? (
+                                                <div className='h-[38rem] overflow-y-auto'>
+                                                    <h2 className="text-xl font-bold mb-4">Primary Information</h2>
 
-                                        ) : (
-                                            <div className="text-black w-full items-center justify-center flex py-20">
-                                                <label>No treatment data available.</label>
-                                            </div>
-                                        )}
-                                    </TabsContent>
-                                    <TabsContent value="Surgery">
-                                        {surgeryData ? (
-                                            <div className='space-y-4 py-5'>
-                                                <div className="flex flex-col w-full">
-                                                    <label className="text-sm font-semibold text-gray-700">Surgery Details of Patient:</label>
-                                                    <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
-                                                        {selectedUserId}
-                                                    </label>
-                                                </div>
-                                                <div className="flex gap-4">
-                                                    <div className="flex flex-col w-2/5">
-                                                        <label className="text-sm font-semibold text-gray-700">Surgeon Details:</label>
+                                                    <Separator className='mb-4' />
+
+                                                    {/* Primary Site */}
+                                                    <div className="flex flex-col mb-4">
+                                                        <label className="text-sm font-semibold text-gray-700">Primary Site:</label>
                                                         <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
-                                                            Dr. {surgeryData.surgerySurgeon.user.userFirstname} {surgeryData.surgerySurgeon.user.userMiddlename} {surgeryData.surgerySurgeon.user.userLastname}
-                                                        </label>
-                                                    </div>
-                                                    <div className="flex flex-col w-3/5">
-                                                        <label className="text-sm font-semibold text-gray-700">Specialty:</label>
-                                                        <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
-                                                            {surgeryData.surgerySurgeon.specialty.specialtyName} - {surgeryData.surgerySurgeon.specialty.specialtyDescription}
-                                                        </label>
-                                                    </div>
-                                                </div>
-                                                <div className="flex gap-4">
-                                                    <div className="flex flex-col w-2/4">
-                                                        <label className="text-sm font-semibold text-gray-700">Department:</label>
-                                                        <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
-                                                            {surgeryData.surgerySurgeon.department.departmentName}
-                                                        </label>
-                                                    </div>
-                                                    <div className="flex flex-col w-2/4">
-                                                        <label className="text-sm font-semibold text-gray-700">Hospital:</label>
-                                                        <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
-                                                            {surgeryData.surgeryHospital.hospitalName}
-                                                        </label>
-                                                    </div>
-                                                </div>
-                                                <div className="flex gap-4">
-                                                    <div className="flex flex-col w-2/4">
-                                                        <label className="text-sm font-semibold text-gray-700">Operation:</label>
-                                                        <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
-                                                            {surgeryData.surgeryOperation}
-                                                        </label>
-                                                    </div>
-                                                    <div className="flex flex-col w-2/4">
-                                                        <label className="text-sm font-semibold text-gray-700">Intent:</label>
-                                                        <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
-                                                            {surgeryData.surgeryIntent}
-                                                        </label>
-                                                    </div>
-                                                    <div className="flex flex-col w-2/4">
-                                                        <label className="text-sm font-semibold text-gray-700">Date:</label>
-                                                        <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
-                                                            {surgeryData.surgeryDate}
-                                                        </label>
-                                                    </div>
-                                                </div>
-                                                <div className="flex flex-col w-full">
-                                                    <label className="text-sm font-semibold text-gray-700">Findings:</label>
-                                                    <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black h-20">
-                                                        {surgeryData.surgeryFindings}
-                                                    </label>
-                                                </div>
-                                            </div>
-                                        ) : (
-                                            <div className="text-black w-full items-center justify-center flex py-20">
-                                                <label>No surgery data available.</label>
-                                            </div>
-                                        )}
-                                    </TabsContent>
-                                    <TabsContent value="Radiotherapy">
-                                        {radiotherapyData ? (
-                                            <div className="space-y-4 py-5">
-                                                <div className="flex flex-col w-full">
-                                                    <label className="text-sm font-semibold text-gray-700">Radiotherapy Details of Patient:</label>
-                                                    <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
-                                                        {selectedUserId}
-                                                    </label>
-                                                </div>
-                                                <div className="flex gap-4">
-                                                    <div className="flex flex-col w-2/5">
-                                                        <label className="text-sm font-semibold text-gray-700">Doctor Name:</label>
-                                                        <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
-                                                            Dr. {`${radiotherapyData.radRxDoctor.user.userFirstname} ${radiotherapyData.radRxDoctor.user.userMiddlename} ${radiotherapyData.radRxDoctor.user.userLastname}`}
-                                                        </label>
-                                                    </div>
-                                                    <div className="flex flex-col w-3/5">
-                                                        <label className="text-sm font-semibold text-gray-700">Specialty:</label>
-                                                        <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
-                                                            {radiotherapyData.radRxDoctor.specialty.specialtyName} - {radiotherapyData.radRxDoctor.specialty.specialtyDescription}
-                                                        </label>
-                                                    </div>
-                                                </div>
-                                                <div className="flex gap-4">
-                                                    <div className="flex flex-col w-2/4">
-                                                        <label className="text-sm font-semibold text-gray-700">Department:</label>
-                                                        <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
-                                                            {radiotherapyData.radRxDoctor.department.departmentName}
-                                                        </label>
-                                                    </div>
-                                                    <div className="flex flex-col w-2/4">
-                                                        <label className="text-sm font-semibold text-gray-700">Hospital:</label>
-                                                        <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
-                                                            {radiotherapyData.radRxDoctor.hospital.hospitalName}
-                                                        </label>
-                                                    </div>
-                                                </div>
-                                                <div className="flex gap-4">
-                                                    <div className="flex flex-col w-2/4">
-                                                        <label className="text-sm font-semibold text-gray-700">Radiotherapy Procedure:</label>
-                                                        <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
-                                                            {radiotherapyData.radRxType.radDetailsProcedure}
-                                                        </label>
-                                                    </div>
-                                                    <div className="flex flex-col w-2/4">
-                                                        <label className="text-sm font-semibold text-gray-700">Initial Date:</label>
-                                                        <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
-                                                            {radiotherapyData.radRxInitialDate}
-                                                        </label>
-                                                    </div>
-                                                    <div className="flex flex-col w-2/4">
-                                                        <label className="text-sm font-semibold text-gray-700">Last Date:</label>
-                                                        <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
-                                                            {radiotherapyData.radRxLastDate}
+                                                            {diseaseData.bodySite.bodysiteName}
                                                         </label>
                                                     </div>
 
-                                                </div>
-                                                <div className="flex gap-4">
-                                                    <div className="flex flex-col w-2/4">
-                                                        <label className="text-sm font-semibold text-gray-700">Dose:</label>
-                                                        <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
-                                                            {radiotherapyData.radRxDose}
-                                                        </label>
-                                                    </div>
-                                                    <div className="flex flex-col w-2/4">
-                                                        <label className="text-sm font-semibold text-gray-700">Body Site:</label>
-                                                        <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
-                                                            {radiotherapyData.radRxBodySite}
-                                                        </label>
-                                                    </div>
-                                                    <div className="flex flex-col w-2/4">
-                                                        <label className="text-sm font-semibold text-gray-700">Status:</label>
-                                                        <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
-                                                            {radiotherapyData.radRxStatus}
-                                                        </label>
-                                                    </div>
-                                                    <div className="flex flex-col w-2/4">
-                                                        <label className="text-sm font-semibold text-gray-700">Completed:</label>
-                                                        <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
-                                                            {radiotherapyData.radRxIsCompleted === 'Y' ? 'Yes' : 'No'}
-                                                        </label>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        ) : (
-                                            <div className="text-black w-full items-center justify-center flex py-20">
-                                                <label>No radiotherapy data available.</label>
-                                            </div>
-                                        )}
+                                                    <div className="flex gap-4 w-full">
+                                                        {/* Diagnosis Date */}
+                                                        <div className="flex flex-col mb-4 w-1/6">
+                                                            <label className="text-sm font-semibold text-gray-700">Diagnosis Date:</label>
+                                                            <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
+                                                                {diseaseData.diseaseDiagnosisDate}
+                                                            </label>
+                                                        </div>
 
-                                    </TabsContent>
-                                    <TabsContent value="Hormonal">
-                                        {hormonalData ? (
-                                            <div className='space-y-4 py-5'>
-                                                <div className="flex flex-col w-full">
-                                                    <label className="text-sm font-semibold text-gray-700">Hormonal Details of Patient:</label>
-                                                    <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
-                                                        {selectedUserId}
-                                                    </label>
-                                                </div>
-                                                <div className="flex gap-4">
-                                                    <div className="flex flex-col w-2/5">
-                                                        <label className="text-sm font-semibold text-gray-700">Doctor Name:</label>
-                                                        <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
-                                                            Dr. {hormonalData.hormonalDoctor.user.userFirstname} {hormonalData.hormonalDoctor.user.userMiddlename} {hormonalData.hormonalDoctor.user.userLastname}
-                                                        </label>
+                                                        {/* Basis */}
+                                                        <div className="flex flex-col mb-4 w-1/2">
+                                                            <label className="text-sm font-semibold text-gray-700">Basis:</label>
+                                                            <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
+                                                                {diseaseData.basis.category} - {diseaseData.basis.subcategory}
+                                                            </label>
+                                                        </div>
+
+                                                        {/* Laterality */}
+                                                        <div className="flex flex-col mb-4 w-1/3">
+                                                            <label className="text-sm font-semibold text-gray-700">Laterality:</label>
+                                                            <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
+                                                                {{
+                                                                    1: 'Left',
+                                                                    2: 'Right',
+                                                                    3: 'Bilateral',
+                                                                    4: 'Mid',
+                                                                    5: 'Not Stated',
+                                                                    6: 'Not Applicable'
+                                                                }[diseaseData.diseaseLaterality] || 'Unknown'}
+                                                            </label>
+                                                        </div>
                                                     </div>
-                                                    <div className="flex flex-col w-3/5">
-                                                        <label className="text-sm font-semibold text-gray-700">Specialty:</label>
+
+                                                    <h2 className="text-xl font-bold my-4">Histology Information</h2>
+
+                                                    <Separator className='mb-4' />
+
+                                                    {/* Histopathology */}
+                                                    <div className="flex flex-col mb-4">
+                                                        <label className="text-sm font-semibold text-gray-700">Histopathology:</label>
                                                         <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
-                                                            {hormonalData.hormonalDoctor.specialty.specialtyName} - {hormonalData.hormonalDoctor.specialty.specialtyDescription}
+                                                            {diseaseData.diseaseHistology.histoPathology.term}
                                                         </label>
                                                     </div>
 
+                                                    <div className="flex gap-4 w-full">
+                                                        {/* Tumor Size */}
+                                                        <div className="flex flex-col mb-4 w-1/3">
+                                                            <label className="text-sm font-semibold text-gray-700">Tumor Size:</label>
+                                                            <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
+                                                                {diseaseData.diseaseHistology.histoTumorSize}
+                                                            </label>
+                                                        </div>
+
+                                                        {/* Grade */}
+                                                        <div className="flex flex-col mb-4 w-1/3">
+                                                            <label className="text-sm font-semibold text-gray-700">Tumor Grade:</label>
+                                                            <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
+                                                                {diseaseData.diseaseHistology.histoGrade}
+                                                            </label>
+                                                        </div>
+
+                                                        {/* Tumor Extension */}
+                                                        <div className="flex flex-col mb-4 w-1/3">
+                                                            <label className="text-sm font-semibold text-gray-700">Tumor Extension:</label>
+                                                            <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
+                                                                {diseaseData.diseaseHistology.histoTumorExtension === "Y" ? "Yes" : "No"}
+                                                            </label>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="flex gap-4 w-full">
+                                                        {/* Node Positive */}
+                                                        <div className="flex flex-col mb-4 w-1/5">
+                                                            <label className="text-sm font-semibold text-gray-700">Node Positive:</label>
+                                                            <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
+                                                                {diseaseData.diseaseHistology.histoNodePositive}
+                                                            </label>
+                                                        </div>
+
+                                                        {/* Node Harvest */}
+                                                        <div className="flex flex-col mb-4 w-1/5">
+                                                            <label className="text-sm font-semibold text-gray-700">Node Harvest:</label>
+                                                            <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
+                                                                {diseaseData.diseaseHistology.histoNodeHarvest}
+                                                            </label>
+                                                        </div>
+
+                                                        {/* Stage */}
+                                                        <div className="flex flex-col mb-4 w-1/5">
+                                                            <label className="text-sm font-semibold text-gray-700">Stage:</label>
+                                                            <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
+                                                                {diseaseData.diseaseHistology.histoStage}
+                                                            </label>
+                                                        </div>
+
+                                                        {/* Margins Negative */}
+                                                        <div className="flex flex-col mb-4 w-1/5">
+                                                            <label className="text-sm font-semibold text-gray-700">Margins Negative:</label>
+                                                            <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
+                                                                {diseaseData.diseaseHistology.histoMarginsNegative === "Y" ? "Yes" : "No"}
+                                                            </label>
+                                                        </div>
+
+                                                        {/* Margins Positive */}
+                                                        <div className="flex flex-col mb-4 w-1/5">
+                                                            <label className="text-sm font-semibold text-gray-700">Margins Positive:</label>
+                                                            <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
+                                                                {diseaseData.diseaseHistology.histoMarginsPositive === "Y" ? "Yes" : "No"}
+                                                            </label>
+                                                        </div>
+                                                    </div>
+
+                                                    <h2 className="text-xl font-bold my-4">Disease Information</h2>
+
+                                                    <Separator className='mb-4' />
+
+                                                    <div className="flex gap-4 w-full">
+                                                        {/* Extent */}
+                                                        <div className="flex flex-col mb-4 w-1/4">
+                                                            <label className="text-sm font-semibold text-gray-700">Extent of Disease:</label>
+                                                            <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
+                                                                {diseaseData.diseaseExtent}
+                                                            </label>
+                                                        </div>
+
+                                                        {/* Tumor Size */}
+                                                        <div className="flex flex-col mb-4 w-1/4">
+                                                            <label className="text-sm font-semibold text-gray-700">Tumor Size:</label>
+                                                            <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
+                                                                {diseaseData.diseaseTumorSize}
+                                                            </label>
+                                                        </div>
+
+                                                        {/* Lymph Node */}
+                                                        <div className="flex flex-col mb-4 w-1/4">
+                                                            <label className="text-sm font-semibold text-gray-700">Lymph Node:</label>
+                                                            <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
+                                                                {diseaseData.diseaseLymphNode}
+                                                            </label>
+                                                        </div>
+
+                                                        {/* Metastatic */}
+                                                        <div className="flex flex-col mb-4 w-1/4">
+                                                            <label className="text-sm font-semibold text-gray-700">Metastatic:</label>
+                                                            <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
+                                                                {diseaseData.diseaseMetastatic === "Y" ? "Yes" : "No"}
+                                                            </label>
+                                                        </div>
+                                                    </div>
+
+                                                    <h2 className="text-xl font-bold my-4">Metastatic Involvement</h2>
+
+                                                    <Separator className='mb-4' />
+
+                                                    <div className="flex gap-4 w-full flex-wrap">
+                                                        {/* Distant Lymph Node */}
+                                                        {diseaseData.diseaseMetastaticSite.metsDistantln === "Y" && (
+                                                            <div className="flex flex-col mb-4 w-1/3">
+                                                                <label className="text-sm font-semibold text-gray-700">Distant Lymph Node:</label>
+                                                                <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
+                                                                    {diseaseData.diseaseMetastaticSite.metsDistantln === "Y" ? "Yes" : "No"}
+                                                                </label>
+                                                            </div>
+                                                        )}
+
+                                                        {/* Bone */}
+                                                        {diseaseData.diseaseMetastaticSite.metsBone === "Y" && (
+                                                            <div className="flex flex-col mb-4 w-1/3">
+                                                                <label className="text-sm font-semibold text-gray-700">Bone:</label>
+                                                                <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
+                                                                    {diseaseData.diseaseMetastaticSite.metsBone === "Y" ? "Yes" : "No"}
+                                                                </label>
+                                                            </div>
+                                                        )}
+
+                                                        {/* Liver */}
+                                                        {diseaseData.diseaseMetastaticSite.metsLiver === "Y" && (
+                                                            <div className="flex flex-col mb-4 w-1/3">
+                                                                <label className="text-sm font-semibold text-gray-700">Liver:</label>
+                                                                <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
+                                                                    {diseaseData.diseaseMetastaticSite.metsLiver === "Y" ? "Yes" : "No"}
+                                                                </label>
+                                                            </div>
+                                                        )}
+
+                                                        {/* Lung */}
+                                                        {diseaseData.diseaseMetastaticSite.metsLung === "Y" && (
+                                                            <div className="flex flex-col mb-4 w-1/3">
+                                                                <label className="text-sm font-semibold text-gray-700">Lung:</label>
+                                                                <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
+                                                                    {diseaseData.diseaseMetastaticSite.metsLung === "Y" ? "Yes" : "No"}
+                                                                </label>
+                                                            </div>
+                                                        )}
+
+                                                        {/* Brain */}
+                                                        {diseaseData.diseaseMetastaticSite.metsBrain === "Y" && (
+                                                            <div className="flex flex-col mb-4 w-1/3">
+                                                                <label className="text-sm font-semibold text-gray-700">Brain:</label>
+                                                                <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
+                                                                    {diseaseData.diseaseMetastaticSite.metsBrain === "Y" ? "Yes" : "No"}
+                                                                </label>
+                                                            </div>
+                                                        )}
+
+                                                        {/* Ovary */}
+                                                        {diseaseData.diseaseMetastaticSite.metsOvary === "Y" && (
+                                                            <div className="flex flex-col mb-4 w-1/3">
+                                                                <label className="text-sm font-semibold text-gray-700">Ovary:</label>
+                                                                <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
+                                                                    {diseaseData.diseaseMetastaticSite.metsOvary === "Y" ? "Yes" : "No"}
+                                                                </label>
+                                                            </div>
+                                                        )}
+
+                                                        {/* Skin */}
+                                                        {diseaseData.diseaseMetastaticSite.metsSkin === "Y" && (
+                                                            <div className="flex flex-col mb-4 w-1/3">
+                                                                <label className="text-sm font-semibold text-gray-700">Skin:</label>
+                                                                <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
+                                                                    {diseaseData.diseaseMetastaticSite.metsSkin === "Y" ? "Yes" : "No"}
+                                                                </label>
+                                                            </div>
+                                                        )}
+
+                                                        {/* Intestine */}
+                                                        {diseaseData.diseaseMetastaticSite.metsIntestine === "Y" && (
+                                                            <div className="flex flex-col mb-4 w-1/3">
+                                                                <label className="text-sm font-semibold text-gray-700">Intestine:</label>
+                                                                <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
+                                                                    {diseaseData.diseaseMetastaticSite.metsIntestine === "Y" ? "Yes" : "No"}
+                                                                </label>
+                                                            </div>
+                                                        )}
+
+                                                        {/* Others */}
+                                                        {diseaseData.diseaseMetastaticSite.metsOthers === "Y" && (
+                                                            <div className="flex flex-col mb-4 w-1/3">
+                                                                <label className="text-sm font-semibold text-gray-700">Others:</label>
+                                                                <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
+                                                                    {diseaseData.diseaseMetastaticSite.metsOthers === "Y" ? "Yes" : "No"}
+                                                                </label>
+                                                            </div>
+                                                        )}
+
+                                                        {/* Unknown */}
+                                                        {diseaseData.diseaseMetastaticSite.metsUnknown === "Y" && (
+                                                            <div className="flex flex-col mb-4 w-1/3">
+                                                                <label className="text-sm font-semibold text-gray-700">Unknown:</label>
+                                                                <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
+                                                                    {diseaseData.diseaseMetastaticSite.metsUnknown === "Y" ? "Yes" : "No"}
+                                                                </label>
+                                                            </div>
+                                                        )}
+                                                    </div>
+
+
+                                                    {/* Notes */}
+                                                    <div className="flex flex-col mb-4">
+                                                        <label className="text-sm font-semibold text-gray-700">Notes:</label>
+                                                        <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black h-40">
+                                                            {diseaseData.diseaseMetastaticSite.metsNotes}
+                                                        </label>
+                                                    </div>
+
+                                                    <h2 className="text-xl font-bold my-4 mt-8">Multiple Primary Information</h2>
+
+                                                    <Separator className='mb-4' />
+
+                                                    {/* Multiple Primary */}
+                                                    <div className="flex flex-col mb-4">
+                                                        <label className="text-sm font-semibold text-gray-700">Multiple Primary:</label>
+                                                        <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
+                                                            {diseaseData.diseaseMultiplePrimary}
+                                                        </label>
+                                                    </div>
+
+                                                    <div className="flex gap-4 w-full">
+                                                        {/* TStage */}
+                                                        <div className="flex flex-col mb-4 w-1/4">
+                                                            <label className="text-sm font-semibold text-gray-700">TStage:</label>
+                                                            <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
+                                                                {diseaseData.diseaseTstage}
+                                                            </label>
+                                                        </div>
+
+                                                        {/* NStage */}
+                                                        <div className="flex flex-col mb-4 w-1/4">
+                                                            <label className="text-sm font-semibold text-gray-700">NStage:</label>
+                                                            <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
+                                                                {diseaseData.diseaseNstage}
+                                                            </label>
+                                                        </div>
+
+                                                        {/* MStage */}
+                                                        <div className="flex flex-col mb-4 w-1/4">
+                                                            <label className="text-sm font-semibold text-gray-700">MStage:</label>
+                                                            <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
+                                                                {diseaseData.diseaseMstage}
+                                                            </label>
+                                                        </div>
+
+                                                        {/* GStage */}
+                                                        <div className="flex flex-col mb-4 w-1/4">
+                                                            <label className="text-sm font-semibold text-gray-700">GStage:</label>
+                                                            <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
+                                                                {diseaseData.diseaseGstage}
+                                                            </label>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="flex gap-4 w-full">
+                                                        {/* Stage */}
+                                                        <div className="flex flex-col mb-4 w-1/2">
+                                                            <label className="text-sm font-semibold text-gray-700">Stage:</label>
+                                                            <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
+                                                                {diseaseData.diseaseStage}
+                                                            </label>
+                                                        </div>
+
+                                                        {/* Stage Type */}
+                                                        <div className="flex flex-col mb-4 w-1/2">
+                                                            <label className="text-sm font-semibold text-gray-700">Stage Type:</label>
+                                                            <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
+                                                                {diseaseData.diseaseStageType}
+                                                            </label>
+                                                        </div>
+                                                    </div>
+
+                                                    <h2 className="text-xl font-bold my-4">Patient Status</h2>
+
+                                                    <Separator className='mb-4' />
+
+                                                    <div className="flex w-full gap-4">
+                                                        {/* Alive */}
+                                                        <div className="flex flex-col mb-4 w-1/5">
+                                                            <label className="text-sm font-semibold text-gray-700">Alive:</label>
+                                                            <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
+                                                                {diseaseData.diseaseStatus.dxstatusAlive === "Y" ? "Yes" : "No"}
+                                                            </label>
+                                                        </div>
+
+                                                        {/* Symptoms */}
+                                                        <div className="flex flex-col mb-4 w-1/5">
+                                                            <label className="text-sm font-semibold text-gray-700">Symptoms:</label>
+                                                            <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
+                                                                {diseaseData.diseaseStatus.dxstatusSymptoms === "Y" ? "Yes" : "No"}
+                                                            </label>
+                                                        </div>
+
+                                                        {/* Recurrence */}
+                                                        <div className="flex flex-col mb-4 w-1/5">
+                                                            <label className="text-sm font-semibold text-gray-700">Recurrence:</label>
+                                                            <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
+                                                                {diseaseData.diseaseStatus.dxstatusRecurrence === "Y" ? "Yes" : "No"}
+                                                            </label>
+                                                        </div>
+
+                                                        {/* Metastatic */}
+                                                        <div className="flex flex-col mb-4 w-1/5">
+                                                            <label className="text-sm font-semibold text-gray-700">Metastatic:</label>
+                                                            <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
+                                                                {diseaseData.diseaseStatus.dxstatusMetastatic === "Y" ? "Yes" : "No"}
+                                                            </label>
+                                                        </div>
+
+                                                        {/* Curative */}
+                                                        <div className="flex flex-col mb-4 w-1/5">
+                                                            <label className="text-sm font-semibold text-gray-700">Curative:</label>
+                                                            <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
+                                                                {diseaseData.diseaseStatus.dxstatusCurative === "Y" ? "Yes" : "No"}
+                                                            </label>
+                                                        </div>
+                                                    </div>
                                                 </div>
-                                                <div className="flex gap-4">
-                                                    <div className="flex flex-col w-2/4">
-                                                        <label className="text-sm font-semibold text-gray-700">Department:</label>
-                                                        <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
-                                                            {hormonalData.hormonalDoctor.department.departmentName}
-                                                        </label>
-                                                    </div>
-                                                    <div className="flex flex-col w-2/4">
-                                                        <label className="text-sm font-semibold text-gray-700">Hospital:</label>
-                                                        <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
-                                                            {hormonalData.hormonalDoctor.hospital.hospitalName}
-                                                        </label>
-                                                    </div>
-                                                </div>
-                                                <div className="flex gap-4">
-                                                    <div className="flex flex-col w-2/4">
-                                                        <label className="text-sm font-semibold text-gray-700">Hormonal Drug:</label>
-                                                        <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
-                                                            {hormonalData.hormonalDrug}
-                                                        </label>
-                                                    </div>
-                                                    <div className="flex flex-col w-2/4">
-                                                        <label className="text-sm font-semibold text-gray-700">Dose:</label>
-                                                        <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
-                                                            {hormonalData.hormonalDose}
-                                                        </label>
-                                                    </div>
-                                                    <div className="flex flex-col w-2/4">
-                                                        <label className="text-sm font-semibold text-gray-700">Initial Date:</label>
-                                                        <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
-                                                            {hormonalData.hormonalInitialdate}
-                                                        </label>
-                                                    </div>
-                                                    <div className="flex flex-col w-2/4">
-                                                        <label className="text-sm font-semibold text-gray-700">End Date:</label>
-                                                        <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
-                                                            {hormonalData.hormonalEnddate}
-                                                        </label>
-                                                    </div>
-                                                </div>
-                                                <div className="flex flex-col w-full">
-                                                    <label className="text-sm font-semibold text-gray-700">Status:</label>
-                                                    <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
-                                                        {hormonalData.hormonalStatus}
-                                                    </label>
-                                                </div>
-                                                <div className="flex flex-col w-full">
-                                                    <label className="text-sm font-semibold text-gray-700">Notes:</label>
-                                                    <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black h-20   ">
-                                                        {hormonalData.hormonalRxNotes}
-                                                    </label>
-                                                </div>
-                                            </div>
-                                        ) : (
-                                            <div className="text-black w-full items-center justify-center flex py-20">
-                                                <label>No hormonal treatment data available.</label>
-                                            </div>
-                                        )}
+
+                                            ) : (
+                                                <div>Loading...</div>
+                                            )}
+                                        </div>
                                     </TabsContent>
-                                    <TabsContent value="Immunotherapy">
-                                        {immunotherapyData ? (
-                                            <div className='space-y-4 py-5'>
-                                                <div className="flex flex-col w-full">
-                                                    <label className="text-sm font-semibold text-gray-700">Immunotherapy Details of Patient:</label>
-                                                    <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
-                                                        {selectedUserId}
-                                                    </label>
-                                                </div>
-                                                <div className="flex gap-4">
-                                                    <div className="flex flex-col w-2/5">
-                                                        <label className="text-sm font-semibold text-gray-700">Doctor Name:</label>
-                                                        <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
-                                                            Dr. {immunotherapyData.immunorxDoctor.user.userFirstname} {immunotherapyData.immunorxDoctor.user.userMiddlename} {immunotherapyData.immunorxDoctor.user.userLastname}
-                                                        </label>
+                                    <TabsContent value="Treatment" className='text-black'>
+                                        <Tabs defaultValue="Treatment" className="mt-10">
+                                            <TabsList className='py-6'>
+                                                <TabsTrigger className="w-[8.5rem] py-2 data-[state=active]:text-white" value="Treatment">Treatment</TabsTrigger>
+                                                <TabsTrigger className="w-[8.5rem] py-2 data-[state=active]:text-white" value="Surgery">Surgery</TabsTrigger>
+                                                <TabsTrigger className="w-[8.5rem] py-2 data-[state=active]:text-white" value="Radiotherapy">Radiotherapy</TabsTrigger>
+                                                <TabsTrigger className="w-[8.5rem] py-2 data-[state=active]:text-white" value="Hormonal">Hormonal</TabsTrigger>
+                                                <TabsTrigger className="w-[8.5rem] py-2 data-[state=active]:text-white" value="Immunotherapy">Immunotherapy</TabsTrigger>
+                                                <TabsTrigger className="w-[8.5rem]   py-2 data-[state=active]:text-white" value="Chemotherapy">Chemotherapy</TabsTrigger>
+                                            </TabsList>
+                                            <TabsContent value="Treatment">
+                                                {treatmentData ? (
+                                                    <div className='space-y-4 py-5'>
+                                                        <div className="flex flex-col w-full">
+                                                            <label className="text-sm font-semibold text-gray-700">Treatment History of Patient:</label>
+                                                            <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
+                                                                {selectedUserId}
+                                                            </label>
+                                                        </div>
+                                                        <div className="flex gap-4">
+                                                            <div className="flex flex-col w-2/4">
+                                                                <label className="text-sm font-semibold text-gray-700">Primary Rx Type:</label>
+                                                                <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
+                                                                    {treatmentData.treatmentPrimaryRxType}
+                                                                </label>
+                                                            </div>
+                                                            <div className="flex flex-col w-2/4">
+                                                                <label className="text-sm font-semibold text-gray-700">Primary Rx Name:</label>
+                                                                <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
+                                                                    {treatmentData.treatmentPrimaryRxName}
+                                                                </label>
+                                                            </div>
+                                                        </div>
+                                                        <div className="flex gap-4">
+                                                            <div className="flex flex-col w-2/4">
+                                                                <label className="text-sm font-semibold text-gray-700">Initial Rx Date:</label>
+                                                                <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
+                                                                    {treatmentData.treatmentInitialRxDate}
+                                                                </label>
+                                                            </div>
+                                                            <div className="flex flex-col w-2/4">
+                                                                <label className="text-sm font-semibold text-gray-700">Purpose:</label>
+                                                                <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
+                                                                    {treatmentData.treatmentPurpose}
+                                                                </label>
+                                                            </div>
+                                                            <div className="flex flex-col w-2/4">
+                                                                <label className="text-sm font-semibold text-gray-700">RX Plan Type ID:</label>
+                                                                <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
+                                                                    {treatmentData.treatmentPlan.rxtypeId}
+                                                                </label>
+                                                            </div>
+                                                        </div>
+                                                        <div className="flex gap-4">
+                                                            <div className="flex flex-col w-2/4">
+                                                                <label className="text-sm font-semibold text-gray-700">Surgery:</label>
+                                                                <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
+                                                                    {treatmentData.treatmentPlan.rxtypeSurgery === "1" ? "Yes" : "No"}
+                                                                </label>
+                                                            </div>
+                                                            <div className="flex flex-col w-2/4">
+                                                                <label className="text-sm font-semibold text-gray-700">Chemotherapy:</label>
+                                                                <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
+                                                                    {treatmentData.treatmentPlan.rxtypeChemotherapy === "1" ? "Yes" : "No"}
+                                                                </label>
+                                                            </div>
+                                                            <div className="flex flex-col w-2/4">
+                                                                <label className="text-sm font-semibold text-gray-700">Radiotherapy:</label>
+                                                                <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
+                                                                    {treatmentData.treatmentPlan.rxtypeRadiotherapy === "1" ? "Yes" : "No"}
+                                                                </label>
+                                                            </div>
+                                                            <div className="flex flex-col w-2/4">
+                                                                <label className="text-sm font-semibold text-gray-700">Immunotherapy:</label>
+                                                                <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
+                                                                    {treatmentData.treatmentPlan.rxtypeImmunotherapy === "1" ? "Yes" : "No"}
+                                                                </label>
+                                                            </div>
+                                                            <div className="flex flex-col w-2/4">
+                                                                <label className="text-sm font-semibold text-gray-700">Hormonal:</label>
+                                                                <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
+                                                                    {treatmentData.treatmentPlan.rxtypeHormonalTherapy === "1" ? "Yes" : "No"}
+                                                                </label>
+                                                            </div>
+                                                            <div className="flex flex-col w-2/4">
+                                                                <label className="text-sm font-semibold text-gray-700">Others:</label>
+                                                                <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
+                                                                    {treatmentData.treatmentPlan.rxtypeOthers === "1" ? "Yes" : "No"}
+                                                                </label>
+                                                            </div>
+                                                        </div>
+                                                        <div className="flex flex-col w-full">
+                                                            <label className="text-sm font-semibold text-gray-700">Notes:</label>
+                                                            <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black h-20">
+                                                                {treatmentData.treatmentPlan.rxtypeNotes}
+                                                            </label>
+                                                        </div>
                                                     </div>
-                                                    <div className="flex flex-col w-3/5">
-                                                        <label className="text-sm font-semibold text-gray-700">Specialty:</label>
-                                                        <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
-                                                            {immunotherapyData.immunorxDoctor.specialty.specialtyName} - {immunotherapyData.immunorxDoctor.specialty.specialtyDescription}
-                                                        </label>
+
+                                                ) : (
+                                                    <div className="text-black w-full items-center justify-center flex py-20">
+                                                        <label>No treatment data available.</label>
                                                     </div>
-                                                </div>
-                                                <div className="flex gap-4">
-                                                    <div className="flex flex-col w-2/4">
-                                                        <label className="text-sm font-semibold text-gray-700">Department:</label>
-                                                        <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
-                                                            {immunotherapyData.immunorxDoctor.department.departmentName}
-                                                        </label>
+                                                )}
+                                            </TabsContent>
+                                            <TabsContent value="Surgery">
+                                                {surgeryData ? (
+                                                    <div className='space-y-4 py-5'>
+                                                        <div className="flex flex-col w-full">
+                                                            <label className="text-sm font-semibold text-gray-700">Surgery Details of Patient:</label>
+                                                            <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
+                                                                {selectedUserId}
+                                                            </label>
+                                                        </div>
+                                                        <div className="flex gap-4">
+                                                            <div className="flex flex-col w-2/5">
+                                                                <label className="text-sm font-semibold text-gray-700">Surgeon Details:</label>
+                                                                <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
+                                                                    Dr. {surgeryData.surgerySurgeon.user.userFirstname} {surgeryData.surgerySurgeon.user.userMiddlename} {surgeryData.surgerySurgeon.user.userLastname}
+                                                                </label>
+                                                            </div>
+                                                            <div className="flex flex-col w-3/5">
+                                                                <label className="text-sm font-semibold text-gray-700">Specialty:</label>
+                                                                <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
+                                                                    {surgeryData.surgerySurgeon.specialty.specialtyName} - {surgeryData.surgerySurgeon.specialty.specialtyDescription}
+                                                                </label>
+                                                            </div>
+                                                        </div>
+                                                        <div className="flex gap-4">
+                                                            <div className="flex flex-col w-2/4">
+                                                                <label className="text-sm font-semibold text-gray-700">Department:</label>
+                                                                <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
+                                                                    {surgeryData.surgerySurgeon.department.departmentName}
+                                                                </label>
+                                                            </div>
+                                                            <div className="flex flex-col w-2/4">
+                                                                <label className="text-sm font-semibold text-gray-700">Hospital:</label>
+                                                                <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
+                                                                    {surgeryData.surgeryHospital.hospitalName}
+                                                                </label>
+                                                            </div>
+                                                        </div>
+                                                        <div className="flex gap-4">
+                                                            <div className="flex flex-col w-2/4">
+                                                                <label className="text-sm font-semibold text-gray-700">Operation:</label>
+                                                                <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
+                                                                    {surgeryData.surgeryOperation}
+                                                                </label>
+                                                            </div>
+                                                            <div className="flex flex-col w-2/4">
+                                                                <label className="text-sm font-semibold text-gray-700">Intent:</label>
+                                                                <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
+                                                                    {surgeryData.surgeryIntent}
+                                                                </label>
+                                                            </div>
+                                                            <div className="flex flex-col w-2/4">
+                                                                <label className="text-sm font-semibold text-gray-700">Date:</label>
+                                                                <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
+                                                                    {surgeryData.surgeryDate}
+                                                                </label>
+                                                            </div>
+                                                        </div>
+                                                        <div className="flex flex-col w-full">
+                                                            <label className="text-sm font-semibold text-gray-700">Findings:</label>
+                                                            <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black h-20">
+                                                                {surgeryData.surgeryFindings}
+                                                            </label>
+                                                        </div>
                                                     </div>
-                                                    <div className="flex flex-col w-2/4">
-                                                        <label className="text-sm font-semibold text-gray-700">Hospital:</label>
-                                                        <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
-                                                            {immunotherapyData.immunorxDoctor.hospital.hospitalName}
-                                                        </label>
+                                                ) : (
+                                                    <div className="text-black w-full items-center justify-center flex py-20">
+                                                        <label>No surgery data available.</label>
                                                     </div>
-                                                </div>
-                                                <div className="flex gap-4">
-                                                    <div className="flex flex-col w-2/4">
-                                                        <label className="text-sm font-semibold text-gray-700">Immunotherapy Drug:</label>
-                                                        <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
-                                                            {immunotherapyData.immunorxDrug}
-                                                        </label>
+                                                )}
+                                            </TabsContent>
+                                            <TabsContent value="Radiotherapy">
+                                                {radiotherapyData ? (
+                                                    <div className="space-y-4 py-5">
+                                                        <div className="flex flex-col w-full">
+                                                            <label className="text-sm font-semibold text-gray-700">Radiotherapy Details of Patient:</label>
+                                                            <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
+                                                                {selectedUserId}
+                                                            </label>
+                                                        </div>
+                                                        <div className="flex gap-4">
+                                                            <div className="flex flex-col w-2/5">
+                                                                <label className="text-sm font-semibold text-gray-700">Doctor Name:</label>
+                                                                <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
+                                                                    Dr. {`${radiotherapyData.radRxDoctor.user.userFirstname} ${radiotherapyData.radRxDoctor.user.userMiddlename} ${radiotherapyData.radRxDoctor.user.userLastname}`}
+                                                                </label>
+                                                            </div>
+                                                            <div className="flex flex-col w-3/5">
+                                                                <label className="text-sm font-semibold text-gray-700">Specialty:</label>
+                                                                <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
+                                                                    {radiotherapyData.radRxDoctor.specialty.specialtyName} - {radiotherapyData.radRxDoctor.specialty.specialtyDescription}
+                                                                </label>
+                                                            </div>
+                                                        </div>
+                                                        <div className="flex gap-4">
+                                                            <div className="flex flex-col w-2/4">
+                                                                <label className="text-sm font-semibold text-gray-700">Department:</label>
+                                                                <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
+                                                                    {radiotherapyData.radRxDoctor.department.departmentName}
+                                                                </label>
+                                                            </div>
+                                                            <div className="flex flex-col w-2/4">
+                                                                <label className="text-sm font-semibold text-gray-700">Hospital:</label>
+                                                                <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
+                                                                    {radiotherapyData.radRxDoctor.hospital.hospitalName}
+                                                                </label>
+                                                            </div>
+                                                        </div>
+                                                        <div className="flex gap-4">
+                                                            <div className="flex flex-col w-2/4">
+                                                                <label className="text-sm font-semibold text-gray-700">Radiotherapy Procedure:</label>
+                                                                <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
+                                                                    {radiotherapyData.radRxType.radDetailsProcedure}
+                                                                </label>
+                                                            </div>
+                                                            <div className="flex flex-col w-2/4">
+                                                                <label className="text-sm font-semibold text-gray-700">Initial Date:</label>
+                                                                <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
+                                                                    {radiotherapyData.radRxInitialDate}
+                                                                </label>
+                                                            </div>
+                                                            <div className="flex flex-col w-2/4">
+                                                                <label className="text-sm font-semibold text-gray-700">Last Date:</label>
+                                                                <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
+                                                                    {radiotherapyData.radRxLastDate}
+                                                                </label>
+                                                            </div>
+
+                                                        </div>
+                                                        <div className="flex gap-4">
+                                                            <div className="flex flex-col w-2/4">
+                                                                <label className="text-sm font-semibold text-gray-700">Dose:</label>
+                                                                <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
+                                                                    {radiotherapyData.radRxDose}
+                                                                </label>
+                                                            </div>
+                                                            <div className="flex flex-col w-2/4">
+                                                                <label className="text-sm font-semibold text-gray-700">Body Site:</label>
+                                                                <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
+                                                                    {radiotherapyData.radRxBodySite}
+                                                                </label>
+                                                            </div>
+                                                            <div className="flex flex-col w-2/4">
+                                                                <label className="text-sm font-semibold text-gray-700">Status:</label>
+                                                                <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
+                                                                    {radiotherapyData.radRxStatus}
+                                                                </label>
+                                                            </div>
+                                                            <div className="flex flex-col w-2/4">
+                                                                <label className="text-sm font-semibold text-gray-700">Completed:</label>
+                                                                <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
+                                                                    {radiotherapyData.radRxIsCompleted === 'Y' ? 'Yes' : 'No'}
+                                                                </label>
+                                                            </div>
+                                                        </div>
                                                     </div>
-                                                    <div className="flex flex-col w-2/4">
-                                                        <label className="text-sm font-semibold text-gray-700">Initial Date:</label>
-                                                        <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
-                                                            {immunotherapyData.immunorxInitialdate}
-                                                        </label>
+                                                ) : (
+                                                    <div className="text-black w-full items-center justify-center flex py-20">
+                                                        <label>No radiotherapy data available.</label>
                                                     </div>
-                                                    <div className="flex flex-col w-2/4">
-                                                        <label className="text-sm font-semibold text-gray-700">End Date:</label>
-                                                        <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
-                                                            {immunotherapyData.immunorxEnddate}
-                                                        </label>
+                                                )}
+
+                                            </TabsContent>
+                                            <TabsContent value="Hormonal">
+                                                {hormonalData ? (
+                                                    <div className='space-y-4 py-5'>
+                                                        <div className="flex flex-col w-full">
+                                                            <label className="text-sm font-semibold text-gray-700">Hormonal Details of Patient:</label>
+                                                            <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
+                                                                {selectedUserId}
+                                                            </label>
+                                                        </div>
+                                                        <div className="flex gap-4">
+                                                            <div className="flex flex-col w-2/5">
+                                                                <label className="text-sm font-semibold text-gray-700">Doctor Name:</label>
+                                                                <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
+                                                                    Dr. {hormonalData.hormonalDoctor.user.userFirstname} {hormonalData.hormonalDoctor.user.userMiddlename} {hormonalData.hormonalDoctor.user.userLastname}
+                                                                </label>
+                                                            </div>
+                                                            <div className="flex flex-col w-3/5">
+                                                                <label className="text-sm font-semibold text-gray-700">Specialty:</label>
+                                                                <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
+                                                                    {hormonalData.hormonalDoctor.specialty.specialtyName} - {hormonalData.hormonalDoctor.specialty.specialtyDescription}
+                                                                </label>
+                                                            </div>
+
+                                                        </div>
+                                                        <div className="flex gap-4">
+                                                            <div className="flex flex-col w-2/4">
+                                                                <label className="text-sm font-semibold text-gray-700">Department:</label>
+                                                                <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
+                                                                    {hormonalData.hormonalDoctor.department.departmentName}
+                                                                </label>
+                                                            </div>
+                                                            <div className="flex flex-col w-2/4">
+                                                                <label className="text-sm font-semibold text-gray-700">Hospital:</label>
+                                                                <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
+                                                                    {hormonalData.hormonalDoctor.hospital.hospitalName}
+                                                                </label>
+                                                            </div>
+                                                        </div>
+                                                        <div className="flex gap-4">
+                                                            <div className="flex flex-col w-2/4">
+                                                                <label className="text-sm font-semibold text-gray-700">Hormonal Drug:</label>
+                                                                <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
+                                                                    {hormonalData.hormonalDrug}
+                                                                </label>
+                                                            </div>
+                                                            <div className="flex flex-col w-2/4">
+                                                                <label className="text-sm font-semibold text-gray-700">Dose:</label>
+                                                                <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
+                                                                    {hormonalData.hormonalDose}
+                                                                </label>
+                                                            </div>
+                                                            <div className="flex flex-col w-2/4">
+                                                                <label className="text-sm font-semibold text-gray-700">Initial Date:</label>
+                                                                <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
+                                                                    {hormonalData.hormonalInitialdate}
+                                                                </label>
+                                                            </div>
+                                                            <div className="flex flex-col w-2/4">
+                                                                <label className="text-sm font-semibold text-gray-700">End Date:</label>
+                                                                <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
+                                                                    {hormonalData.hormonalEnddate}
+                                                                </label>
+                                                            </div>
+                                                        </div>
+                                                        <div className="flex flex-col w-full">
+                                                            <label className="text-sm font-semibold text-gray-700">Status:</label>
+                                                            <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
+                                                                {hormonalData.hormonalStatus}
+                                                            </label>
+                                                        </div>
+                                                        <div className="flex flex-col w-full">
+                                                            <label className="text-sm font-semibold text-gray-700">Notes:</label>
+                                                            <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black h-20   ">
+                                                                {hormonalData.hormonalRxNotes}
+                                                            </label>
+                                                        </div>
                                                     </div>
-                                                </div>
-                                                <div className="flex flex-col w-full">
-                                                    <label className="text-sm font-semibold text-gray-700">Status:</label>
-                                                    <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
-                                                        {immunotherapyData.immunorxStatus}
-                                                    </label>
-                                                </div>
-                                                <div className="flex flex-col w-full">
-                                                    <label className="text-sm font-semibold text-gray-700">Notes:</label>
-                                                    <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black h-20">
-                                                        {immunotherapyData.immunorxNotes}
-                                                    </label>
-                                                </div>
-                                            </div>
-                                        ) : (
-                                            <div className="text-black w-full items-center justify-center flex py-20">
-                                                <label>No immunotherapy treatment data available.</label>
-                                            </div>
-                                        )}
+                                                ) : (
+                                                    <div className="text-black w-full items-center justify-center flex py-20">
+                                                        <label>No hormonal treatment data available.</label>
+                                                    </div>
+                                                )}
+                                            </TabsContent>
+                                            <TabsContent value="Immunotherapy">
+                                                {immunotherapyData ? (
+                                                    <div className='space-y-4 py-5'>
+                                                        <div className="flex flex-col w-full">
+                                                            <label className="text-sm font-semibold text-gray-700">Immunotherapy Details of Patient:</label>
+                                                            <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
+                                                                {selectedUserId}
+                                                            </label>
+                                                        </div>
+                                                        <div className="flex gap-4">
+                                                            <div className="flex flex-col w-2/5">
+                                                                <label className="text-sm font-semibold text-gray-700">Doctor Name:</label>
+                                                                <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
+                                                                    Dr. {immunotherapyData.immunorxDoctor.user.userFirstname} {immunotherapyData.immunorxDoctor.user.userMiddlename} {immunotherapyData.immunorxDoctor.user.userLastname}
+                                                                </label>
+                                                            </div>
+                                                            <div className="flex flex-col w-3/5">
+                                                                <label className="text-sm font-semibold text-gray-700">Specialty:</label>
+                                                                <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
+                                                                    {immunotherapyData.immunorxDoctor.specialty.specialtyName} - {immunotherapyData.immunorxDoctor.specialty.specialtyDescription}
+                                                                </label>
+                                                            </div>
+                                                        </div>
+                                                        <div className="flex gap-4">
+                                                            <div className="flex flex-col w-2/4">
+                                                                <label className="text-sm font-semibold text-gray-700">Department:</label>
+                                                                <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
+                                                                    {immunotherapyData.immunorxDoctor.department.departmentName}
+                                                                </label>
+                                                            </div>
+                                                            <div className="flex flex-col w-2/4">
+                                                                <label className="text-sm font-semibold text-gray-700">Hospital:</label>
+                                                                <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
+                                                                    {immunotherapyData.immunorxDoctor.hospital.hospitalName}
+                                                                </label>
+                                                            </div>
+                                                        </div>
+                                                        <div className="flex gap-4">
+                                                            <div className="flex flex-col w-2/4">
+                                                                <label className="text-sm font-semibold text-gray-700">Immunotherapy Drug:</label>
+                                                                <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
+                                                                    {immunotherapyData.immunorxDrug}
+                                                                </label>
+                                                            </div>
+                                                            <div className="flex flex-col w-2/4">
+                                                                <label className="text-sm font-semibold text-gray-700">Initial Date:</label>
+                                                                <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
+                                                                    {immunotherapyData.immunorxInitialdate}
+                                                                </label>
+                                                            </div>
+                                                            <div className="flex flex-col w-2/4">
+                                                                <label className="text-sm font-semibold text-gray-700">End Date:</label>
+                                                                <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
+                                                                    {immunotherapyData.immunorxEnddate}
+                                                                </label>
+                                                            </div>
+                                                        </div>
+                                                        <div className="flex flex-col w-full">
+                                                            <label className="text-sm font-semibold text-gray-700">Status:</label>
+                                                            <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
+                                                                {immunotherapyData.immunorxStatus}
+                                                            </label>
+                                                        </div>
+                                                        <div className="flex flex-col w-full">
+                                                            <label className="text-sm font-semibold text-gray-700">Notes:</label>
+                                                            <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black h-20">
+                                                                {immunotherapyData.immunorxNotes}
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                ) : (
+                                                    <div className="text-black w-full items-center justify-center flex py-20">
+                                                        <label>No immunotherapy treatment data available.</label>
+                                                    </div>
+                                                )}
+                                            </TabsContent>
+                                            <TabsContent value="Chemotherapy">
+                                                {chemotherapyData ? (
+                                                    <div className="space-y-4 py-5">
+                                                        <div className="flex flex-col w-full">
+                                                            <label className="text-sm font-semibold text-gray-700">Chemotherapy Details of Patient:</label>
+                                                            <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
+                                                                {selectedUserId}
+                                                            </label>
+                                                        </div>
+                                                        <div className="flex gap-4">
+                                                            <div className="flex flex-col w-2/5">
+                                                                <label className="text-sm font-semibold text-gray-700">Doctor Name:</label>
+                                                                <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
+                                                                    Dr. {chemotherapyData.chemoDoctor.user.userFirstname} {chemotherapyData.chemoDoctor.user.userMiddlename} {chemotherapyData.chemoDoctor.user.userLastname}
+                                                                </label>
+                                                            </div>
+                                                            <div className="flex flex-col w-3/5">
+                                                                <label className="text-sm font-semibold text-gray-700">Specialty:</label>
+                                                                <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
+                                                                    {chemotherapyData.chemoDoctor.specialty.specialtyName} - {chemotherapyData.chemoDoctor.specialty.specialtyDescription}
+                                                                </label>
+                                                            </div>
+                                                        </div>
+                                                        <div className="flex gap-4">
+                                                            <div className="flex flex-col w-2/4">
+                                                                <label className="text-sm font-semibold text-gray-700">Department:</label>
+                                                                <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
+                                                                    {chemotherapyData.chemoDoctor.department.departmentName}
+                                                                </label>
+                                                            </div>
+                                                            <div className="flex flex-col w-2/4">
+                                                                <label className="text-sm font-semibold text-gray-700">Hospital:</label>
+                                                                <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
+                                                                    {chemotherapyData.chemoDoctor.hospital.hospitalName}
+                                                                </label>
+                                                            </div>
+                                                        </div>
+                                                        <div className="flex gap-4">
+                                                            <div className="flex flex-col w-2/4">
+                                                                <label className="text-sm font-semibold text-gray-700">Chemotherapy Type:</label>
+                                                                <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
+                                                                    {chemotherapyData.chemoType}
+                                                                </label>
+                                                            </div>
+                                                            <div className="flex flex-col w-2/4">
+                                                                <label className="text-sm font-semibold text-gray-700">Drug Protocol:</label>
+                                                                <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
+                                                                    {chemotherapyData.chemoProtocol.chemoDrugs} - {chemotherapyData.chemoProtocol.chemoDosage}mg per cycle
+                                                                </label>
+                                                            </div>
+                                                        </div>
+                                                        <div className="flex gap-4">
+                                                            <div className="flex flex-col w-1/3">
+                                                                <label className="text-sm font-semibold text-gray-700">Status:</label>
+                                                                <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
+                                                                    {chemotherapyData.chemoStatus}
+                                                                </label>
+                                                            </div>
+                                                            <div className="flex flex-col w-1/3">
+                                                                <label className="text-sm font-semibold text-gray-700">Initial Date:</label>
+                                                                <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
+                                                                    {chemotherapyData.chemoInitialDate}
+                                                                </label>
+                                                            </div>
+                                                            <div className="flex flex-col w-1/3">
+                                                                <label className="text-sm font-semibold text-gray-700">End Date:</label>
+                                                                <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
+                                                                    {chemotherapyData.chemoEndDate}
+                                                                </label>
+                                                            </div>
+                                                        </div>
+                                                        <div className="flex flex-col w-full">
+                                                            <label className="text-sm font-semibold text-gray-700">Notes:</label>
+                                                            <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black h-20">
+                                                                {chemotherapyData.chemoNotes}
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                ) : (
+                                                    <div className="text-black w-full items-center justify-center flex py-20">
+                                                        <label>No chemotherapy treatment data available.</label>
+                                                    </div>
+                                                )}
+                                            </TabsContent>
+                                        </Tabs>
                                     </TabsContent>
-                                    <TabsContent value="Chemotherapy">
-                                        {chemotherapyData ? (
-                                            <div className="space-y-4 py-5">
-                                                <div className="flex flex-col w-full">
-                                                    <label className="text-sm font-semibold text-gray-700">Chemotherapy Details of Patient:</label>
-                                                    <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
-                                                        {selectedUserId}
-                                                    </label>
-                                                </div>
-                                                <div className="flex gap-4">
-                                                    <div className="flex flex-col w-2/5">
-                                                        <label className="text-sm font-semibold text-gray-700">Doctor Name:</label>
+                                    <TabsContent value="Schedule" className='text-black'>4</TabsContent>
+                                    <TabsContent value="Consult" className='text-black'>5</TabsContent>
+                                    <TabsContent value="Message" className='text-black w-[76%]'>
+                                        <div className="w-full bg-white flex flex-col items-center px-6">
+                                            <div className="w-full max-w-4xl bg-white rounded-lg">
+                                                <form className="p-6 rounded-lg flex flex-col gap-4" onSubmit={handleSubmitForm}>
+                                                    {/* TO Input */}
+                                                    <div className="flex flex-col w-full relative">
+                                                        <label htmlFor="familyName" className="text-sm pb font-semibold">
+                                                            TO:
+                                                        </label>
                                                         <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
-                                                            Dr. {chemotherapyData.chemoDoctor.user.userFirstname} {chemotherapyData.chemoDoctor.user.userMiddlename} {chemotherapyData.chemoDoctor.user.userLastname}
+                                                            {patientSearchTerm}
                                                         </label>
                                                     </div>
-                                                    <div className="flex flex-col w-3/5">
-                                                        <label className="text-sm font-semibold text-gray-700">Specialty:</label>
-                                                        <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
-                                                            {chemotherapyData.chemoDoctor.specialty.specialtyName} - {chemotherapyData.chemoDoctor.specialty.specialtyDescription}
-                                                        </label>
+
+                                                    {/* Title Input */}
+                                                    <div className="flex flex-col">
+                                                        <label className="text-sm font-semibold">SUBJECT:</label>
+                                                        <input
+                                                            type="text"
+                                                            name="title"
+                                                            value={notificationData.title}
+                                                            onChange={handleInputChange}
+                                                            className="p-2 border rounded mt-1"
+                                                            placeholder="Enter title"
+                                                        />
                                                     </div>
-                                                </div>
-                                                <div className="flex gap-4">
-                                                    <div className="flex flex-col w-2/4">
-                                                        <label className="text-sm font-semibold text-gray-700">Department:</label>
-                                                        <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
-                                                            {chemotherapyData.chemoDoctor.department.departmentName}
-                                                        </label>
+
+                                                    {/* Content Input */}
+                                                    <div className="flex flex-col">
+                                                        <label className="text-sm font-semibold">CONTENT:</label>
+                                                        <textarea
+                                                            name="content"
+                                                            value={notificationData.content}
+                                                            onChange={handleInputChange}
+                                                            rows={10}
+                                                            className="p-2 border rounded mt-1"
+                                                            placeholder="Enter message content"
+                                                        />
                                                     </div>
-                                                    <div className="flex flex-col w-2/4">
-                                                        <label className="text-sm font-semibold text-gray-700">Hospital:</label>
-                                                        <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
-                                                            {chemotherapyData.chemoDoctor.hospital.hospitalName}
-                                                        </label>
+
+                                                    {/* Submit Button */}
+                                                    <div className="flex justify-center mt-6">
+                                                        <button type="submit" className="bg-red-900 text-white font-semibold py-2 px-8 rounded-lg shadow-lg hover:bg-red-800 transition duration-200">
+                                                            SUBMIT
+                                                        </button>
                                                     </div>
-                                                </div>
-                                                <div className="flex gap-4">
-                                                    <div className="flex flex-col w-2/4">
-                                                        <label className="text-sm font-semibold text-gray-700">Chemotherapy Type:</label>
-                                                        <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
-                                                            {chemotherapyData.chemoType}
-                                                        </label>
-                                                    </div>
-                                                    <div className="flex flex-col w-2/4">
-                                                        <label className="text-sm font-semibold text-gray-700">Drug Protocol:</label>
-                                                        <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
-                                                            {chemotherapyData.chemoProtocol.chemoDrugs} - {chemotherapyData.chemoProtocol.chemoDosage}mg per cycle
-                                                        </label>
-                                                    </div>
-                                                </div>
-                                                <div className="flex gap-4">
-                                                    <div className="flex flex-col w-1/3">
-                                                        <label className="text-sm font-semibold text-gray-700">Status:</label>
-                                                        <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
-                                                            {chemotherapyData.chemoStatus}
-                                                        </label>
-                                                    </div>
-                                                    <div className="flex flex-col w-1/3">
-                                                        <label className="text-sm font-semibold text-gray-700">Initial Date:</label>
-                                                        <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
-                                                            {chemotherapyData.chemoInitialDate}
-                                                        </label>
-                                                    </div>
-                                                    <div className="flex flex-col w-1/3">
-                                                        <label className="text-sm font-semibold text-gray-700">End Date:</label>
-                                                        <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black">
-                                                            {chemotherapyData.chemoEndDate}
-                                                        </label>
-                                                    </div>
-                                                </div>
-                                                <div className="flex flex-col w-full">
-                                                    <label className="text-sm font-semibold text-gray-700">Notes:</label>
-                                                    <label className="mt-1 p-2 border border-gray-300 rounded bg-gray-100 text-black h-20">
-                                                        {chemotherapyData.chemoNotes}
-                                                    </label>
-                                                </div>
+                                                </form>
                                             </div>
-                                        ) : (
-                                            <div className="text-black w-full items-center justify-center flex py-20">
-                                                <label>No chemotherapy treatment data available.</label>
-                                            </div>
-                                        )}
+                                        </div>
                                     </TabsContent>
                                 </Tabs>
                             </DialogHeader>
@@ -1261,7 +2017,7 @@ export const DoctorSidebar = () => {
                                     <li
                                         key={patient.patientId}
                                         className="flex gap-2 p-2 text-black hover:bg-gray-200 cursor-pointer items-center text-nowrap"
-                                        onClick={() => handleSelectPatient(patient.patientId, patient.userFirstname, patient.userLastname, patient.userEmail)}
+                                        onClick={() => handleSelectPatient(patient.patientUserId, patient.patientId, patient.userFirstname, patient.userLastname, patient.userEmail)}
                                     >
                                         {patient.userLastname} <p className="text-zinc-400 text-sm">({patient.userEmail})</p>
                                     </li>
@@ -1275,62 +2031,88 @@ export const DoctorSidebar = () => {
 
                 <Button
                     onClick={() => navigateTo("/dashboard")}
-                    className={`w-full h-12 hover:bg-white hover:text-black  rounded-3xl font-normal bg-transparent shadow-none justify-start text-xl flex gap-3 transition-all ease-in-out duration-100 ${isActive("/dashboard") || isActive("/") ? "font-medium pl-8 bg-white text-black" : ""}`}
+                    className={`w-full h-12 hover:bg-zinc-300 hover:text-black  rounded-3xl font-normal bg-transparent shadow-none justify-start text-xl flex gap-3 transition-all ease-in-out duration-100 ${isActive("/dashboard") || isActive("/") ? "hover:bg-white font-medium pl-8 bg-white text-black" : ""}`}
                 >
                     <LayoutDashboard /> Dashboard
                 </Button>
 
                 <Button
                     onClick={() => navigateTo("/enrollPatient")}
-                    className={`w-full h-12 hover:bg-white hover:text-black  rounded-3xl font-normal bg-transparent shadow-none justify-start text-xl flex gap-3 transition-all ease-in-out duration-100 ${isActive("/enrollPatient") ? "font-medium pl-8 bg-white text-black" : ""}`}
+                    className={`w-full h-12 hover:bg-zinc-300 hover:text-black  rounded-3xl font-normal bg-transparent shadow-none justify-start text-xl flex gap-3 transition-all ease-in-out duration-100 ${isActive("/enrollPatient") ? "hover:bg-white font-medium pl-8 bg-white text-black" : ""}`}
                 >
                     <ContactRound /> Enroll Patient
                 </Button>
 
                 <Button
                     onClick={() => navigateTo("/diseaseProfile")}
-                    className={`w-full h-12 hover:bg-white hover:text-black  rounded-3xl font-normal bg-transparent shadow-none justify-start text-xl flex gap-3 transition-all ease-in-out duration-100 ${isActive("/diseaseProfile") ? "font-medium pl-8 bg-white text-black" : ""}`}
+                    className={`w-full h-12 hover:bg-zinc-300 hover:text-black  rounded-3xl font-normal bg-transparent shadow-none justify-start text-xl flex gap-3 transition-all ease-in-out duration-100 ${isActive("/diseaseProfile") ? "hover:bg-white font-medium pl-8 bg-white text-black" : ""}`}
                 >
                     <Microscope /> Disease Profile
                 </Button>
 
                 <Button
-                    onClick={() => navigateTo("/treatmentHistory")}
-                    className={`w-full h-12 hover:bg-white hover:text-black  rounded-3xl font-normal bg-transparent shadow-none justify-start text-xl flex gap-3 transition-all ease-in-out duration-100 ${isActive("/treatmentHistory") ? "font-medium pl-8 bg-white text-black" : ""}`}
+                    onClick={() => {
+                        handleClick(); // Retain any existing logic in handleClick
+                        setCurrentPage(1); // Set the page to 1 for "Treatment History"
+                    }}
+                    className={`w-full h-12 hover:bg-zinc-300 hover:text-black  rounded-3xl font-normal bg-transparent shadow-none justify-start text-xl flex gap-3 transition-all ease-in-out duration-100 ${isActive("/treatmentHistory") && (currentPage == 1) ? "hover:bg-white font-medium pl-8 bg-white text-black" : ""}`}
                 >
-                    <Syringe /> Treatment History
+                    <ClipboardPlus /> Treatment History
                 </Button>
+
+                <div
+                    className={`ml-4 overflow-hidden transition-all duration-300 ease-in-out ${isTreatmentPage ? "max-h-96 opacity-100" : "max-h-0 opacity-0"}`}
+                >
+                    <div className="flex">
+                        <Separator orientation='vertical' className='absolute bg-[#9c3737] h-52 ml-3' />
+                        <div className="flex flex-col gap-1">
+                            {subButtons.map((items, index) => (
+                                <Button
+                                    key={index}
+                                    onClick={() => setCurrentPage(index + 2)}
+                                    className={`w-full h-10 hover:bg-zinc-300 hover:text-black rounded-3xl font-normal bg-transparent shadow-none justify-start text-lg flex gap-3 transition-all ease-in-out duration-100 ml-6
+                                ${currentPage === index + 2 ? 'hover:bg-white pl-8 font-medium bg-white text-black' : ''} 
+                                ${items.label === 'Chemotherapy' ? 'mb-1' : ''}
+                                ${items.label === 'Surgery' ? '-mb-1' : ''}`}
+                                >
+                                    {items.icon} {items.label}
+                                </Button>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+
 
                 <Button
                     onClick={() => navigateTo("/consult")}
-                    className={`w-full h-12 hover:bg-white hover:text-black  rounded-3xl font-normal bg-transparent shadow-none justify-start text-xl flex gap-3 transition-all ease-in-out duration-100 ${isActive("/consult") ? "font-medium pl-8 bg-white text-black" : ""}`}
+                    className={`w-full h-12 -mt-2 hover:bg-zinc-300 hover:text-black  rounded-3xl font-normal bg-transparent shadow-none justify-start text-xl flex gap-3 transition-all ease-in-out duration-100 ${isActive("/consult") ? "hover:bg-white font-medium pl-8 bg-white text-black" : ""}`}
                 >
                     <Stethoscope /> Consult
                 </Button>
 
                 <Button
                     onClick={() => navigateTo("/notification")}
-                    className={`w-full h-12 hover:bg-white hover:text-black  rounded-3xl font-normal bg-transparent shadow-none justify-start text-xl flex gap-3 transition-all ease-in-out duration-100 ${isActive("/notification") ? "font-medium pl-8 bg-white text-black" : ""}`}
+                    className={`w-full h-12 hover:bg-zinc-300 hover:text-black  rounded-3xl font-normal bg-transparent shadow-none justify-start text-xl flex gap-3 transition-all ease-in-out duration-100 ${isActive("/notification") ? "hover:bg-white font-medium pl-8 bg-white text-black" : ""}`}
                 >
                     <Bell /> Notification
                 </Button>
 
                 <Button
                     onClick={() => navigateTo("/message")}
-                    className={`w-full h-12 hover:bg-white hover:text-black  rounded-3xl font-normal bg-transparent shadow-none justify-start text-xl flex gap-3 transition-all ease-in-out duration-100 ${isActive("/message") ? "font-medium pl-8 bg-white text-black" : ""}`}
+                    className={`w-full h-12 hover:bg-zinc-300 hover:text-black  rounded-3xl font-normal bg-transparent shadow-none justify-start text-xl flex gap-3 transition-all ease-in-out duration-100 ${isActive("/message") ? "hover:bg-white font-medium pl-8 bg-white text-black" : ""}`}
                 >
                     <Mail /> Message
                 </Button>
             </div>
 
-            <div>
+            {/* <div>
                 <Button
                     onClick={handleLogout}
-                    className='w-full h-12 hover:bg-white hover:text-black  rounded-3xl font-normal bg-transparent shadow-none justify-start text-xl flex gap-3 transition-all ease-in-out duration-100'
+                    className='w-full h-12 hover:bg-zinc-300 hover:text-black  rounded-3xl font-normal bg-transparent shadow-none justify-start text-xl flex gap-3 transition-all ease-in-out duration-100'
                 >
                     <LogOut /> Logout
                 </Button>
-            </div>
+            </div> */}
         </div>
     );
 }

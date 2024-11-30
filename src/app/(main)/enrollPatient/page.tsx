@@ -1,7 +1,9 @@
 "use client";
 
+import { useToast } from "@/hooks/use-toast";
 import EnrollPatientSchema from "@/packages/api/enroll-patient";
 import { UserSchema } from "@/packages/api/user";
+import { title } from "process";
 import React, { useState, useEffect } from "react";
 import { z } from "zod";
 
@@ -45,6 +47,7 @@ const EnrollPatient: React.FC = () => {
   }, []);
 
   const [errors, setErrors] = useState<Errors>({});
+  const { toast } = useToast()
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -140,6 +143,7 @@ const EnrollPatient: React.FC = () => {
 
         if (response.ok) {
           const data = await response.json();
+          toast({ title: "Patient added successfully!" });
           setFormData({
             lastname: "",
             firstname: "",

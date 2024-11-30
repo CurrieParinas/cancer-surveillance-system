@@ -1,4 +1,5 @@
 "use client";
+import { useToast } from "@/hooks/use-toast";
 import { PatientsResponseSchema } from "@/packages/api/patient-list";
 import React, { useEffect, useRef, useState } from "react";
 
@@ -10,6 +11,7 @@ interface ConsultFormData {
 	CONSULT_SURVWORKUP: string;
 	CONSULT_RXPLAN: string;
 	CONSULT_PATIENTSTATUS: number;
+	CONSULT_DATE: string;
 }
 
 interface ValidationErrors {
@@ -92,7 +94,12 @@ const ConsultPage = () => {
 		CONSULT_SURVWORKUP: "",
 		CONSULT_RXPLAN: "",
 		CONSULT_PATIENTSTATUS: 1,
+		CONSULT_DATE: new Date()
+			.toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "numeric" }),
 	});
+	const today = new Date()
+		.toLocaleDateString(undefined, { day: "2-digit", month: "2-digit", year: "numeric" });
+	console.log(today);
 
 	const [patientConsultInfo, setPatientConsultInfo] = useState<PatientConsultInfo | null>(null);
 
@@ -129,11 +136,12 @@ const ConsultPage = () => {
 		return Object.keys(newErrors).length === 0;
 	};
 
+	const { toast } = useToast()
+
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
 		if (!validateForm()) return;
 
-		// Construct the request body
 		const requestBody = {
 			PATIENT_ID: Number(formData.PATIENT_ID),
 			CONSULT_SUBJECTIVE: formData.CONSULT_SUBJECTIVE.trim(),
@@ -142,7 +150,10 @@ const ConsultPage = () => {
 			CONSULT_SURVWORKUP: formData.CONSULT_SURVWORKUP.trim(),
 			CONSULT_RXPLAN: formData.CONSULT_RXPLAN.trim(),
 			CONSULT_PATIENTSTATUS: formData.CONSULT_PATIENTSTATUS,
+			CONSULT_DATE: formData.CONSULT_DATE,
 		};
+
+		console.log(requestBody)
 
 		try {
 			const response = await fetch("http://localhost:8080/css/consult/add", {
@@ -150,11 +161,11 @@ const ConsultPage = () => {
 				headers: {
 					"Content-Type": "application/json",
 				},
-				body: JSON.stringify(requestBody), // Use the constructed request body
+				body: JSON.stringify(requestBody),
 			});
 
 			if (response.ok) {
-				alert("Consult added successfully!");
+				toast({ title: "Consult added successfully!" });
 				setFormData({
 					PATIENT_ID: 0,
 					CONSULT_SUBJECTIVE: "",
@@ -162,8 +173,23 @@ const ConsultPage = () => {
 					CONSULT_ASSESSMENT: "",
 					CONSULT_SURVWORKUP: "",
 					CONSULT_RXPLAN: "",
-					CONSULT_PATIENTSTATUS: 0,
+					CONSULT_PATIENTSTATUS: 1,
+					CONSULT_DATE: new Date()
+						.toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "numeric" }),
 				});
+				try {
+					const response = await fetch(`http://localhost:8080/css/patient/getConsultInfo/${Number(formData.PATIENT_ID)}`);
+					if (response.ok) {
+						const data = await response.json();
+						setPatientConsultInfo(data);
+					} else {
+						console.error("Failed to fetch consultation details.");
+						setPatientConsultInfo(null);
+					}
+				} catch (error) {
+					console.error("Error fetching consultation details:", error);
+					setPatientConsultInfo(null);
+				}
 				setErrors({});
 			} else {
 				alert("Failed to add consult.");
@@ -336,12 +362,34 @@ const ConsultPage = () => {
 									<div className="flex flex-col w-1/2">
 										<label className="text-sm font-semibold text-gray-800">Diagnosis:</label>
 										<span className="mt-1 p-2 border border-gray-300 rounded text-gray-900 bg-zinc-100">
+											{patientConsultInfo?.DIAGNOSIS ? (
+												!patientConsultInfo.DIAGNOSIS.STAGE && !patientConsultInfo.DIAGNOSIS.LATERALITY ? (
+													"No diagnosis profile"
+												) : (
+													`Stage ${patientConsultInfo.DIAGNOSIS.STAGE || "N/A"} - ${{
+														1: "Left Laterality",
+														2: "Right Laterality",
+														3: "Bilateral Laterality",
+														4: "Mid Laterality",
+														5: "Not Stated",
+														6: "Not Applicable",
+													}[patientConsultInfo.DIAGNOSIS.LATERALITY as keyof typeof patientConsultInfo.DIAGNOSIS.LATERALITY] || "N/A"
+													}`
+												)
+											) : (
+												"N/A"
+											)}
+										</span>
+									</div>
+
+									{/* Date of Diagnosis */}
+									<div className="flex flex-col w-1/2">
+										<label className="text-sm font-semibold text-gray-800">Date of Diagnosis:</label>
+										<span className="mt-1 p-2 border border-gray-300 rounded text-gray-900 bg-zinc-100">
 											{patientConsultInfo?.DIAGNOSIS
-												? (!patientConsultInfo.DIAGNOSIS.DATE &&
-													!patientConsultInfo.DIAGNOSIS.STAGE &&
-													!patientConsultInfo.DIAGNOSIS.LATERALITY
+												? (!patientConsultInfo.DIAGNOSIS.DATE
 													? "No diagnosis profile"
-													: `${patientConsultInfo.DIAGNOSIS.DATE || "N/A"} - ${patientConsultInfo.DIAGNOSIS.STAGE || "N/A"} - ${patientConsultInfo.DIAGNOSIS.LATERALITY || "N/A"}`)
+													: `${patientConsultInfo.DIAGNOSIS.DATE || "N/A"}`)
 												: "N/A"}
 										</span>
 									</div>

@@ -1,6 +1,7 @@
 "use client";
 
 import { PatientsResponseSchema } from "@/packages/api/patient-list";
+import usePageStore from "@/packages/stores/pageStore";
 import { ArrowLeft, ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
 import React, { ChangeEvent, useEffect, useRef, useState } from "react";
 
@@ -755,8 +756,6 @@ const TreatmentHistoryForm = () => {
     }
   };
 
-
-  const [currentPage, setCurrentPage] = useState(1);
   const [patientSearchTerm, setPatientSearchTerm] = useState("");
   const [patientDropdownOpen, setPatientDropdownOpen] = useState(false);
   const [filteredPatients, setFilteredPatients] = useState<FilteredPatient[]>([]);
@@ -841,17 +840,7 @@ const TreatmentHistoryForm = () => {
     fetchPatients();
   }, []);
 
-  const handleNext = () => {
-    if (currentPage < 6) {
-      setCurrentPage(currentPage + 1);
-    }
-  };
-
-  const handleBack = () => {
-    if (currentPage > 1) {
-      setCurrentPage(currentPage - 1);
-    }
-  };
+  const { currentPage, handleNext, handleBack } = usePageStore();
 
   const renderPageTitle = () => {
     switch (currentPage) {
@@ -1722,7 +1711,7 @@ const TreatmentHistoryForm = () => {
         return (
           <form onSubmit={handleChemoSubmit} className="h-[60vh] flex flex-col ">
             <div className="">
-              <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-6">
                 <div className="flex flex-col w-full relative" ref={dropdownRefPatient}>
                   <label htmlFor="lastname" className="text-sm font-semibold text-gray-700">Last Name</label>
                   <input

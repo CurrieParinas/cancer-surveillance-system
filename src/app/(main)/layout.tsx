@@ -1,6 +1,7 @@
 "use client"
 import { Sidebar } from "@/components/atoms/sidebar";
 import { LoginFooter, LoginNavbar } from "@/components/organisms/login";
+import { Toaster } from "@/components/ui/toaster";
 import { useEffect, useState } from "react";
 
 interface RootLayoutProps {
@@ -23,12 +24,14 @@ export default function RootLayout({ children }: RootLayoutProps) {
         <div className="w-full">
           <LoginNavbar />
           {children}
+          <Toaster />
           <LoginFooter />
         </div>
       ) : (
         <div className="w-screen flex">
           <Sidebar />
           {children}
+          <Toaster />
         </div>
       )
       }
