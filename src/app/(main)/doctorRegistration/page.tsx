@@ -3,6 +3,7 @@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import { useToast } from "@/hooks/use-toast";
 import { UserSchema } from "@/packages/api/user";
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
@@ -127,14 +128,15 @@ const DoctorRegistration: React.FC = () => {
     setDoctorESig(file);
   };
 
+  const { toast } = useToast();
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (validateForm()) {
-      // Check if birthdate is not in the future
       const today = new Date();
       const [birthYear, birthMonth, birthDay] = formData.birthdate.split("-").map(Number);
-      const birthDate = new Date(birthYear, birthMonth - 1, birthDay); // Month is 0-based in JavaScript
+      const birthDate = new Date(birthYear, birthMonth - 1, birthDay);
 
       if (birthDate >= today) {
         setErrors((prevErrors: Errors) => ({
@@ -147,7 +149,7 @@ const DoctorRegistration: React.FC = () => {
       }
 
       const [licenseYear, licenseMonth, licenseDay] = formData.doctor_license_exp_date.split("-").map(Number);
-      const licenseDate = new Date(licenseYear, licenseMonth - 1, licenseDay); // Month is 0-based in JavaScript
+      const licenseDate = new Date(licenseYear, licenseMonth - 1, licenseDay);
 
       if (licenseDate < today) {
         setErrors((prevErrors: Errors) => ({
@@ -239,6 +241,7 @@ const DoctorRegistration: React.FC = () => {
 
         const verificationResult = await verificationResponse;
         console.log("Verification email sent successfully:", verificationResult);
+        toast({ title: "Doctor Registered Successfully!" })
 
         window.location.href = "/";
 

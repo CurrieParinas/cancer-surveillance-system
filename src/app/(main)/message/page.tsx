@@ -1,4 +1,5 @@
 "use client";
+import { useToast } from "@/hooks/use-toast";
 import { PatientsResponseSchema } from "@/packages/api/patient-list";
 import React, { ChangeEvent, FormEvent, useEffect, useRef, useState } from "react";
 
@@ -38,6 +39,7 @@ const MessagePage = () => {
   });
 
   const [errors, setErrors] = useState<Partial<EmailFormData>>({});
+  const [loading, setLoading] = useState(false); // Loading state
 
   const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -73,7 +75,6 @@ const MessagePage = () => {
     const userData = localStorage.getItem('user');
     if (userData) {
       const parsedUserData = JSON.parse(userData);
-      console.log("hello", parsedUserData)
       setDoctorInfo(parsedUserData.user.userId);
       setDoctorEmail(parsedUserData.user.userEmail)
       setFormData({ ...formData, senderEmail: parsedUserData.user.userEmail, senderID: parsedUserData.user.userId })
@@ -131,7 +132,6 @@ const MessagePage = () => {
             userLastname: relation.patient.user.userLastname,
             userEmail: relation.patient.user.userEmail,
           }));
-          console.log("patient", patients)
           setAllPatients(patients); // Store all patients
           setFilteredPatients(patients); // Initially display all patients
         }
@@ -143,12 +143,18 @@ const MessagePage = () => {
     fetchPatients();
   }, []);
 
+  const { toast } = useToast();
+
+
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    console.log("hello")
-    if (!validate()) return;
+    if (!validate()) {
+      alert("invalid message")
+      return;
+    }
+    setLoading(true);
 
-    // Build the request body
     const requestBody = {
       subject: formData.subject,
       messageBody: formData.messageBody,
@@ -158,9 +164,6 @@ const MessagePage = () => {
       senderEmail: formData.senderEmail,
       notificationType: formData.notificationType,
     };
-
-    console.log(requestBody)
-
     try {
       const response = await fetch('http://localhost:8080/css/email/send', {
         method: 'POST',
@@ -173,19 +176,22 @@ const MessagePage = () => {
       if (!response.ok) {
         console.error('Failed to send email');
       } else {
-        console.log('Email sent successfully');
+        toast({ title: "Email sent successfully!" })
         setFormData({
           subject: '',
           messageBody: '',
           recieverID: 1,
           senderID: 1,
           recieverEmail: '',
-          senderEmail: '',
+          senderEmail: formData.senderEmail,
           notificationType: 1,
         })
+        setPatientSearchTerm("")
       }
     } catch (error) {
       console.error('Error:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -260,10 +266,23 @@ const MessagePage = () => {
             </div>
 
             {/* Submit Button */}
-            <div className="flex justify-center mt-6">
-              <button type="submit" className="bg-red-900 text-white font-semibold py-2 px-8 rounded-lg shadow-lg hover:bg-red-800 transition duration-200">
-                SUBMIT
-              </button>
+            <div className="flex justify-center items-center mt-6 flex-col">
+              {loading ? (
+                <div className="w-32 py-2 bg-red-900 flex items-center justify-center rounded-lg hover:cursor-not-allowed">
+                  <div
+                    className="inline-block h-5 w-5 animate-spin rounded-full border-[3px] border-solid border-current border-e-transparent align-[-0.125em] text-surface motion-reduce:animate-[spin_1.5s_linear_infinite] dark:text-white"
+                    role="status">
+                  </div>
+                  <span className="ml-2 text-white font-semibold">Sending...</span>
+                </div>
+              ) : (
+                <button
+                  type="submit"
+                  className="w-32 bg-red-900 text-white font-semibold py-2 px-8 rounded-lg shadow-lg hover:bg-red-800 transition duration-200"
+                >
+                  Send
+                </button>
+              )}
             </div>
           </form>
         </div>
