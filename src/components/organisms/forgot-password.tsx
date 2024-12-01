@@ -5,6 +5,8 @@ import { Label } from '../ui/label';
 import { Input } from '../ui/input';
 import { Button } from '../ui/button';
 import { useRouter } from 'next/navigation';
+import { useToast } from '@/hooks/use-toast';
+import { title } from 'process';
 
 export const ForgotPasswordForm = () => {
   const [email, setEmail] = useState('');
@@ -13,6 +15,8 @@ export const ForgotPasswordForm = () => {
   useEffect(() => {
     console.log(email)
   })
+
+  const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,6 +30,7 @@ export const ForgotPasswordForm = () => {
       });
 
       if (response.ok) {
+        toast({ title: 'Email sent successfully' });
         console.log('Forgot password request successful', response);
         router.push('/');
       } else {

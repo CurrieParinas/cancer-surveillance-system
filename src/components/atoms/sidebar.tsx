@@ -6,7 +6,7 @@ import { Separator } from '../ui/separator'
 import { Button } from '../ui/button'
 import { usePathname, useRouter } from 'next/navigation'
 import { Input } from '../ui/input'
-import { BabyIcon, Bell, Brain, ChevronRight, ChevronsUpDownIcon, ClipboardPlus, ContactRound, DnaIcon, EllipsisVertical, FileSearch, HeartPulseIcon, HospitalIcon, LayoutDashboard, LogOut, Mail, Microscope, MicroscopeIcon, PillBottleIcon, PillIcon, Radiation, RadiationIcon, Search, Slice, SquareUser, Stethoscope, Syringe, SyringeIcon, ThermometerSnowflake, UsersRoundIcon } from 'lucide-react'
+import { BabyIcon, Bell, Brain, ChevronRight, ChevronsUpDownIcon, ClipboardPlus, ContactRound, DnaIcon, EllipsisVertical, FileSearch, HeartPulseIcon, HospitalIcon, LayoutDashboard, LogOut, Mail, Microscope, MicroscopeIcon, PillBottleIcon, PillIcon, Radiation, RadiationIcon, Search, SettingsIcon, Slice, SquareUser, Stethoscope, Syringe, SyringeIcon, ThermometerSnowflake, UsersRoundIcon } from 'lucide-react'
 import { PatientsResponseSchema } from '@/packages/api/patient-list'
 
 import {
@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/dialog"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { DiseaseZodSchema } from "@/packages/api/disease-response"
 import { z } from "zod";
 import usePageStore from '@/packages/stores/pageStore'
@@ -62,12 +63,14 @@ export const Sidebar = () => {
         role: '',
         departmentName: '',
         hospitalName: '',
+        email: '',
     });
 
     useEffect(() => {
         const userData = localStorage.getItem('user');
         if (userData) {
             const parsedUserData = JSON.parse(userData);
+            console.log(parsedUserData);
 
             if ('doctorId' in parsedUserData) {
                 setUserInfo({
@@ -76,14 +79,16 @@ export const Sidebar = () => {
                     role: 'Doctor',
                     departmentName: parsedUserData.department.departmentName,
                     hospitalName: parsedUserData.hospital.hospitalName,
+                    email: parsedUserData.user.userEmail,
                 });
             } else if ('patientId' in parsedUserData) {
                 setUserInfo({
                     userFirstname: parsedUserData.user.userFirstname,
                     userLastname: parsedUserData.user.userLastname,
                     role: 'Patient',
-                    departmentName: '', // Patients don't have a department
-                    hospitalName: '', // Patients don't have a hospital
+                    departmentName: '',
+                    hospitalName: '',
+                    email: parsedUserData.user.userEmail,
                 });
             }
         }
@@ -113,12 +118,39 @@ export const Sidebar = () => {
                 <Label className='text-xl'>Welcome,</Label>
             </div>
             <div className="flex items-center">
-                <div className='pl-4 flex flex-col gap-1'>
-                    <Label className='text-xl font-[700] tracking-wide'>
-                        {userInfo.role === 'Doctor' ? 'Dr. ' : ''}
-                        {userInfo.userFirstname} {userInfo.userLastname}
-                        {/* Christopher Martinez */}
-                    </Label>
+                <div className='pl-2 flex flex-col gap-1 w-full'>
+                    <div className="flex justify-between w-full items-center">
+                        <Label className='text-xl font-[700] tracking-wide'>
+                            {userInfo.role === 'Doctor' ? 'Dr. ' : ''}
+                            {userInfo.userFirstname} {userInfo.userLastname}
+                        </Label>
+                        <Popover>
+                            <PopoverTrigger className=''><SettingsIcon size={19} /></PopoverTrigger>
+                            <PopoverContent side='right' align='start' className='rounded-2xl p-2 bg-red-900 border-red-800 shadow-lg'>
+                                <div className='flex items-center hover:bg-red-800 rounded-lg'>
+                                    <Avatar className='rounded-lg'>
+                                        <AvatarImage src="https://www.flaticon.com/free-icon/doctor_387561" />
+                                        <AvatarFallback className='font-bold rounded-lg bg-zinc-200'>{userInfo.userFirstname.charAt(0)}{userInfo.userLastname.charAt(0)}</AvatarFallback>
+                                    </Avatar>
+                                    <div className="flex flex-col p-2">
+                                        <Label className='font-bold text-white tracking-wider'>
+                                            {userInfo.userFirstname} {userInfo.userLastname}
+                                        </Label>
+                                        <Label className='text-zinc-300'>
+                                            {userInfo.email}
+                                        </Label>
+                                    </div>
+                                </div>
+                                <Separator className='my-4' />
+                                <Button
+                                    onClick={handleLogout}
+                                    className='bg-white shadow-none flex gap-2 rounded-lg text-black w-full hover:bg-zinc-200 '
+                                >
+                                    <LogOut /> Logout
+                                </Button>
+                            </PopoverContent>
+                        </Popover>
+                    </div>
                     {userInfo.role === 'Doctor' && (
                         <div className='flex gap-2 flex-wrap'>
                             <Badge className='bg-white text-black rounded-xl hover:bg-zinc-200 gap-2 text-sm font-medium'>{getDepartmentIcon(userInfo.departmentName)} {userInfo.departmentName}</Badge>
@@ -126,22 +158,8 @@ export const Sidebar = () => {
                         </div>
                     )}
                 </div>
-                <div className='absolute right-2'>
-                    <Popover>
-                        <PopoverTrigger className='relative -top-3'><ChevronsUpDownIcon size={19} /></PopoverTrigger>
-                        <PopoverContent side='right' className='rounded-2xl'>
-                            <Button
-                                onClick={handleLogout}
-                                className='bg-white shadow-none flex gap-2 rounded-lg text-black w-full hover:bg-red-800 hover:text-white'
-                            >
-                                <LogOut /> Logout
-                            </Button>
-                        </PopoverContent>
-                    </Popover>
-
-                </div>
             </div>
-            <Separator />
+            <Separator className='h-[1px] bg-[#9c3737]' />
             {userInfo.role === 'Doctor' ? <DoctorSidebar /> : <PatientSidebar />}
         </div>
     );
@@ -404,20 +422,6 @@ interface ChemotherapyData {
     chemoDoctor: ChemoDoctor;
 }
 
-interface UserFormData {
-    patientCode?: string;
-    familyName?: string;
-    contactEmail?: string;
-}
-
-interface SearchablePatient {
-    userPatientId: number;
-    patientCode: number;
-    givenName: string;
-    surname: string;
-    emailAddress: string;
-}
-
 interface NotificationFormData {
     title: string;
     content: string;
@@ -439,7 +443,6 @@ export const DoctorSidebar = () => {
     const [isTreatmentPage, setIsTreatmentPage] = useState(false);
 
     useEffect(() => {
-        // Check if the current path matches the treatment history page
         if (pathname.includes('treatmentHistory')) {
             setIsTreatmentPage(true);
         } else {
@@ -1024,7 +1027,7 @@ export const DoctorSidebar = () => {
                         value={patientSearchTerm}
                         onChange={handlePatientSearchChange}
                         onClick={() => setPatientDropdownOpen(true)}
-                        placeholder='Find patient (ID or Lastname)'
+                        placeholder='Find surname...'
                         className='rounded-full placeholder:text-zinc-400 py-5' />
                     <Dialog>
                         <DialogTrigger><Search className="absolute right-5 bottom-[34px] text-zinc-300" size={23} onClick={() => handleSearchIconClick(selectedUserId || 0)} /></DialogTrigger>
@@ -2064,7 +2067,7 @@ export const DoctorSidebar = () => {
                     className={`ml-4 overflow-hidden transition-all duration-300 ease-in-out ${isTreatmentPage ? "max-h-96 opacity-100" : "max-h-0 opacity-0"}`}
                 >
                     <div className="flex">
-                        <Separator orientation='vertical' className='absolute bg-[#9c3737] h-52 ml-3' />
+                        <Separator orientation='vertical' className='absolute bg-[#9c3737] max-h-52 ml-3' />
                         <div className="flex flex-col gap-1">
                             {subButtons.map((items, index) => (
                                 <Button
@@ -2073,7 +2076,7 @@ export const DoctorSidebar = () => {
                                     className={`w-full h-10 hover:bg-zinc-300 hover:text-black rounded-3xl font-normal bg-transparent shadow-none justify-start text-lg flex gap-3 transition-all ease-in-out duration-100 ml-6
                                 ${currentPage === index + 2 ? 'hover:bg-white pl-8 font-medium bg-white text-black' : ''} 
                                 ${items.label === 'Chemotherapy' ? 'mb-1' : ''}
-                                ${items.label === 'Surgery' ? '-mb-1' : ''}`}
+                                ${items.label === 'Surgery' ? '-pb-1' : ''}`}
                                 >
                                     {items.icon} {items.label}
                                 </Button>
@@ -2103,17 +2106,8 @@ export const DoctorSidebar = () => {
                 >
                     <Mail /> Message
                 </Button>
-            </div>
 
-            {/* <div>
-                <Button
-                    onClick={handleLogout}
-                    className='w-full h-12 hover:bg-zinc-300 hover:text-black  rounded-3xl font-normal bg-transparent shadow-none justify-start text-xl flex gap-3 transition-all ease-in-out duration-100'
-                >
-                    <LogOut /> Logout
-                </Button>
-            </div> */}
+            </div>
         </div>
     );
 }
-

@@ -21,9 +21,9 @@ export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <div className="flex bg-white ">
       {!isAuthenticated ? (
-        <div className="w-full">
-          <LoginNavbar />
+        <div className="w-full h-screen">
           {children}
+          <LoginNavbar />
           <Toaster />
           <LoginFooter />
         </div>

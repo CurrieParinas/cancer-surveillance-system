@@ -169,7 +169,7 @@ const EnrollPatient: React.FC = () => {
   };
 
   return (
-    <div className="w-5/6">
+    <div className="w-5/6 flex justify-center">
       <div className="min-h-screen flex justify-center p-6">
         <div className="w-full max-w-3xl rounded-lg p-8">
           <div className="text-center">

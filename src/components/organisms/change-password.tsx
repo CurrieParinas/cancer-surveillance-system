@@ -3,6 +3,7 @@ import { Label } from '../ui/label';
 import { Input } from '../ui/input';
 import { Button } from '../ui/button';
 import { useRouter } from 'next/navigation';
+import { useToast } from '@/hooks/use-toast';
 
 export const ChangePasswordForm = (userId: any) => {
   const [newPassword, setNewPassword] = useState('');
@@ -20,6 +21,8 @@ export const ChangePasswordForm = (userId: any) => {
       return () => clearTimeout(timer);
     }
   }, [successMessage]);
+
+  const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,6 +45,7 @@ export const ChangePasswordForm = (userId: any) => {
 
       if (response.ok) {
         setSuccessMessage("Password changed successfully.");
+        toast({ title: "Password changed successfully." });
         setNewPassword('');
         setNewPasswordCheck('');
       } else {

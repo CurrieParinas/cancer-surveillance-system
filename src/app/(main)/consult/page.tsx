@@ -97,9 +97,6 @@ const ConsultPage = () => {
 		CONSULT_DATE: new Date()
 			.toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "numeric" }),
 	});
-	const today = new Date()
-		.toLocaleDateString(undefined, { day: "2-digit", month: "2-digit", year: "numeric" });
-	console.log(today);
 
 	const [patientConsultInfo, setPatientConsultInfo] = useState<PatientConsultInfo | null>(null);
 
@@ -152,8 +149,6 @@ const ConsultPage = () => {
 			CONSULT_PATIENTSTATUS: formData.CONSULT_PATIENTSTATUS,
 			CONSULT_DATE: formData.CONSULT_DATE,
 		};
-
-		console.log(requestBody)
 
 		try {
 			const response = await fetch("http://localhost:8080/css/consult/add", {

@@ -1,5 +1,6 @@
 "use client";
 
+import { useToast } from "@/hooks/use-toast";
 import { PatientsResponseSchema } from "@/packages/api/patient-list";
 import usePageStore from "@/packages/stores/pageStore";
 import { ArrowLeft, ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
@@ -184,6 +185,8 @@ const TreatmentHistoryForm = () => {
     };
   }, []);
 
+  const { toast } = useToast();
+
   const handleTreatmentSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
@@ -216,6 +219,7 @@ const TreatmentHistoryForm = () => {
 
       if (response.ok) {
         console.log("Treatment information submitted successfully!");
+        toast({ title: "Treatment information submitted successfully!" })
         setTreatmentFormData({
           PATIENT_ID: "",
           TREATMENT_PRIMARYRXTYPE: "",
@@ -328,6 +332,7 @@ const TreatmentHistoryForm = () => {
 
       if (response.ok) {
         console.log("Surgery information submitted successfully!");
+        toast({ title: "Surgery information submitted successfully!" })
         setSurgeryFormData({
           PATIENT_ID: "",
           SURGERY_OPERATION: "",
@@ -420,6 +425,7 @@ const TreatmentHistoryForm = () => {
       });
 
       if (response.ok) {
+        toast({ title: "Radiotherapy information submitted successfully!" })
         console.log("Radiotherapy information submitted successfully!");
         setRadiationFormData({
           PATIENT_ID: "",
@@ -513,6 +519,7 @@ const TreatmentHistoryForm = () => {
       });
 
       if (response.ok) {
+        toast({ title: "Hormonal treatment information submitted successfully!" })
         console.log("Hormonal treatment information submitted successfully!");
         setHormonalFormData({
           patientId: "",
@@ -608,6 +615,7 @@ const TreatmentHistoryForm = () => {
       });
 
       if (response.ok) {
+        toast({ title: "Immunotherapy information submitted successfully!" })
         console.log("Immunotherapy information submitted successfully!");
         setImmunorxFormData({
           patientId: "",
@@ -733,6 +741,7 @@ const TreatmentHistoryForm = () => {
       });
 
       if (response.ok) {
+        toast({ title: "Chemotherapy information submitted successfully!" })
         console.log("Chemotherapy information submitted successfully!");
         setChemoFormData({
           PATIENT_ID: "",
