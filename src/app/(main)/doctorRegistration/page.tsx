@@ -3,6 +3,7 @@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import { useToast } from "@/hooks/use-toast";
 import { UserSchema } from "@/packages/api/user";
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
@@ -82,6 +83,7 @@ const DoctorRegistration: React.FC = () => {
     if (!formData.lastname) newErrors.lastname = "Last name is required";
     if (!formData.firstname) newErrors.firstname = "First name is required";
     if (!formData.email) newErrors.email = "Email is required";
+    if (!formData.birthdate) newErrors.birthdate = "Birthday is required";
     if (!formData.password) newErrors.password = "Password is required";
     if (!formData.confirmPassword) newErrors.confirmPassword = "Please confirm your password";
     if (!formData.doctor_license_number) newErrors.doctor_license_number = "License number is required";
@@ -127,14 +129,15 @@ const DoctorRegistration: React.FC = () => {
     setDoctorESig(file);
   };
 
+  const { toast } = useToast();
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (validateForm()) {
-      // Check if birthdate is not in the future
       const today = new Date();
       const [birthYear, birthMonth, birthDay] = formData.birthdate.split("-").map(Number);
-      const birthDate = new Date(birthYear, birthMonth - 1, birthDay); // Month is 0-based in JavaScript
+      const birthDate = new Date(birthYear, birthMonth - 1, birthDay);
 
       if (birthDate >= today) {
         setErrors((prevErrors: Errors) => ({
@@ -147,7 +150,7 @@ const DoctorRegistration: React.FC = () => {
       }
 
       const [licenseYear, licenseMonth, licenseDay] = formData.doctor_license_exp_date.split("-").map(Number);
-      const licenseDate = new Date(licenseYear, licenseMonth - 1, licenseDay); // Month is 0-based in JavaScript
+      const licenseDate = new Date(licenseYear, licenseMonth - 1, licenseDay);
 
       if (licenseDate < today) {
         setErrors((prevErrors: Errors) => ({
@@ -239,6 +242,7 @@ const DoctorRegistration: React.FC = () => {
 
         const verificationResult = await verificationResponse;
         console.log("Verification email sent successfully:", verificationResult);
+        toast({ title: "Doctor Registered Successfully!" })
 
         window.location.href = "/";
 
@@ -298,6 +302,10 @@ const DoctorRegistration: React.FC = () => {
       ...depFormData,
       [event.target.name]: event.target.value,
     });
+    setFormData({
+      ...formData,
+      department_id: Number(event.target.value),
+    })
   };
 
   const [specialties, setSpecialties] = useState<Specialty[]>([]);
@@ -320,10 +328,14 @@ const DoctorRegistration: React.FC = () => {
   }, []);
 
   const handleChangeSpecialty = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    setFormData({
-      ...formData,
+    setFormSpecialtiesData({
+      ...formSpecialtiesData,
       [event.target.name]: event.target.value,
     });
+    setFormData({
+      ...formData,
+      specialty_id: Number(event.target.value),
+    })
   };
 
   const [hospitals, setHospitals] = useState<Hospital[]>([]);
@@ -346,20 +358,23 @@ const DoctorRegistration: React.FC = () => {
   }, []);
 
   const handleChangeHospital = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    setFormData({
-      ...formData,
+    setFormHospitalData({
+      ...formHospitalData,
       [event.target.name]: event.target.value,
     });
+    setFormData({
+      ...formData,
+      hospital_id: Number(event.target.value),
+    })
   };
 
   return (
-    <div className="w-full h-screen-minus-48">
+    <div className="w-full h-screen">
       <div className="w-full h-full flex items-center justify-center p-6">
-        <div className="w-full h-full flex flex-col max-w-7xl bg-white rounded-lg p-8">
+        <div className="w-full flex flex-col justify-center items-center max-w-7xl bg-white rounded-lg p-8">
           <div className="text-center">
             <h1 className="text-4xl font-bold text-red-900 mb-8">Doctor Registration</h1>
           </div>
-
           <form className="flex gap-6 h-full" onSubmit={handleSubmit}>
             <div className="w-1/2 flex flex-col gap-5">
               <div className="flex w-full gap-3">
@@ -578,7 +593,7 @@ const DoctorRegistration: React.FC = () => {
                     name="doctor_license_number"
                     value={formData.doctor_license_number}
                     onChange={handleChange}
-                    maxLength={7}
+                    minLength={7}
                     className={`mt-1 p-2 border ${errors.doctor_license_number ? "border-red-500" : "border-gray-300"} rounded focus:outline-none focus:border-red-500 text-black`}
                     placeholder="9182347"
                   />

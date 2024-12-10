@@ -3,6 +3,7 @@ import { Label } from '../ui/label';
 import { Input } from '../ui/input';
 import { Button } from '../ui/button';
 import { useRouter } from 'next/navigation';
+import { useToast } from '@/hooks/use-toast';
 
 export const ChangePasswordForm = (userId: any) => {
   const [newPassword, setNewPassword] = useState('');
@@ -20,6 +21,8 @@ export const ChangePasswordForm = (userId: any) => {
       return () => clearTimeout(timer);
     }
   }, [successMessage]);
+
+  const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,6 +45,7 @@ export const ChangePasswordForm = (userId: any) => {
 
       if (response.ok) {
         setSuccessMessage("Password changed successfully.");
+        toast({ title: "Password changed successfully." });
         setNewPassword('');
         setNewPasswordCheck('');
       } else {
@@ -55,8 +59,8 @@ export const ChangePasswordForm = (userId: any) => {
 
   return (
     <div className="flex items-center justify-center">
-      <div className="bg-red-50 p-10 shadow-md max-w-sm w-full border-4 border-red-200">
-        <h2 className="text-4xl font-bold text-center py-4 text-red-800">Change Password</h2>
+      <div className="bg-red-50 p-10 shadow-lg rounded-lg max-w-sm w-full border border-red-200">
+        <h2 className="text-4xl font-bold text-center py-4 text-red-800 text-nowrap">Change Password</h2>
         <form onSubmit={handleSubmit} className='space-y-8 py-6'>
           <div className="flex flex-col gap-2">
             <Label className="block text-xl font-medium text-red-800 text-nowrap" htmlFor="newPassword">
@@ -89,7 +93,7 @@ export const ChangePasswordForm = (userId: any) => {
           <div className="flex justify-center items-center flex-col gap-4">
             <Button
               type="submit"
-              className="bg-red-700 hover:bg-red-900 rounded-none h-11 w-1/2 shadow-md text-xl"
+              className="bg-red-700 hover:bg-red-900 rounded-md h-11 w-1/2 shadow-md text-xl"
             >
               SUBMIT
             </Button>

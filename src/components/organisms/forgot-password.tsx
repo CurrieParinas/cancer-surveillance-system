@@ -5,6 +5,8 @@ import { Label } from '../ui/label';
 import { Input } from '../ui/input';
 import { Button } from '../ui/button';
 import { useRouter } from 'next/navigation';
+import { useToast } from '@/hooks/use-toast';
+import { title } from 'process';
 
 export const ForgotPasswordForm = () => {
   const [email, setEmail] = useState('');
@@ -13,6 +15,8 @@ export const ForgotPasswordForm = () => {
   useEffect(() => {
     console.log(email)
   })
+
+  const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,6 +30,7 @@ export const ForgotPasswordForm = () => {
       });
 
       if (response.ok) {
+        toast({ title: 'Email sent successfully' });
         console.log('Forgot password request successful', response);
         router.push('/');
       } else {
@@ -38,7 +43,7 @@ export const ForgotPasswordForm = () => {
 
   return (
     <div className="flex items-center justify-center">
-      <div className="bg-red-50 p-10 shadow-md max-w-sm w-full border-4 border-red-200">
+      <div className="bg-red-50 p-10 py-20 gap-4 flex flex-col rounded-lg shadow-md max-w-sm w-full border border-red-200">
         <h2 className="text-4xl font-bold text-center py-4 text-red-800">Forgot Password</h2>
         <form onSubmit={handleSubmit} className='space-y-8 py-6'>
           <div className="flex items-center gap-2">
@@ -57,7 +62,7 @@ export const ForgotPasswordForm = () => {
           <div className="flex justify-center items-center flex-col gap-4">
             <Button
               type="submit"
-              className="bg-red-700 hover:bg-red-900 rounded-none h-11 w-1/2 shadow-md text-xl"
+              className="bg-red-700 hover:bg-red-900 rounded-md h-11 w-1/2 shadow-md text-xl"
             >
               SUBMIT
             </Button>

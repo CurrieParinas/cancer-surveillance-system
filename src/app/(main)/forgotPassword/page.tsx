@@ -6,7 +6,7 @@ import { ForgotPasswordForm } from '@/components/organisms/forgot-password'
 
 const ForgotPassword = () => {
   return (
-    <div className='w-full text-black h-screen-minus-48 flex py-28'>
+    <div className='w-full text-black h-screen flex justify-center items-center py-28'>
       <div className='w-3/5 flex flex-col items-center'>
         <div className='w-full flex justify-center items-center px-32 gap-6'>
           <Image src={Logo} width={300} height={300} className='shrink-0 object-contain' alt='upm-logo' />

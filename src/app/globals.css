@@ -28,6 +28,19 @@ body {
   .text-balance {
     text-wrap: balance;
   }
+  .scheduled-day {
+    @apply relative;
+  }
+
+  .scheduled-day::after {
+    content: "";
+    @apply absolute bg-red-900 rounded-full;
+    bottom: 1.7rem; /* Distance from the bottom */
+    left: 95%; /* Center the dot */
+    transform: translateX(-50%);
+    width: 0.5rem; /* Width of the dot */
+    height: 0.5rem; /* Height of the dot */
+  }
 }
 
 @layer base {
@@ -96,9 +109,8 @@ body {
     @apply bg-background text-foreground;
   }
 }
-
-.kalam-font {
-  font-family: var(--font-kalam);
+.charm {
+  font-family: var(--font-charm);
 }
 
 .h-screen-minus-48 {

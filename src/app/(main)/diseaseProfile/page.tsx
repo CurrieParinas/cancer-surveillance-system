@@ -5,6 +5,9 @@ import React, { useEffect, useRef, useState } from "react";
 import { DiseaseFormDataSchema, DiseaseErrorsSchema } from "@/packages/api/add-disease";
 import { PatientsResponseSchema } from "@/packages/api/patient-list";
 import { z } from "zod";
+import { useToast } from "@/hooks/use-toast";
+import { PatientSchema } from "@/packages/api/patient";
+import { useRouter } from "next/navigation";
 
 interface FilteredPatient {
   patientId: number;
@@ -125,6 +128,7 @@ const DiseaseProfile = () => {
   };
 
   useEffect(() => {
+    console.log(doctorInfo)
     setFormData(prevData => ({
       ...prevData,
       disease_encoder: doctorInfo,
@@ -132,9 +136,8 @@ const DiseaseProfile = () => {
   }, [doctorInfo]);
 
   const [errors, setErrors] = useState<Errors>({});
-  const [diagnosisType, setDiagnosisType] = useState<string>("Non-Microscopic");
-  const [checkAll, setCheckAll] = useState<boolean>(false);
   const [bodySites, setBodySites] = useState<{ bodysiteId: number; bodysiteName: string }[]>([]);
+  const [filteredSitesMultiple, setFilteredSitesMultiple] = useState<{ bodysiteId: number; bodysiteName: string }[]>([]);
   const [filteredSites, setFilteredSites] = useState<{ bodysiteId: number; bodysiteName: string }[]>([]);
   const [primarySearchTerm, setPrimarySearchTerm] = useState("");
   const [multipleSearchTerm, setMultipleSearchTerm] = useState("");
@@ -156,6 +159,7 @@ const DiseaseProfile = () => {
         const data = await response.json();
         setBodySites(data);
         setFilteredSites(data);
+        setFilteredSitesMultiple(data)
       } catch (error) {
         console.error("Error fetching body sites:", error);
       }
@@ -181,7 +185,7 @@ const DiseaseProfile = () => {
     const filtered = bodySites.filter((site) =>
       site.bodysiteName.toLowerCase().includes(search)
     );
-    setFilteredSites(filtered);
+    setFilteredSitesMultiple(filtered)
   };
 
   const handleSelectPrimarySite = (siteId: number, siteName: string) => {
@@ -260,15 +264,176 @@ const DiseaseProfile = () => {
     return newErrors;
   };
 
+  const { toast } = useToast();
+  const [loading, setLoading] = useState(false); // Loading state
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     const formErrors = validateForm();
+    try {
+      const userData = localStorage.getItem('user');
+      if (userData) {
+        const parsedUserData = JSON.parse(userData);
+        setFormData({
+          ...formData,
+          disease_encoder: parsedUserData.doctorId
+        })
+      }
+    } catch (error) {
+      console.error("Error fetching user logged in:", error);
+    }
     if (Object.keys(formErrors).length > 0) {
       setErrors(formErrors);
       console.log(formErrors)
       return;
     }
+    setLoading(true);
+
+    const convertDateFormat = (dateString: string) => {
+      const [year, month, day] = dateString.split('-');
+      return `${day}/${month}/${year}`;
+    };
+
+
+    const requestBody = {
+      PATIENT_ID: Number(formData.patientId),
+      DISEASE_PRIMARY_SITE: Number(formData.primary_site),
+      DISEASE_DIAGNOSIS_DATE: convertDateFormat(formData.date_of_diagnosis),
+      DISEASE_BASIS: Number(formData.basis_of_diagnosis),
+      DISEASE_LATERALITY: formData.laterality,
+      HISTO_PATHOLOGY: Number(formData.histo_pathology),
+      HISTO_TUMOR_SIZE: Number(formData.histo_tumorSize),
+      HISTO_TUMOR_EXTENSION: formData.histo_tumorExtension,
+      HISTO_GRADE: Number(formData.histo_tumorGrade),
+      HISTO_NODE_POSITIVE: Number(formData.histo_nodePositive),
+      HISTO_NODE_HARVEST: Number(formData.histo_nodeHarvest),
+      HISTO_MARGINS_NEGATIVE: formData.histo_negativeMargins,
+      HISTO_POSITIVE_MARGINS: formData.histo_positiveMargins,
+      HISTO_STAGE: formData.histo_stage,
+      DISEASE_EXTENT: formData.disease_extent,
+      DISEASE_TUMOR_SIZE: Number(formData.disease_tumor_size),
+      DISEASE_LYMPH_NODE: Number(formData.disease_lymph_node),
+      DISEASE_METASTATIC: formData.disease_metastatic,
+      METS_DISTANTLN: formData.metastatic_distant_ln,
+      METS_BONE: formData.metastatic_bone,
+      METS_LIVER: formData.metastatic_liver,
+      METS_LUNG: formData.metastatic_lung,
+      METS_BRAIN: formData.metastatic_brain,
+      METS_OVARY: formData.metastatic_ovary,
+      METS_SKIN: formData.metastatic_skin,
+      METS_INTESTINE: formData.metastatic_intestine,
+      METS_OTHERS: formData.metastatic_others,
+      METS_UNKNOWN: formData.metastatic_unknown,
+      METS_NOTES: formData.metastatic_notes,
+      DISEASE_MULTIPLE_PRIMARY: Number(formData.multiple_primaries?.length),
+      DISEASE_OTHER_SITES: formData.multiple_primaries?.map(Number),
+      DISEASE_TSTAGE: Number(formData.disease_tstage),
+      DISEASE_NSTAGE: Number(formData.disease_nstage),
+      DISEASE_MSTAGE: Number(formData.disease_mstage),
+      DISEASE_GSTAGE: Number(formData.disease_gstage),
+      DISEASE_STAGE: formData.stage,
+      DISEASE_STAGE_TYPE: formData.stage_type,
+      DXSTATUS_ALIVE: formData.dxstatus_alive,
+      DXSTATUS_SYMPTOMS: formData.dxstatus_symptoms,
+      DXSTATUS_RECURRENCE: formData.dxstatus_recurrence,
+      DXSTATUS_METASTATIC: formData.dxstatus_metastatic,
+      DXSTATUS_CURATIVE: formData.dxstatus_curative,
+      DISEASE_ENCODER: Number(formData.disease_encoder),
+    };
+
+    try {
+      const response = await fetch("http://localhost:8080/css/disease/add", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestBody),
+      });
+
+
+      if (!response.ok) {
+        toast({ title: "Disease Profile submission failed." })
+        throw new Error("Network response was not ok");
+      }
+
+      const result = await response.json();
+      toast({ title: "Disease Profile Added Succesfully" })
+
+      setFormData({
+        patientId: "",
+        lastname: "",
+        email: "",
+        primary_site: "",
+        date_of_diagnosis: "",
+        basis_of_diagnosis: "",
+        basis_of_diagnosis_option: "Non-Microscopic",
+        basis_of_diagnosis_suboption: "",
+        laterality: "1",
+        histo_pathology: "",
+        histo_tumorSize: "",
+        histo_tumorExtension: "",
+        histo_tumorGrade: "",
+        histo_nodePositive: "",
+        histo_nodeHarvest: "",
+        histo_negativeMargins: "",
+        histo_stage: "I",
+        histo_positiveMargins: "",
+        disease_extent: "1",
+        disease_tumor_size: "",
+        disease_lymph_node: "",
+        disease_metastatic: "",
+        metastatic_distant_ln: "N",
+        metastatic_bone: "N",
+        metastatic_liver: "N",
+        metastatic_lung: "N",
+        metastatic_brain: "N",
+        metastatic_ovary: "N",
+        metastatic_skin: "N",
+        metastatic_intestine: "N",
+        metastatic_others: "N",
+        metastatic_unknown: "N",
+        metastatic_notes: "",
+        multiple_primaries: [],
+        stage: "I",
+        stage_type: "",
+        disease_tstage: "",
+        disease_nstage: "",
+        disease_mstage: "",
+        disease_gstage: "",
+        dxstatus_alive: "N",
+        dxstatus_symptoms: "N",
+        dxstatus_recurrence: "N",
+        dxstatus_metastatic: "N",
+        dxstatus_curative: "N",
+        disease_encoder: "",
+      });
+      setErrors({});
+      setSelectedSites([]);
+      setPrimarySearchTerm("");
+      setMultipleSearchTerm("");
+      setPathologySearchTerm("");
+      setPatientSearchTerm("");
+      setSelectedStatuses([]);
+      setSelectedMetastaticSites([])
+    } catch (error) {
+      console.error("Error submitting form:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const router = useRouter();
+
+  const handleSubmitRedirect = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const formErrors = validateForm();
+    if (Object.keys(formErrors).length > 0) {
+      setErrors(formErrors);
+      return;
+    }
+
+    console.log(formErrors)
 
     const convertDateFormat = (dateString: string) => {
       const [year, month, day] = dateString.split('-');
@@ -331,11 +496,12 @@ const DiseaseProfile = () => {
       });
 
       if (!response.ok) {
+        toast({ title: "Disease Profile submission failed." })
         throw new Error("Network response was not ok");
       }
 
       const result = await response.json();
-      console.log("Form submitted successfully", result);
+      toast({ title: "Disease Profile Added Succesfully" })
 
       setFormData({
         patientId: "",
@@ -393,6 +559,7 @@ const DiseaseProfile = () => {
       setPatientSearchTerm("");
       setSelectedStatuses([]);
       setSelectedMetastaticSites([])
+      router.push("/treatmentHistory")
     } catch (error) {
       console.error("Error submitting form:", error);
     }
@@ -468,12 +635,54 @@ const DiseaseProfile = () => {
     fetchPatients();
   }, []);
 
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchPatientDetails = async () => {
+      try {
+        const userData = localStorage.getItem('user');
+        if (userData) {
+          const parsedUserData = JSON.parse(userData);
+          const apiUrl = `http://localhost:8080/css/patient/get/latest?doctorID=${parsedUserData.doctorId}`;
+
+          const response = await fetch(apiUrl);
+          if (!response.ok) {
+            throw new Error(`Failed to fetch data: ${response.statusText}`);
+          }
+
+          const data = await response.json();
+
+          const patientData = PatientSchema.parse(data);
+
+          if (patientData) {
+            setFormData({
+              ...formData,
+              lastname: patientData.user.userLastname,
+              patientId: patientData.patientId.toString(),
+              email: patientData.user.userEmail,
+            });
+
+            setPatientSearchTerm(
+              `${patientData.user.userFirstname} ${patientData.user.userLastname} (${patientData.user.userEmail})`
+            );
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching patients:", error);
+        setError("Failed to fetch patient details. Please try again.");
+        console.log(error)
+      }
+    };
+
+    fetchPatientDetails();
+  }, []);
+
   const handlePatientSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const search = e.target.value.toLowerCase();
     setPatientSearchTerm(search);
     setPatientDropdownOpen(true);
     if (search === "") {
-      setFilteredPatients(allPatients); // Show all patients if the search term is empty
+      setFilteredPatients(allPatients);
     } else {
       const filtered = allPatients.filter((patient) =>
         patient.userLastname.toLowerCase().includes(search)
@@ -555,10 +764,6 @@ const DiseaseProfile = () => {
     );
     setFilteredMetastaticSites(filtered);
   };
-
-  useEffect(() => {
-    console.log(formData)
-  })
 
   const dropdownRefStatus = useRef<HTMLDivElement>(null);
   const [selectedStatuses, setSelectedStatuses] = useState<Status[]>([]);
@@ -669,6 +874,7 @@ const DiseaseProfile = () => {
                     <option value="Microscopic">Microscopic</option>
                     <option value="Unknown">Unknown</option>
                   </select>
+                  {errors.basis_of_diagnosis_option && <p className="text-red-500 text-xs mt-1">{errors.basis_of_diagnosis_option}</p>}
                 </div>
 
                 <div className="flex flex-col w-1/4 relative" ref={dropdownRefPrimary}>
@@ -1117,6 +1323,7 @@ const DiseaseProfile = () => {
                       No
                     </label>
                   </div>
+                  {errors.disease_metastatic && <p className="text-red-500 text-xs mt-1">{errors.disease_metastatic}</p>}
                 </div>
               </div>
 
@@ -1224,8 +1431,8 @@ const DiseaseProfile = () => {
                 </div>
                 {multipleDropdownOpen && (
                   <ul className="absolute z-10 bg-white border border-gray-300 w-full mt-1 rounded shadow-lg max-h-40 overflow-y-auto">
-                    {filteredSites.length > 0 ? (
-                      filteredSites.map((site) => (
+                    {filteredSitesMultiple.length > 0 ? (
+                      filteredSitesMultiple.map((site) => (
                         <li
                           key={site.bodysiteId}
                           className="p-2 hover:bg-gray-200 text-black cursor-pointer"
@@ -1332,7 +1539,6 @@ const DiseaseProfile = () => {
               <Separator className="" />
 
               <div className="flex flex-col">
-                (
                 <div className="relative" ref={dropdownRefStatus}>
                   <label htmlFor="patient_status" className="text-sm font-semibold text-gray-700">
                     Patient Status
@@ -1385,15 +1591,26 @@ const DiseaseProfile = () => {
 
 
             <div className="flex mt-20 mb-8">
-              <div className="w-1/2 flex justify-center">
-                <button type="submit"
-                  className={`bg-red-900 hover:bg-red-800 text-white py-2 px-6 rounded-3xl transition`}
-                >
-                  Submit
-                </button>
-              </div>
+              {loading ? (
+                <div className="w-32 py-2 bg-red-900 flex items-center justify-center rounded-3xl px-3 hover:cursor-not-allowed">
+                  <div
+                    className="inline-block h-5 w-5 animate-spin rounded-full border-[3px] border-solid border-current border-e-transparent align-[-0.125em] text-surface motion-reduce:animate-[spin_1.5s_linear_infinite] dark:text-white"
+                    role="status">
+                  </div>
+                  <span className="ml-2 text-white font-semibold">Sending...</span>
+                </div>
+              ) : (
+                <div className="w-1/2 flex justify-center">
+                  <button type="submit"
+                    className={`bg-red-900 hover:bg-red-800 text-white py-2 px-6 rounded-3xl transition`}
+                  >
+                    Submit
+                  </button>
+                </div>
+              )}
               <div className="w-1/2 flex justify-center">
                 <button type="button"
+                  onClick={() => handleSubmitRedirect}
                   className={`bg-red-900 hover:bg-red-800 text-white py-2 px-6 rounded-3xl transition`}
                 >
                   Submit & Add Treatment History

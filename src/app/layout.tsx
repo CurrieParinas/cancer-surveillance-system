@@ -1,11 +1,11 @@
 import "./globals.css";
 import type { Metadata } from "next";
-import { Kalam } from "next/font/google"
+import { Charm } from "next/font/google"
 
-const kalam = Kalam({
+const charm = Charm({
   subsets: ["latin"],
   weight: "400",
-  variable: "--font-kalam",
+  variable: "--font-charm",
 });
 
 export const metadata: Metadata = {
@@ -19,7 +19,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${kalam.variable}`}>
+    <html lang="en" className={`${charm.variable}`}>
       <body>{children}</body>
     </html>
   );
