@@ -3,6 +3,7 @@
 import { useToast } from "@/hooks/use-toast";
 import EnrollPatientSchema from "@/packages/api/enroll-patient";
 import { UserSchema } from "@/packages/api/user";
+import { useRouter } from "next/navigation";
 import { title } from "process";
 import React, { useState, useEffect } from "react";
 import { z } from "zod";
@@ -57,6 +58,7 @@ const EnrollPatient: React.FC = () => {
     });
   };
 
+  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -168,6 +170,117 @@ const EnrollPatient: React.FC = () => {
     }
   };
 
+  const handleSubmitRedirect = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    const result = EnrollPatientSchema.safeParse(formData);
+
+    if (!result.success) {
+      const errorMap: Record<string, string> = {};
+      result.error.errors.forEach((error) => {
+        if (error.path[0]) {
+          errorMap[error.path[0]] = error.message;
+        }
+      });
+      setErrors(errorMap);
+    } else {
+      setErrors({});
+
+      try {
+        const response = await fetch('http://localhost:8080/css/user/allUsers');
+        const data = await response.json();
+
+        const users = UserSchema.array().parse(data);
+        const emailList = users.map((user) => user.userEmail);
+
+        if (emailList.includes(formData.email)) {
+          setErrors((prevErrors) => ({
+            ...prevErrors,
+            emailNotUnique: "The email must be unique. Please use a different email address."
+          }));
+          return;
+        } else {
+          setErrors((prevErrors) => ({ ...prevErrors, emailNotUnique: undefined }));
+        }
+      } catch (error) {
+        console.error("Email uniqueness check failed:", error);
+        return;
+      }
+
+      const today = new Date();
+      const [birthYear, birthMonth, birthDay] = formData.birthdate.split("-").map(Number);
+      const birthDate = new Date(birthYear, birthMonth - 1, birthDay); // Month is 0-based in JavaScript
+
+      if (birthDate >= today) {
+        setErrors((prevErrors: Errors) => ({
+          ...prevErrors,
+          birthdate: "The birthdate cannot be today or in the future."
+        }));
+        return;
+      } else {
+        setErrors((prevErrors: Errors) => ({ ...prevErrors, birthdate: undefined }));
+      }
+
+      // Convert the birthdate format from yyyy-mm-dd to dd/mm/yyyy
+      const dateParts = formData.birthdate.split("-");
+      const formattedBirthdate = `${dateParts[2]}/${dateParts[1]}/${dateParts[0]}`;
+
+      const requestBody = JSON.stringify({
+        USER_LASTNAME: formData.lastname,
+        USER_FIRSTNAME: formData.firstname,
+        USER_MIDDLENAME: formData.middle_name,
+        USER_EMAIL: formData.email,
+        USER_GENDER: formData.gender.charAt(0).toUpperCase() + formData.gender.slice(1),
+        USER_MARITAL_STATUS: formData.marital_status.charAt(0).toUpperCase() + formData.marital_status.slice(1),
+        USER_BIRTHDATE: formattedBirthdate,
+        USER_BIRTHPLACE: formData.birthplace,
+        ADDRESS_NUMBER: formData.addressNumber,
+        ADDRESS_STREET: formData.addressStreet,
+        ADDRESS_CITY: formData.addressCity,
+        ADDRESS_REGION: formData.addressRegion,
+        ADDRESS_ZIPCODE: formData.addressZipcode,
+        USER_ENCODER: doctorInfo.userId,
+      })
+
+      console.log(requestBody)
+
+      try {
+        const response = await fetch("http://localhost:8080/css/patient/add", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: requestBody
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          toast({ title: "Patient added successfully!" });
+          setFormData({
+            lastname: "",
+            firstname: "",
+            middle_name: "",
+            email: "",
+            birthdate: "",
+            birthplace: "",
+            gender: "male",
+            marital_status: "single",
+            addressNumber: "",
+            addressStreet: "",
+            addressCity: "",
+            addressRegion: "",
+            addressZipcode: ""
+          })
+          router.push("/diseaseProfile")
+        } else {
+          console.error("Failed to add patient:", response.status);
+        }
+      } catch (error) {
+        console.error("An error occurred:", error);
+      }
+    }
+  };
+
   return (
     <div className="w-5/6 flex justify-center">
       <div className="min-h-screen flex justify-center p-6">
@@ -260,6 +373,7 @@ const EnrollPatient: React.FC = () => {
                   className="mt-1 p-2 border border-gray-300 rounded focus:outline-none focus:border-red-500 text-black"
                   placeholder="Province, City/Municipality"
                 />
+                {errors.birthplace && <p className="text-red-500 text-xs mt-1">{errors.birthplace}</p>}
               </div>
             </div>
 
@@ -308,6 +422,7 @@ const EnrollPatient: React.FC = () => {
                   className="mt-1 p-2 border border-gray-300 rounded focus:outline-none focus:border-red-500 text-black"
                   placeholder="101"
                 />
+                {errors.addressNumber && <p className="text-red-500 text-xs mt-1">{errors.addressNumber}</p>}
               </div>
 
               <div className="flex flex-col w-1/3">
@@ -321,6 +436,7 @@ const EnrollPatient: React.FC = () => {
                   className="mt-1 p-2 border border-gray-300 rounded focus:outline-none focus:border-red-500 text-black"
                   placeholder="Padre Faura St."
                 />
+                {errors.addressStreet && <p className="text-red-500 text-xs mt-1">{errors.addressStreet}</p>}
               </div>
 
               <div className="flex flex-col w-1/3">
@@ -334,6 +450,7 @@ const EnrollPatient: React.FC = () => {
                   className="mt-1 p-2 border border-gray-300 rounded focus:outline-none focus:border-red-500 text-black"
                   placeholder="Manila City"
                 />
+                {errors.addressCity && <p className="text-red-500 text-xs mt-1">{errors.addressCity}</p>}
               </div>
             </div>
 
@@ -349,6 +466,7 @@ const EnrollPatient: React.FC = () => {
                   className="mt-1 p-2 border border-gray-300 rounded focus:outline-none focus:border-red-500 text-black"
                   placeholder="NCR"
                 />
+                {errors.addressRegion && <p className="text-red-500 text-xs mt-1">{errors.addressRegion}</p>}
               </div>
 
               <div className="flex flex-col w-1/2">
@@ -378,6 +496,7 @@ const EnrollPatient: React.FC = () => {
               <div className="w-1/2 flex justify-center">
                 <button
                   type="button"
+                  onClick={() => handleSubmitRedirect}
                   className={`bg-red-900 hover:bg-red-800 text-white py-2 px-6 rounded-3xl transition`}
                 >
                   Submit & Add Disease Profile

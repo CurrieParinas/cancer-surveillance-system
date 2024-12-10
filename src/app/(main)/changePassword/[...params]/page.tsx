@@ -17,8 +17,8 @@ const ChangePasswordPage = () => {
   })
 
   return (
-    <div className='w-full text-black h-screen-minus-48 flex py-28'>
-      <div className='w-3/5 flex flex-col items-center'>
+    <div className='w-full text-black h-screen flex py-28'>
+      <div className='w-3/5 flex flex-col justify-center items-center'>
         <div className='w-full flex justify-center items-center px-32 gap-6'>
           <Image src={Logo} width={300} height={300} className='shrink-0 object-contain' alt='upm-logo' />
           <Label className='text-8xl px-2'>Cancer Surveillance System</Label>

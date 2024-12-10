@@ -1,6 +1,7 @@
 "use client";
 
 import { useToast } from "@/hooks/use-toast";
+import { PatientSchema } from "@/packages/api/patient";
 import { PatientsResponseSchema } from "@/packages/api/patient-list";
 import usePageStore from "@/packages/stores/pageStore";
 import { ArrowLeft, ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
@@ -17,6 +18,96 @@ interface FormData {
   patientId?: string;
   lastname?: string;
   email?: string;
+}
+
+interface Address {
+  addressId: number;
+  addressNumber: string;
+  addressStreet: string;
+  addressCity: string;
+  addressRegion: string;
+  addressZipcode: string;
+}
+
+interface Hospital {
+  hospitalId: number;
+  hospitalName: string;
+  address: Address;
+  hospitalContactNo: string | null;
+}
+
+interface Address {
+  addressId: number;
+  addressNumber: string;
+  addressStreet: string;
+  addressCity: string;
+  addressRegion: string;
+  addressZipcode: string;
+}
+
+interface Role {
+  roleId: number;
+  roleName: string;
+  roleDescription: string;
+}
+
+interface UserAccess {
+  accessId: number;
+  accessCanenrollpatient: string;
+  accessCaneditpatientinfo: string;
+  accessCanviewpatientinfo: string;
+  accessCandeleteuser: string;
+  accessCandeletepatientinfo: string;
+}
+
+interface User {
+  userId: number;
+  userLastname: string;
+  userFirstname: string;
+  userMiddlename: string;
+  userEmail: string;
+  userPassword: string;
+  userGender: string;
+  userMaritalStatus: string;
+  userBirthdate: string;
+  userBirthplace: string;
+  userAddress: Address;
+  userRole: Role;
+  userAccess: UserAccess;
+  userIsVerified: string;
+  userStatus: string;
+  userCreatedOn: string;
+  userUpdatedOn: string;
+}
+
+interface Hospital {
+  hospitalId: number;
+  hospitalName: string;
+  address: Address;
+  hospitalContactNo: string | null;
+}
+
+interface Department {
+  departmentId: number;
+  departmentName: string;
+}
+
+interface Specialty {
+  specialtyID: number;
+  specialtyName: string;
+  specialtyDescription: string;
+}
+
+interface Doctor {
+  doctorId: number;
+  user: User;
+  hospital: Hospital;
+  department: Department;
+  specialty: Specialty;
+  doctorESignature: string | null;
+  doctorLicenseNumber: string;
+  doctorLicenseExpDate: string;
+  doctorSchedule: number;
 }
 
 const treatments = [
@@ -221,7 +312,7 @@ const TreatmentHistoryForm = () => {
         console.log("Treatment information submitted successfully!");
         toast({ title: "Treatment information submitted successfully!" })
         setTreatmentFormData({
-          PATIENT_ID: "",
+          PATIENT_ID: treatmentFormData.PATIENT_ID,
           TREATMENT_PRIMARYRXTYPE: "",
           TREATMENT_PRIMARYRXNAME: "",
           TREATMENT_INITIALRXDATE: "",
@@ -334,7 +425,7 @@ const TreatmentHistoryForm = () => {
         console.log("Surgery information submitted successfully!");
         toast({ title: "Surgery information submitted successfully!" })
         setSurgeryFormData({
-          PATIENT_ID: "",
+          PATIENT_ID: surgeryFormData.PATIENT_ID,
           SURGERY_OPERATION: "",
           SURGERY_DATE: "",
           SURGERY_FINDINGS: "",
@@ -415,6 +506,8 @@ const TreatmentHistoryForm = () => {
       RADRX_ENCODER: Number(doctorInfo),
     };
 
+    console.log(JSON.stringify(requestBody))
+
     try {
       const response = await fetch("http://localhost:8080/css/radiotherapy/add", {
         method: "POST",
@@ -428,7 +521,7 @@ const TreatmentHistoryForm = () => {
         toast({ title: "Radiotherapy information submitted successfully!" })
         console.log("Radiotherapy information submitted successfully!");
         setRadiationFormData({
-          PATIENT_ID: "",
+          PATIENT_ID: radiationFormData.PATIENT_ID,
           RADRX_TYPE: "",
           RADRX_INITIALDATE: "",
           RADRX_LASTDATE: "",
@@ -522,7 +615,7 @@ const TreatmentHistoryForm = () => {
         toast({ title: "Hormonal treatment information submitted successfully!" })
         console.log("Hormonal treatment information submitted successfully!");
         setHormonalFormData({
-          patientId: "",
+          patientId: hormonalFormData.patientId,
           hormonalDrug: "",
           hormonalDose: "",
           hormonalInitialDate: "",
@@ -618,7 +711,7 @@ const TreatmentHistoryForm = () => {
         toast({ title: "Immunotherapy information submitted successfully!" })
         console.log("Immunotherapy information submitted successfully!");
         setImmunorxFormData({
-          patientId: "",
+          patientId: immunorxFormData.patientId,
           immunorxDrug: "",
           immunorxInitialDate: "",
           immunorxEndDate: "",
@@ -744,7 +837,7 @@ const TreatmentHistoryForm = () => {
         toast({ title: "Chemotherapy information submitted successfully!" })
         console.log("Chemotherapy information submitted successfully!");
         setChemoFormData({
-          PATIENT_ID: "",
+          PATIENT_ID: chemoFormData.PATIENT_ID,
           CHEMO_TYPE: "",
           CHEMO_PROTOCOL: "",
           CHEMO_INITIALDATE: "",
@@ -807,6 +900,47 @@ const TreatmentHistoryForm = () => {
     setPatientSearchTerm(`${firstname} ${lastname} (${email})`);
     setPatientDropdownOpen(false);
   };
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchPatientDetails = async () => {
+      try {
+        const userData = localStorage.getItem('user');
+        if (userData) {
+          const parsedUserData = JSON.parse(userData);
+          const apiUrl = `http://localhost:8080/css/patient/get/latest?doctorID=${parsedUserData.doctorId}`;
+
+          const response = await fetch(apiUrl);
+          if (!response.ok) {
+            throw new Error(`Failed to fetch data: ${response.statusText}`);
+          }
+
+          const data = await response.json();
+
+          const patientData = PatientSchema.parse(data);
+
+          if (patientData) {
+            setFormData({
+              ...formData,
+              lastname: patientData.user.userLastname,
+              patientId: patientData.patientId.toString(),
+              email: patientData.user.userEmail,
+            });
+
+            setPatientSearchTerm(
+              `${patientData.user.userFirstname} ${patientData.user.userLastname} (${patientData.user.userEmail})`
+            );
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching patients:", error);
+        setError("Failed to fetch patient details. Please try again.");
+        console.log(error)
+      }
+    };
+
+    fetchPatientDetails();
+  }, []);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -850,6 +984,102 @@ const TreatmentHistoryForm = () => {
   }, []);
 
   const { currentPage, handleNext, handleBack } = usePageStore();
+
+  const [hospitals, setHospitals] = useState<Hospital[]>([]);
+
+  useEffect(() => {
+    const fetchHospitals = async () => {
+      try {
+        const response = await fetch('http://localhost:8080/css/hospital/all');
+        const data: Hospital[] = await response.json();
+        setHospitals(data);
+      } catch (error) {
+        console.error('Error fetching hospitals:', error);
+      }
+    };
+
+    fetchHospitals();
+  }, []);
+
+  const handleSurgeryChangeHospital = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    setSurgeryFormData({
+      ...surgeryFormData,
+      SURGERY_HOSPITAL: event.target.value,
+    });
+  };
+  const handleradxChangeHospital = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    setRadiationFormData({
+      ...radiationFormData,
+      RADRX_FACILITY: event.target.value,
+    });
+  };
+  const handleimuChangeHospital = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    setImmunorxFormData({
+      ...immunorxFormData,
+      immunorxFacilityId: event.target.value,
+    });
+  };
+  const handlechemoChangeHospital = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    setChemoFormData({
+      ...chemoFormData,
+      CHEMO_FACILITY: event.target.value,
+    });
+  };
+
+  const [doctors, setDoctors] = useState<Doctor[]>([]);
+
+  useEffect(() => {
+    const fetchDoctors = async () => {
+      try {
+        const response = await fetch('http://localhost:8080/css/doctor/all');
+        const data = await response.json();
+        setDoctors(data);
+      } catch (error) {
+        console.error('Error fetching doctors:', error);
+      }
+    };
+
+    fetchDoctors();
+  }, []);
+
+  const handleSurgeryDoctor = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    setSurgeryFormData({
+      ...surgeryFormData,
+      SURGERY_SURGEON: event.target.value,
+    });
+  };
+  const handleradxDoctor = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    setRadiationFormData({
+      ...radiationFormData,
+      RADRX_DOCTOR: event.target.value,
+    });
+  };
+  const handleimuDoctor = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    setImmunorxFormData({
+      ...immunorxFormData,
+      immunorxDoctorId: event.target.value,
+    });
+  };
+  const handlechemoDoctor = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    setChemoFormData({
+      ...chemoFormData,
+      CHEMO_DOCTOR: event.target.value,
+    });
+  };
+  const handlehormoDoctor = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    setHormonalFormData({
+      ...hormonalFormData,
+      hormonalDoctorId: event.target.value,
+    });
+  };
+
+  useEffect(() => {
+    console.log("SURGERY", surgeryFormData)
+    console.log("RADX", radiationFormData)
+    console.log("IMUNO", immunorxFormData)
+    console.log("HORMO", hormonalFormData)
+    console.log("CHEMO", chemoFormData)
+  })
 
   const renderPageTitle = () => {
     switch (currentPage) {
@@ -952,8 +1182,6 @@ const TreatmentHistoryForm = () => {
                     />
                   </div>
                 </div>
-
-
 
                 <div className="flex gap-4">
                   <div className="flex flex-col w-full relative" ref={dropdownRefPurpose}>
@@ -1122,26 +1350,36 @@ const TreatmentHistoryForm = () => {
               <div className="flex gap-4">
                 <div className="flex flex-col w-full">
                   <label htmlFor="surgerySurgeon" className="text-sm font-semibold text-gray-700">Surgeon ID</label>
-                  <input
-                    type="number"
+                  <select
                     name="SURGERY_SURGEON"
-                    value={surgeryFormData.SURGERY_SURGEON}
-                    onChange={handleSurgeryChange}
-                    className={`mt-1 hover:border-red-200 p-2 border rounded focus:outline-none focus:border-red-500 text-black`}
-                    placeholder="Enter surgeon ID"
-                  />
+                    value={surgeryFormData.SURGERY_SURGEON || ''}
+                    onChange={handleSurgeryDoctor}
+                    className="mt-1 p-2 border border-gray-300 rounded focus:outline-none focus:border-red-500 text-black"
+                  >
+                    <option value="">Select a doctor</option>
+                    {doctors.map((doctor) => (
+                      <option key={doctor.doctorId} value={doctor.doctorId}>
+                        {doctor.user.userFirstname} {doctor.user.userLastname} - {doctor.specialty.specialtyName} ({doctor.hospital.hospitalName})
+                      </option>
+                    ))}
+                  </select>
                 </div>
 
                 <div className="flex flex-col w-full">
-                  <label htmlFor="surgeryHospital" className="text-sm font-semibold text-gray-700">Hospital ID</label>
-                  <input
-                    type="number"
+                  <label htmlFor="surgeryHospital" className="text-sm font-semibold text-gray-700">Hospital</label>
+                  <select
                     name="SURGERY_HOSPITAL"
                     value={surgeryFormData.SURGERY_HOSPITAL}
-                    onChange={handleSurgeryChange}
-                    className={`mt-1 hover:border-red-200 p-2 border rounded focus:outline-none focus:border-red-500 text-black`}
-                    placeholder="Enter hospital ID"
-                  />
+                    onChange={handleSurgeryChangeHospital}
+                    className="mt-1 h-10 hover:border-red-200 p-2 border rounded focus:outline-none focus:border-red-500 text-black"
+                  >
+                    <option value="">Select a hospital</option> {/* Optional placeholder */}
+                    {hospitals.map((hospital) => (
+                      <option key={hospital.hospitalId} value={hospital.hospitalId}>
+                        {hospital.hospitalName}
+                      </option>
+                    ))}
+                  </select>
                 </div>
               </div>
               <div className="flex gap-4">
@@ -1258,27 +1496,37 @@ const TreatmentHistoryForm = () => {
 
               <div className="flex gap-4">
                 <div className="flex flex-col w-full">
-                  <label htmlFor="RADRX_DOCTOR" className="text-sm font-semibold text-gray-700">Doctor ID</label>
-                  <input
-                    type="number"
+                  <label htmlFor="RADRX_DOCTOR" className="text-sm font-semibold text-gray-700">Doctor</label>
+                  <select
                     name="RADRX_DOCTOR"
-                    value={radiationFormData.RADRX_DOCTOR}
-                    onChange={handleRadiationChange}
-                    className={`mt-1 hover:border-red-200 p-2 border rounded focus:outline-none focus:border-red-500 text-black`}
-                    placeholder="Enter doctor ID"
-                  />
+                    value={radiationFormData.RADRX_DOCTOR || ''}
+                    onChange={handleradxDoctor}
+                    className="mt-1 p-2 border border-gray-300 rounded focus:outline-none focus:border-red-500 text-black"
+                  >
+                    <option value="">Select a doctor</option>
+                    {doctors.map((doctor) => (
+                      <option key={doctor.doctorId} value={doctor.doctorId}>
+                        {doctor.user.userFirstname} {doctor.user.userLastname} - {doctor.specialty.specialtyName} ({doctor.hospital.hospitalName})
+                      </option>
+                    ))}
+                  </select>
                 </div>
 
                 <div className="flex flex-col w-full">
-                  <label htmlFor="RADRX_FACILITY" className="text-sm font-semibold text-gray-700">Facility ID</label>
-                  <input
-                    type="number"
+                  <label htmlFor="RADRX_FACILITY" className="text-sm font-semibold text-gray-700">Facility</label>
+                  <select
                     name="RADRX_FACILITY"
                     value={radiationFormData.RADRX_FACILITY}
-                    onChange={handleRadiationChange}
-                    className={`mt-1 hover:border-red-200 p-2 border rounded focus:outline-none focus:border-red-500 text-black`}
-                    placeholder="Enter facility ID"
-                  />
+                    onChange={handleradxChangeHospital}
+                    className="mt-1 h-10 hover:border-red-200 p-2 border rounded focus:outline-none focus:border-red-500 text-black"
+                  >
+                    <option value="">Select a hospital</option> {/* Optional placeholder */}
+                    {hospitals.map((hospital) => (
+                      <option key={hospital.hospitalId} value={hospital.hospitalId}>
+                        {hospital.hospitalName}
+                      </option>
+                    ))}
+                  </select>
                 </div>
               </div>
 
@@ -1447,15 +1695,20 @@ const TreatmentHistoryForm = () => {
                 </div>
 
                 <div className="flex flex-col w-full">
-                  <label htmlFor="hormonalDoctorId" className="text-sm font-semibold text-gray-700">Doctor ID</label>
-                  <input
-                    type="number"
+                  <label htmlFor="hormonalDoctorId" className="text-sm font-semibold text-gray-700">Doctor</label>
+                  <select
                     name="hormonalDoctorId"
-                    value={hormonalFormData.hormonalDoctorId}
-                    onChange={handleHormonalChange}
-                    className={`mt-1 hover:border-red-200 p-2 border rounded focus:outline-none focus:border-red-500 text-black`}
-                    placeholder="Enter doctor ID"
-                  />
+                    value={hormonalFormData.hormonalDoctorId || ''}
+                    onChange={handlehormoDoctor}
+                    className="mt-1 p-2 border border-gray-300 rounded focus:outline-none focus:border-red-500 text-black"
+                  >
+                    <option value="">Select a doctor</option>
+                    {doctors.map((doctor) => (
+                      <option key={doctor.doctorId} value={doctor.doctorId}>
+                        {doctor.user.userFirstname} {doctor.user.userLastname} - {doctor.specialty.specialtyName} ({doctor.hospital.hospitalName})
+                      </option>
+                    ))}
+                  </select>
                 </div>
 
                 <div className="flex gap-4">
@@ -1592,27 +1845,37 @@ const TreatmentHistoryForm = () => {
 
               <div className="flex gap-4">
                 <div className="flex flex-col w-full">
-                  <label htmlFor="immunorxDoctorId" className="text-sm font-semibold text-gray-700">Doctor ID</label>
-                  <input
-                    type="number"
+                  <label htmlFor="immunorxDoctorId" className="text-sm font-semibold text-gray-700">Doctor</label>
+                  <select
                     name="immunorxDoctorId"
-                    value={immunorxFormData.immunorxDoctorId}
-                    onChange={handleImmunorxChange}
-                    className={`mt-1 hover:border-red-200 p-2 border rounded focus:outline-none focus:border-red-500 text-black`}
-                    placeholder="Enter doctor ID"
-                  />
+                    value={immunorxFormData.immunorxDoctorId || ''}
+                    onChange={handleimuDoctor}
+                    className="mt-1 p-2 border border-gray-300 rounded focus:outline-none focus:border-red-500 text-black"
+                  >
+                    <option value="">Select a doctor</option>
+                    {doctors.map((doctor) => (
+                      <option key={doctor.doctorId} value={doctor.doctorId}>
+                        {doctor.user.userFirstname} {doctor.user.userLastname} - {doctor.specialty.specialtyName} ({doctor.hospital.hospitalName})
+                      </option>
+                    ))}
+                  </select>
                 </div>
 
                 <div className="flex flex-col w-full">
-                  <label htmlFor="immunorxFacilityId" className="text-sm font-semibold text-gray-700">Facility ID</label>
-                  <input
-                    type="number"
+                  <label htmlFor="immunorxFacilityId" className="text-sm font-semibold text-gray-700">Facility</label>
+                  <select
                     name="immunorxFacilityId"
                     value={immunorxFormData.immunorxFacilityId}
-                    onChange={handleImmunorxChange}
-                    className={`mt-1 hover:border-red-200 p-2 border rounded focus:outline-none focus:border-red-500 text-black`}
-                    placeholder="Enter facility ID"
-                  />
+                    onChange={handleimuChangeHospital}
+                    className="mt-1 h-10 hover:border-red-200 p-2 border rounded focus:outline-none focus:border-red-500 text-black"
+                  >
+                    <option value="">Select a hospital</option> {/* Optional placeholder */}
+                    {hospitals.map((hospital) => (
+                      <option key={hospital.hospitalId} value={hospital.hospitalId}>
+                        {hospital.hospitalName}
+                      </option>
+                    ))}
+                  </select>
                 </div>
               </div>
 
@@ -1753,27 +2016,37 @@ const TreatmentHistoryForm = () => {
 
                 <div className="flex gap-4">
                   <div className="flex flex-col w-full">
-                    <label htmlFor="chemoDoctor" className="text-sm font-semibold text-gray-700">Doctor ID</label>
-                    <input
-                      type="text"
+                    <label htmlFor="chemoDoctor" className="text-sm font-semibold text-gray-700">Doctor</label>
+                    <select
                       name="CHEMO_DOCTOR"
-                      value={chemoFormData.CHEMO_DOCTOR}
-                      onChange={handleChemoChange}
-                      className="mt-1 hover:border-red-200 p-2 border rounded focus:outline-none focus:border-red-500 text-black"
-                      placeholder="Enter chemotherapy doctor"
-                    />
+                      value={chemoFormData.CHEMO_DOCTOR || ''}
+                      onChange={handlechemoDoctor}
+                      className="h-10 mt-1 p-2 border border-gray-200 rounded focus:outline-none focus:border-red-500 text-black"
+                    >
+                      <option value="">Select a doctor</option>
+                      {doctors.map((doctor) => (
+                        <option key={doctor.doctorId} value={doctor.doctorId}>
+                          {doctor.user.userFirstname} {doctor.user.userLastname} - {doctor.specialty.specialtyName} ({doctor.hospital.hospitalName})
+                        </option>
+                      ))}
+                    </select>
                   </div>
 
                   <div className="flex flex-col w-full">
-                    <label htmlFor="chemoFacility" className="text-sm font-semibold text-gray-700">Facility ID</label>
-                    <input
-                      type="text"
+                    <label htmlFor="chemoFacility" className="text-sm font-semibold text-gray-700">Facility</label>
+                    <select
                       name="CHEMO_FACILITY"
                       value={chemoFormData.CHEMO_FACILITY}
-                      onChange={handleChemoChange}
-                      className="mt-1 hover:border-red-200 p-2 border rounded focus:outline-none focus:border-red-500 text-black"
-                      placeholder="Enter chemotherapy facility"
-                    />
+                      onChange={handlechemoChangeHospital}
+                      className="mt-1 h-10 hover:border-red-200 p-2 border rounded focus:outline-none focus:border-red-500 text-black"
+                    >
+                      <option value="">Select a hospital</option> {/* Optional placeholder */}
+                      {hospitals.map((hospital) => (
+                        <option key={hospital.hospitalId} value={hospital.hospitalId}>
+                          {hospital.hospitalName}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                 </div>
 

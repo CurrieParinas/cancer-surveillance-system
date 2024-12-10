@@ -1,4 +1,5 @@
 "use client";
+import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { PatientsResponseSchema } from "@/packages/api/patient-list";
 import React, { ChangeEvent, FormEvent, useEffect, useRef, useState } from "react";
@@ -71,14 +72,67 @@ const MessagePage = () => {
 
   const dropdownRefPatient = useRef<HTMLDivElement>(null);
 
+  const [userInfo, setUserInfo] = useState({
+    userFirstname: '',
+    userLastname: '',
+    role: '',
+    email: '',
+  });
+
   useEffect(() => {
-    const userData = localStorage.getItem('user');
-    if (userData) {
-      const parsedUserData = JSON.parse(userData);
-      setDoctorInfo(parsedUserData.user.userId);
-      setDoctorEmail(parsedUserData.user.userEmail)
-      setFormData({ ...formData, senderEmail: parsedUserData.user.userEmail, senderID: parsedUserData.user.userId })
-    }
+    const setFormDetails = async () => {
+
+      const userData = localStorage.getItem('user');
+      if (userData) {
+        const parsedUserData = JSON.parse(userData);
+        setFormData({ ...formData, senderEmail: parsedUserData.user.userEmail, senderID: parsedUserData.user.userId })
+        if ('doctorId' in parsedUserData) {
+          setDoctorInfo(parsedUserData.user.userId);
+          setDoctorEmail(parsedUserData.user.userEmail)
+          setUserInfo({
+            userFirstname: parsedUserData.user.userFirstname,
+            userLastname: parsedUserData.user.userLastname,
+            role: 'Doctor',
+            email: parsedUserData.user.userEmail,
+          });
+        } else if ('patientId' in parsedUserData) {
+          setUserInfo({
+            userFirstname: parsedUserData.user.userFirstname,
+            userLastname: parsedUserData.user.userLastname,
+            role: 'Patient',
+            email: parsedUserData.user.userEmail,
+          });
+        }
+      }
+    };
+
+    const fetchDoctorDetails = async () => {
+      const userData = localStorage.getItem('user');
+      if (userData) {
+        const parsedUserData = JSON.parse(userData);
+        if ('patientId' in parsedUserData) {
+          try {
+            const response = await fetch(`http://localhost:8080/css/doctor/finddoctorsbypatient?patientID=${parsedUserData.patientId}`);
+            const data = await response.json();
+            if (data && data.length > 0) {
+              const doctor = data[0];
+              setFormData((prev) => ({
+                ...prev,
+                recieverEmail: doctor.user.userEmail,
+                recieverID: doctor.user.userId,
+              }));
+            } else {
+              console.warn("No doctor details found for the patient.");
+            }
+          } catch (error) {
+            console.error("Error fetching doctor details:", error);
+          }
+        }
+      }
+    };
+
+    fetchDoctorDetails();
+    setFormDetails();
   }, []);
 
   const handlePatientSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -150,6 +204,7 @@ const MessagePage = () => {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!validate()) {
+      console.log(errors)
       alert("invalid message")
       return;
     }
@@ -164,6 +219,7 @@ const MessagePage = () => {
       senderEmail: formData.senderEmail,
       notificationType: formData.notificationType,
     };
+
     try {
       const response = await fetch('http://localhost:8080/css/email/send', {
         method: 'POST',
@@ -177,15 +233,27 @@ const MessagePage = () => {
         console.error('Failed to send email');
       } else {
         toast({ title: "Email sent successfully!" })
-        setFormData({
-          subject: '',
-          messageBody: '',
-          recieverID: 1,
-          senderID: 1,
-          recieverEmail: '',
-          senderEmail: formData.senderEmail,
-          notificationType: 1,
-        })
+        if (userInfo.role === "Doctor") {
+          setFormData({
+            subject: '',
+            messageBody: '',
+            recieverID: 1,
+            senderID: 1,
+            recieverEmail: '',
+            senderEmail: formData.senderEmail,
+            notificationType: 1,
+          })
+        } else {
+          setFormData({
+            subject: '',
+            messageBody: '',
+            recieverID: 1,
+            senderID: 1,
+            recieverEmail: formData.recieverEmail,
+            senderEmail: formData.senderEmail,
+            notificationType: 1,
+          })
+        }
         setPatientSearchTerm("")
       }
     } catch (error) {
@@ -206,35 +274,44 @@ const MessagePage = () => {
           <form className="p-6 rounded-lg " onSubmit={handleSubmit}>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {/* TO Input */}
-              <div className="flex flex-col w-full relative " ref={dropdownRefPatient}>
-                <label htmlFor="lastname" className="text-sm pb-2 font-semibold text-black">TO:</label>
-                <input
-                  type="text"
-                  name="lastname"
-                  value={patientSearchTerm}
-                  onChange={handlePatientSearchChange}
-                  onClick={() => setPatientDropdownOpen(true)}
-                  className="mt-1 hover:border-red-200 p-2 border border-gray-300 rounded focus:outline-none focus:border-red-500 text-black"
-                  placeholder="Select or search Last Name"
-                />
-                {patientDropdownOpen && (
-                  <ul className="absolute z-10 top-16 bg-white border border-gray-300 w-full mt-1 hover:border-red-200 rounded shadow-lg max-h-40 overflow-y-auto">
-                    {filteredPatients.length > 0 ? (
-                      filteredPatients.map(patient => (
-                        <li
-                          key={patient.patientId}
-                          className="flex gap-2 p-2 text-black hover:bg-gray-200 cursor-pointer"
-                          onClick={() => handleSelectPatient(patient.patientUserId, patient.patientId, patient.userFirstname, patient.userLastname, patient.userEmail)}
-                        >
-                          {patient.userFirstname} {patient.userLastname} <p className="text-zinc-400">({patient.userEmail})</p>
-                        </li>
-                      ))
-                    ) : (
-                      <li className="p-2 text-gray-500">No patients found</li>
-                    )}
-                  </ul>
-                )}
-              </div>
+              {userInfo.role === "Doctor" ? (
+                <div className="flex flex-col w-full relative " ref={dropdownRefPatient}>
+                  <label htmlFor="lastname" className="text-sm pb-2 font-semibold text-black">TO:</label>
+                  <input
+                    type="text"
+                    name="lastname"
+                    value={patientSearchTerm}
+                    onChange={handlePatientSearchChange}
+                    onClick={() => setPatientDropdownOpen(true)}
+                    className="mt-1 hover:border-red-200 p-2 border border-gray-300 rounded focus:outline-none focus:border-red-500 text-black"
+                    placeholder="Select or search Last Name"
+                  />
+                  {patientDropdownOpen && (
+                    <ul className="absolute z-10 top-16 bg-white border border-gray-300 w-full mt-1 hover:border-red-200 rounded shadow-lg max-h-40 overflow-y-auto">
+                      {filteredPatients.length > 0 ? (
+                        filteredPatients.map(patient => (
+                          <li
+                            key={patient.patientId}
+                            className="flex gap-2 p-2 text-black hover:bg-gray-200 cursor-pointer"
+                            onClick={() => handleSelectPatient(patient.patientUserId, patient.patientId, patient.userFirstname, patient.userLastname, patient.userEmail)}
+                          >
+                            {patient.userFirstname} {patient.userLastname} <p className="text-zinc-400">({patient.userEmail})</p>
+                          </li>
+                        ))
+                      ) : (
+                        <li className="p-2 text-gray-500">No patients found</li>
+                      )}
+                    </ul>
+                  )}
+                </div>
+              ) : (
+                <div className="flex flex-col">
+                  <label className="font-semibold text-sm text-black mb-2">TO:</label>
+                  <div className="mt-1 p-2 border rounded-md bg-zinc-200 border-zinc-300 text-black">
+                    <Label className="text-base">{formData.recieverEmail || "No email selected"}</Label>
+                  </div>
+                </div>
+              )}
 
               {/* SUBJECT Input */}
               <div className="flex flex-col">
