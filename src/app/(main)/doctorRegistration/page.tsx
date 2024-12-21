@@ -48,6 +48,10 @@ type Errors = {
   emailNotUnique?: string;
 };
 
+type FormErrors = {
+  [key: string]: string | undefined;
+};
+
 const DoctorRegistration: React.FC = () => {
   const [formData, setFormData] = useState({
     lastname: "",
@@ -73,11 +77,11 @@ const DoctorRegistration: React.FC = () => {
   });
 
   const [doctorESig, setDoctorESig] = useState<File | null>(null);
-  const [errors, setErrors] = useState<any>({});
+  const [errors, setErrors] = useState<FormErrors>({});
   const [passwordMatch, setPasswordMatch] = useState(true);
 
   const validateForm = () => {
-    const newErrors: any = {};
+    const newErrors: FormErrors = {};
 
 
     if (!formData.lastname) newErrors.lastname = "Last name is required";
@@ -615,7 +619,7 @@ const DoctorRegistration: React.FC = () => {
               </div>
 
               <div className="flex flex-col">
-                <label htmlFor="doctorESig" className="text-sm font-semibold text-gray-700">Doctor's E-Signature</label>
+                <label htmlFor="doctorESig" className="text-sm font-semibold text-gray-700">Doctor&apos;s E-Signature</label>
                 <Input
                   type="file"
                   id="doctorESig"

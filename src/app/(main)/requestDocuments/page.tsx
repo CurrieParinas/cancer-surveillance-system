@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import { DiseaseZodSchema } from "@/packages/api/disease-response";
@@ -21,10 +21,10 @@ interface WorkupData {
 const RequestDocumentsPage = () => {
   const [selectedReferral, setSelectedReferral] = useState<string | undefined>("");
 
-  const [diseaseData, setDiseaseData] = useState<DiseaseResponse | null>(null);
+  const [, setDiseaseData] = useState<DiseaseResponse | null>(null);
   const [bodysiteName, setBodySiteName] = useState("");
   const [bodysiteId, setBodySiteId] = useState<number>(0);
-  const [error, setError] = useState<string | null>(null);
+  const [, setError] = useState<string | null>(null);
 
   const [userInfo, setUserInfo] = useState({
     lastName: "",
@@ -281,7 +281,7 @@ const RequestDocumentsPage = () => {
     setSelectedReferral(workupReferral ?? "None");
   };
 
-  const generatePDFPreview = async () => {
+  const generatePDFPreview = useCallback(async () => {
     if (!userInfo.firstName || !selectedWorkup) {
       setPdfUrl(null);
       return;
@@ -328,13 +328,11 @@ const RequestDocumentsPage = () => {
     setPdfUrl(pdfBlobUrl);
 
     document.body.removeChild(container);
-  };
+  }, [userInfo.firstName, selectedWorkup, selectedReferral, generatePDFContent]);
 
-  // Automatically generate preview when relevant data changes
   useEffect(() => {
     generatePDFPreview();
-  }, [userInfo, selectedWorkup, selectedReferral]);
-
+  }, [generatePDFPreview]);
 
   return (
     <div className="w-5/6 bg-zinc-100 flex flex-col items-center px-6">

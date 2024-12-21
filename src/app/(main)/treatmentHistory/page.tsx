@@ -4,7 +4,7 @@ import { useToast } from "@/hooks/use-toast";
 import { PatientSchema } from "@/packages/api/patient";
 import { PatientsResponseSchema } from "@/packages/api/patient-list";
 import usePageStore from "@/packages/stores/pageStore";
-import { ArrowLeft, ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import React, { ChangeEvent, useEffect, useRef, useState } from "react";
 
 interface FilteredPatient {
@@ -900,7 +900,7 @@ const TreatmentHistoryForm = () => {
     setPatientSearchTerm(`${firstname} ${lastname} (${email})`);
     setPatientDropdownOpen(false);
   };
-  const [error, setError] = useState<string | null>(null);
+  const [, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchPatientDetails = async () => {
@@ -940,7 +940,7 @@ const TreatmentHistoryForm = () => {
     };
 
     fetchPatientDetails();
-  }, []);
+  }, [formData]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -1072,14 +1072,6 @@ const TreatmentHistoryForm = () => {
       hormonalDoctorId: event.target.value,
     });
   };
-
-  useEffect(() => {
-    console.log("SURGERY", surgeryFormData)
-    console.log("RADX", radiationFormData)
-    console.log("IMUNO", immunorxFormData)
-    console.log("HORMO", hormonalFormData)
-    console.log("CHEMO", chemoFormData)
-  })
 
   const renderPageTitle = () => {
     switch (currentPage) {

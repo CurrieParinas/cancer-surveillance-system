@@ -67,8 +67,8 @@ const MessagePage = () => {
   const [patientDropdownOpen, setPatientDropdownOpen] = useState(false);
   const [filteredPatients, setFilteredPatients] = useState<FilteredPatient[]>([]);
   const [allPatients, setAllPatients] = useState<FilteredPatient[]>([]); // Store all patients initially
-  const [doctorInfo, setDoctorInfo] = useState("");
-  const [doctorEmail, setDoctorEmail] = useState("");
+  const [, setDoctorInfo] = useState("");
+  const [, setDoctorEmail] = useState("");
 
   const dropdownRefPatient = useRef<HTMLDivElement>(null);
 

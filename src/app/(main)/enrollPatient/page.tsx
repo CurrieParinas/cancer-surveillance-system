@@ -4,7 +4,6 @@ import { useToast } from "@/hooks/use-toast";
 import EnrollPatientSchema from "@/packages/api/enroll-patient";
 import { UserSchema } from "@/packages/api/user";
 import { useRouter } from "next/navigation";
-import { title } from "process";
 import React, { useState, useEffect } from "react";
 import { z } from "zod";
 
@@ -132,7 +131,6 @@ const EnrollPatient: React.FC = () => {
         USER_ENCODER: doctorInfo.userId,
       })
 
-      console.log(requestBody)
 
       try {
         const response = await fetch("http://localhost:8080/css/patient/add", {
@@ -144,7 +142,7 @@ const EnrollPatient: React.FC = () => {
         });
 
         if (response.ok) {
-          const data = await response.json();
+          // const data = await response.json();
           toast({ title: "Patient added successfully!" });
           setFormData({
             lastname: "",
@@ -242,8 +240,6 @@ const EnrollPatient: React.FC = () => {
         USER_ENCODER: doctorInfo.userId,
       })
 
-      console.log(requestBody)
-
       try {
         const response = await fetch("http://localhost:8080/css/patient/add", {
           method: "POST",
@@ -254,7 +250,7 @@ const EnrollPatient: React.FC = () => {
         });
 
         if (response.ok) {
-          const data = await response.json();
+          // const data = await response.json();
           toast({ title: "Patient added successfully!" });
           setFormData({
             lastname: "",

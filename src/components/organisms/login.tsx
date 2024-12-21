@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import { Button } from '../ui/button'
 import { useRouter, usePathname } from 'next/navigation'
 import { Label } from '../ui/label'
@@ -8,11 +8,17 @@ import Image from 'next/image'
 import Logo from '/public/logo/upm-colored.png'
 import { Input } from '../ui/input'
 import DoctorSchema from '@/packages/api/doctor'
-import { Separator } from '../ui/separator'
 import Link from 'next/link'
 import { PatientSchema } from '@/packages/api/patient'
-import { Contact2Icon, HeartPulseIcon, HouseIcon, InfoIcon, LucideBookA, StethoscopeIcon } from 'lucide-react'
-import BackgroundImage from '../../../public/background/1_1.jpg'
+import { Contact2Icon, HeartPulseIcon, HouseIcon, InfoIcon, LucideBookA, MenuIcon, StethoscopeIcon } from 'lucide-react'
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetTrigger,
+} from "@/components/ui/sheet"
+
+// import BackgroundImage from '../../../public/background/1_1.jpg'
 
 export const Login = () => {
   return (
@@ -28,18 +34,18 @@ export const Login = () => {
         <LoginForm />
       </div>
     </div>
-    // <div className="flex flex-col items-center justify-between h-screen overflow-hidden bg-zinc-600 w-full">
+    // <div className="flex flex-col items-center justify-between h-screen overflow-hidden bg-zinc-200 sm:bg-zinc-600 w-full">
     //   <div className="absolute w-full h-full">
     //     <Image
     //       src={BackgroundImage}
     //       alt='background image'
-    //       className='object-cover w-full h-full opacity-50'
+    //       className='object-cover w-full h-full opacity-50 hidden sm:flex'
     //     />
     //   </div>
     //   <div className="z-10 w-full h-screen mt-10 flex justify-center items-center">
-    //     <div className="flex w-6/12 h-[70%]">
-    //       <div className='w-full h-full bg-zinc-200 flex justify-center items-center text-black  rounded-3xl'>
-    //         <div className="w-1/2 h-full flex justify-center items-center">
+    //     <div className="flex w-full sm:w-6/12 h-[70%]">
+    //       <div className='w-full h-full bg-zinc-200 flex justify-center items-center text-black rounded-none sm:rounded-3xl'>
+    //         <div className="w-1/2 h-full hidden justify-center items-center xl:flex">
     //           <div className="h-[97.5%] rounded-l-2xl mx-2 flex flex-col justify-between py-6 px-3 items-center bg-red-900">
     //             <Label className='text-3xl text-white tracking-wider pt-4 font-semibold text-center'>Cancer Surveillance System</Label>
     //             <Image
@@ -47,17 +53,16 @@ export const Login = () => {
     //               alt='background image'
     //               className='object-contain w-10/12 opacity-75'
     //             />
-    //             <Label className='text-xl text-zinc-300 font-light italic'>&quot;Magkasama natin puksain ang kanser&quot;</Label>
+    //             <Label className='text-xl text-zinc-300 font-light italic text-center'>&quot;Magkasama natin puksain ang kanser&quot;</Label>
     //           </div>
     //         </div>
-    //         <div className="w-1/2">
+    //         <div className="xl:w-1/2 w-full">
     //           <LoginForm />
     //         </div>
     //       </div>
     //     </div>
     //   </div>
     // </div>
-
   )
 }
 
@@ -126,7 +131,7 @@ export const LoginForm = () => {
     <div className="flex items-center justify-center ">
       <div
         className="p-8 max-w-md w-full rounded-lg
-      border shadow-lg border-red-50
+      
       ">
         <h2 className="text-4xl text-center py-4 text-red-800">Kumusta!</h2>
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -190,8 +195,8 @@ export const LoginNavbar = () => {
   const isActive = (path: string) => pathname === path;
 
   return (
-    <div className='absolute top-0 w-full h-20 bg-red-900 transition-all duration-300 flex justify-between items-center px-8'>
-      <div className='group text-black h-12 w-[355px] flex items-center hover:bg-zinc-200 justify-center rounded-md transition-all duration-300 ease-in-out cursor-pointer'
+    <div className='absolute top-0 w-full h-20 bg-red-900 transition-all duration-300 flex justify-between items-center  px-8 md:px-2'>
+      <div className='group text-black h-12 sm:w-[355px] flex items-center hover:bg-zinc-200 justify-center rounded-md transition-all duration-300 ease-in-out cursor-pointer'
         onClick={() => router.push('/')}
       >
         <Image
@@ -201,48 +206,95 @@ export const LoginNavbar = () => {
           height={60}
           width={60}
         />
-        <Label className='text-xl text-white tracking-wider group-hover:text-black cursor-pointer'>
+        <Label className='text-xl text-white tracking-wider group-hover:text-black cursor-pointer sm:flex hidden'>
           Cancer Surveillance System
         </Label>
+        <Label className='text-xl text-white tracking-wider group-hover:text-black cursor-pointer sm:hidden flex'>
+          CSS
+        </Label>
       </div>
-      <div className='flex gap-2'>
+      <div className='hidden lg:flex gap-2'>
         <Button
           onClick={() => router.push("/")}
-          className={`w-32 flex gap-1 text-white bg-transparent shadow-none text-lg py-6 hover:bg-zinc-200 hover:text-black ${isActive("/") ? 'bg-white text-black' : ''}`}
+          className={`w-14 xl:w-32 flex gap-1 text-white bg-transparent shadow-none text-lg py-6 hover:bg-zinc-200 hover:text-black ${isActive("/") ? 'bg-white text-black' : ''}`}
         >
-          <HouseIcon /> Home
+          <HouseIcon /> <p className="hidden xl:flex">Home</p>
         </Button>
         <Button
           onClick={() => router.push("/patient")}
-          className={`w-32 flex gap-1 text-white bg-transparent shadow-none text-lg py-6 hover:bg-zinc-200 hover:text-black ${isActive("/patient") ? 'bg-white text-black' : ''}`}
+          className={`w-14 xl:w-32 flex gap-1 text-white bg-transparent shadow-none text-lg py-6 hover:bg-zinc-200 hover:text-black ${isActive("/patient") ? 'bg-white text-black' : ''}`}
         >
-          <HeartPulseIcon /> Patient
+          <HeartPulseIcon /> <p className="hidden xl:flex">Patient</p>
         </Button>
         <Button
           onClick={() => router.push("/doctor")}
-          className={`w-32 flex gap-1 text-white bg-transparent shadow-none text-lg py-6 hover:bg-zinc-200 hover:text-black ${isActive("/doctor") ? 'bg-white text-black' : ''}`}
+          className={`w-14 xl:w-32 flex gap-1 text-white bg-transparent shadow-none text-lg py-6 hover:bg-zinc-200 hover:text-black ${isActive("/doctor") ? 'bg-white text-black' : ''}`}
         >
-          <StethoscopeIcon /> Doctor
+          <StethoscopeIcon /> <p className="hidden xl:flex">Doctor</p>
         </Button>
         <Button
           onClick={() => router.push("/tutorial")}
-          className={`w-32 flex gap-1 text-white bg-transparent shadow-none text-lg py-6 hover:bg-zinc-200 hover:text-black ${isActive("/tutorial") ? 'bg-white text-black' : ''}`}
+          className={`w-14 xl:w-32 flex gap-1 text-white bg-transparent shadow-none text-lg py-6 hover:bg-zinc-200 hover:text-black ${isActive("/tutorial") ? 'bg-white text-black' : ''}`}
         >
-          <LucideBookA /> Tutorial
+          <LucideBookA /> <p className="hidden xl:flex">Tutorial</p>
         </Button>
         <Button
           onClick={() => router.push("/contact")}
-          className={`w-32 flex gap-1 text-white bg-transparent shadow-none text-lg py-6 hover:bg-zinc-200 hover:text-black ${isActive("/contact") ? 'bg-white text-black' : ''}`}
+          className={`w-14 xl:w-32 flex gap-1 text-white bg-transparent shadow-none text-lg py-6 hover:bg-zinc-200 hover:text-black ${isActive("/contact") ? 'bg-white text-black' : ''}`}
         >
-          <Contact2Icon /> Contact
+          <Contact2Icon /> <p className="hidden xl:flex">Contact</p>
         </Button>
         <Button
           onClick={() => router.push("/about")}
-          className={`w-32 flex gap-1 text-white bg-transparent shadow-none text-lg py-6 hover:bg-zinc-200 hover:text-black ${isActive("/about") ? 'bg-white text-black' : ''}`}
+          className={`w-14 xl:w-32 flex gap-1 text-white bg-transparent shadow-none text-lg py-6 hover:bg-zinc-200 hover:text-black ${isActive("/about") ? 'bg-white text-black' : ''}`}
         >
-          <InfoIcon /> About
+          <InfoIcon /> <p className="hidden xl:flex">About</p>
         </Button>
       </div>
+      <Sheet>
+        <SheetTrigger className='flex lg:hidden'> <MenuIcon /></SheetTrigger>
+        <SheetContent className='bg-red-900 w-1/4 border-l-0 px-2 pt-10'>
+          <SheetDescription className='gap-2'>
+            <Button
+              onClick={() => router.push("/")}
+              className={`w-full flex gap-1 text-white bg-transparent shadow-none text-lg py-6 hover:bg-zinc-200 hover:text-black justify-start ${isActive("/about") ? 'bg-white text-black' : ''}`}
+            >
+              <HouseIcon /> <p className="">Home</p>
+            </Button>
+            <Button
+              onClick={() => router.push("/patient")}
+              className={`w-full flex gap-1 text-white bg-transparent shadow-none text-lg py-6 hover:bg-zinc-200 hover:text-black justify-start ${isActive("/patient") ? 'bg-white text-black' : ''}`}
+            >
+              <HeartPulseIcon /> <p className="">Patient</p>
+            </Button>
+            <Button
+              onClick={() => router.push("/doctor")}
+              className={`w-full flex gap-1 text-white bg-transparent shadow-none text-lg py-6 hover:bg-zinc-200 hover:text-black justify-start ${isActive("/doctor") ? 'bg-white text-black' : ''}`}
+            >
+              <StethoscopeIcon /> <p className="">Doctor</p>
+            </Button>
+            <Button
+              onClick={() => router.push("/tutorial")}
+              className={`w-full flex gap-1 text-white bg-transparent shadow-none text-lg py-6 hover:bg-zinc-200 hover:text-black justify-start ${isActive("/tutorial") ? 'bg-white text-black' : ''}`}
+            >
+              <LucideBookA /> <p className="">Tutorial</p>
+            </Button>
+            <Button
+              onClick={() => router.push("/contact")}
+              className={`w-full flex gap-1 text-white bg-transparent shadow-none text-lg py-6 hover:bg-zinc-200 hover:text-black justify-start ${isActive("/contact") ? 'bg-white text-black' : ''}`}
+            >
+              <Contact2Icon /> <p className="">Contact</p>
+            </Button>
+            <Button
+              onClick={() => router.push("/about")}
+              className={`w-full flex gap-1 text-white bg-transparent shadow-none text-lg py-6 hover:bg-zinc-200 hover:text-black justify-start ${isActive("/about") ? 'bg-white text-black' : ''}`}
+            >
+              <InfoIcon /> <p className="">About</p>
+            </Button>
+          </SheetDescription>
+        </SheetContent>
+      </Sheet>
+
     </div>
   )
 }

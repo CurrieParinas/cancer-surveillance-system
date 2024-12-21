@@ -207,7 +207,7 @@ const ConsultPage = () => {
 	const [patientDropdownOpen, setPatientDropdownOpen] = useState(false);
 	const [filteredPatients, setFilteredPatients] = useState<FilteredPatient[]>([]);
 	const [allPatients, setAllPatients] = useState<FilteredPatient[]>([]); // Store all patients initially
-	const [doctorInfo, setDoctorInfo] = useState("");
+	const [, setDoctorInfo] = useState("");
 
 	const dropdownRefPatient = useRef<HTMLDivElement>(null);
 
@@ -345,7 +345,7 @@ const ConsultPage = () => {
 		};
 
 		fetchPatientDetails();
-	}, []);
+	}, [searchFormData]);
 
 	return (
 		<div className="w-5/6 bg-white flex flex-col items-center justify-center gap-4">

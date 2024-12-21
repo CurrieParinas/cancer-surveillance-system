@@ -16,10 +16,10 @@ interface Symptom {
 
 const ReportSymptomsPage = () => {
   const [patientId, setPatientId] = useState("");
-  const [diseaseData, setDiseaseData] = useState<DiseaseResponse | null>(null);
+  const [, setDiseaseData] = useState<DiseaseResponse | null>(null);
   const [bodysiteId, setBodySiteId] = useState<number>(0);
   const [surveyResponseID, setSurveyResponseID] = useState<number>(0);
-  const [error, setError] = useState<string | null>(null);
+  const [, setError] = useState<string | null>(null);
   const [symptomNotes, setSymptomNotes] = useState<string>("");
 
   const [LocalSymptoms, setLocalSymptoms] = useState<Symptom[]>([]);
@@ -44,11 +44,10 @@ const ReportSymptomsPage = () => {
   ]);
   const [SelectedTreatmentcompletion, setSelectedTreatmentcompletion] = useState<Symptom[]>([]);
 
-  const [doctorId, setDoctorId] = useState<number | null>(null);
+  const [, setDoctorId] = useState<number | null>(null);
 
   useEffect(() => {
     const fetchDoctorData = async () => {
-      console.log(patientId)
       try {
         const response = await fetch(
           `http://localhost:8080/css/doctor/finddoctorsbypatient?patientID=${patientId}`
@@ -210,8 +209,6 @@ const ReportSymptomsPage = () => {
         throw new Error(`Error: ${responseDoctorId.status} ${responseDoctorId.statusText}`);
       }
 
-      console.log("TEST1");
-
       const doctorData = await responseDoctorId.json();
 
       if (!doctorData || doctorData.length === 0 || !doctorData[0].doctorId) {
@@ -219,30 +216,23 @@ const ReportSymptomsPage = () => {
       }
 
       const doctorId = doctorData[0].doctorId;
-      console.log("Doctor ID:", doctorId);
 
       const response = await fetch(
         `http://localhost:8080/css/surveyresponse/existing?patientID=${patientId}&doctorID=${doctorId}`
       );
 
-      console.log("TEST1.1", patientId, "AND", doctorId);
 
       if (!response.ok) {
-        console.log("RESPONSE NOT OK");
         throw new Error(`Error: ${response.status} ${response.statusText}`);
       }
 
-      console.log("Content-Type:", response.headers.get("Content-Type"));
 
       // Read response as text first
       const responseText = await response.text();
-      console.log("Raw Response Text:", responseText);
 
       // Parse the text as JSON if it's not empty
       const responseBody = responseText ? JSON.parse(responseText) : {};
-      console.log("Parsed Response Body:", responseBody);
 
-      console.log("TEST2");
 
       try {
         // Retrieve or create the survey response ID

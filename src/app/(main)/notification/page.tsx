@@ -19,6 +19,18 @@ interface Notification {
   notificationNotes: string;
 }
 
+type NotificationSender = {
+  userFirstname: string;
+  userLastname: string;
+};
+
+type NotificationType = {
+  notifLogID: number;
+  notificationDate: string; // ISO date string
+  notificationSender: NotificationSender;
+  notificationNotes: string;
+};
+
 const NotificationPage = () => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
 
@@ -35,7 +47,7 @@ const NotificationPage = () => {
             throw new Error(`HTTP error! Status: ${response.status}`);
           }
           const data = await response.json();
-          const parsedData = data.map((item: any) => ({
+          const parsedData = data.map((item: NotificationType) => ({
             notifLogID: item.notifLogID,
             notificationDate: new Date(item.notificationDate).toISOString().split("T")[0],
             notificationSender: {
