@@ -1,6 +1,6 @@
 "use client";
 
-import { usePathname, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import React, { useEffect } from 'react';
 import { Label } from '@/components/ui/label';
 import Image from 'next/image';
@@ -8,7 +8,6 @@ import Logo from '/public/logo/upm-colored.png';
 import { ChangePasswordForm } from '@/components/organisms/change-password';
 
 const ChangePasswordPage = () => {
-  const pathname = usePathname();
   const searchParams = useSearchParams();
 
   const userId = searchParams.get('userId');

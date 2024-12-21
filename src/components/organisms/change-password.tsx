@@ -5,7 +5,11 @@ import { Button } from '../ui/button';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 
-export const ChangePasswordForm = (userId: any) => {
+interface UserIdProps {
+  userId: string | number;
+}
+
+export const ChangePasswordForm = (userId: UserIdProps) => {
   const [newPassword, setNewPassword] = useState('');
   const [newPasswordCheck, setNewPasswordCheck] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
@@ -20,7 +24,7 @@ export const ChangePasswordForm = (userId: any) => {
 
       return () => clearTimeout(timer);
     }
-  }, [successMessage]);
+  }, [successMessage, router]);
 
   const { toast } = useToast();
 

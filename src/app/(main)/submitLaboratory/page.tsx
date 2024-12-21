@@ -24,14 +24,14 @@ interface Workup {
 }
 
 const SubmitLaboratoryPage = () => {
-  const [diseaseData, setDiseaseData] = useState<DiseaseResponse | null>(null);
-  const [bodysiteName, setBodySiteName] = useState("");
+  const [, setDiseaseData] = useState<DiseaseResponse | null>(null);
+  const [, setBodySiteName] = useState("");
   const [bodysiteId, setBodySiteId] = useState<number>(0);
   const [error, setError] = useState<string | null>(null);
   const [workups, setWorkups] = useState<WorkupData[]>([]);
   const [selectedWorkup, setSelectedWorkup] = useState<string>("");
   const [labfile, setLabfile] = useState<File | null>(null);
-  const [fileList, setFileList] = useState<string[]>([]);
+  const [, setFileList] = useState<string[]>([]);
   const [patientId, setPatientId] = useState<number | null>(null);
   const [resetDropzone, setResetDropzone] = useState<boolean>(false);
   const [loading, setLoading] = useState(false); // Loading state
@@ -43,13 +43,13 @@ const SubmitLaboratoryPage = () => {
         const parsedUserData = JSON.parse(userData);
         setPatientId(parsedUserData.patientId);
 
-        const birthDate = new Date(parsedUserData.user.userBirthdate);
-        const age = new Date().getFullYear() - birthDate.getFullYear();
-        const isBeforeBirthday =
-          new Date().getMonth() < birthDate.getMonth() ||
-          (new Date().getMonth() === birthDate.getMonth() &&
-            new Date().getDate() < birthDate.getDate());
-        const calculatedAge = isBeforeBirthday ? age - 1 : age;
+        // const birthDate = new Date(parsedUserData.user.userBirthdate);
+        // const age = new Date().getFullYear() - birthDate.getFullYear();
+        // const isBeforeBirthday =
+        //   new Date().getMonth() < birthDate.getMonth() ||
+        //   (new Date().getMonth() === birthDate.getMonth() &&
+        //     new Date().getDate() < birthDate.getDate());
+        // const calculatedAge = isBeforeBirthday ? age - 1 : age;
       } catch (error) {
         console.error("Invalid user data:", error);
       }

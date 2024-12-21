@@ -199,8 +199,8 @@ export const Dashboard = () => {
   };
 
   const [workups, setWorkups] = useState<SubmittedWorkup>([]);
-  const [loadingWorkups, setLoadingWorkups] = useState(true);
-  const [errorWorkups, setErrorWorkups] = useState<string | null>(null);
+  const [, setLoadingWorkups] = useState(true);
+  const [, setErrorWorkups] = useState<string | null>(null);
 
   // Fetch the submitted workups
   const fetchSubmittedWorkups = async () => {

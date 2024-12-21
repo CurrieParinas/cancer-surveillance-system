@@ -6,7 +6,7 @@ import { Separator } from '../ui/separator'
 import { Button } from '../ui/button'
 import { usePathname, useRouter } from 'next/navigation'
 import { Input } from '../ui/input'
-import { BabyIcon, Bell, Brain, ChevronRight, ChevronsUpDownIcon, ClipboardPlus, ContactRound, DnaIcon, EllipsisVertical, FileSearch, HeartPulseIcon, HospitalIcon, LayoutDashboard, LogOut, Mail, Microscope, MicroscopeIcon, PillBottleIcon, PillIcon, Radiation, RadiationIcon, Search, SettingsIcon, Slice, SquareUser, Stethoscope, Syringe, SyringeIcon, Terminal, ThermometerSnowflake, UsersRoundIcon } from 'lucide-react'
+import { Bell, ClipboardPlus, ContactRound, DnaIcon, FileSearch, HospitalIcon, LayoutDashboard, LogOut, Mail, Microscope, MicroscopeIcon, PillBottleIcon, PillIcon, RadiationIcon, Search, SettingsIcon, Slice, Stethoscope, SyringeIcon, Terminal, ThermometerSnowflake, UsersRoundIcon } from 'lucide-react'
 import { PatientsResponseSchema } from '@/packages/api/patient-list'
 
 import {
@@ -188,13 +188,6 @@ export const PatientSidebar = () => {
     window.location.reload();
     window.location.href = "/";
   };
-
-  useEffect(() => {
-    const userData = localStorage.getItem('user');
-    if (userData) {
-      const parsedUserData = JSON.parse(userData);
-    }
-  }, []);
 
   return (
     <div className='justify-between h-full flex flex-col overflow-hidden'>
@@ -473,15 +466,15 @@ interface NotificationFormData {
   messageType: number;
 }
 
-interface EmailFormData {
-  subject: string;
-  messageBody: string;
-  recieverID: number;
-  senderID: number;
-  recieverEmail: string;
-  senderEmail: string;
-  notificationType: number;
-}
+// interface EmailFormData {
+//   subject: string;
+//   messageBody: string;
+//   recieverID: number;
+//   senderID: number;
+//   recieverEmail: string;
+//   senderEmail: string;
+//   notificationType: number;
+// }
 
 interface ConsultFormData {
   PATIENT_ID: number;
@@ -504,53 +497,53 @@ interface ValidationErrors {
   CONSULT_PATIENTSTATUS?: string;
 }
 
-interface Diagnosis {
-  DATE: string | null;
-  LATERALITY: string | null;
-  STAGE: string | null;
-}
+// interface Diagnosis {
+//   DATE: string | null;
+//   LATERALITY: string | null;
+//   STAGE: string | null;
+// }
 
-interface HormonalTherapy {
-  YN: string;
-  COMPLIANCE: string | null;
-}
+// interface HormonalTherapy {
+//   YN: string;
+//   COMPLIANCE: string | null;
+// }
 
-interface Chemotherapy {
-  YN: string;
-  COMPLETION: string | null;
-}
+// interface Chemotherapy {
+//   YN: string;
+//   COMPLETION: string | null;
+// }
 
-interface Name {
-  MIDDLENAME: string;
-  LASTNAME: string;
-  FIRSTNAME: string;
-}
+// interface Name {
+//   MIDDLENAME: string;
+//   LASTNAME: string;
+//   FIRSTNAME: string;
+// }
 
-interface Operation {
-  SURGERY: string | null;
-  DATE: string | null;
-}
+// interface Operation {
+//   SURGERY: string | null;
+//   DATE: string | null;
+// }
 
-interface Radiotherapy {
-  YN: string;
-  COMPLETION: string | null;
-}
+// interface Radiotherapy {
+//   YN: string;
+//   COMPLETION: string | null;
+// }
 
-interface PatientConsultInfo {
-  DIAGNOSIS: Diagnosis;
-  PATIENT_SISX_REPORT: string | null;
-  PATIENT_REPORT_DATE: string | null;
-  HORMONAL_THERAPY: HormonalTherapy;
-  CHEMOTHERAPY: Chemotherapy;
-  NAME: Name;
-  STATUS: string;
-  LATEST_LAB_SUBMITTED: string | null;
-  OPERATION: Operation;
-  LATEST_LAB_DATE: string | null;
-  RADIOTHERAPY: Radiotherapy;
-  LATEST_CONSULT_DATE: string | null;
-  AGE: number;
-}
+// interface PatientConsultInfo {
+//   DIAGNOSIS: Diagnosis;
+//   PATIENT_SISX_REPORT: string | null;
+//   PATIENT_REPORT_DATE: string | null;
+//   HORMONAL_THERAPY: HormonalTherapy;
+//   CHEMOTHERAPY: Chemotherapy;
+//   NAME: Name;
+//   STATUS: string;
+//   LATEST_LAB_SUBMITTED: string | null;
+//   OPERATION: Operation;
+//   LATEST_LAB_DATE: string | null;
+//   RADIOTHERAPY: Radiotherapy;
+//   LATEST_CONSULT_DATE: string | null;
+//   AGE: number;
+// }
 
 
 export const DoctorSidebar = () => {
@@ -583,7 +576,7 @@ export const DoctorSidebar = () => {
   const [patientDropdownOpen, setPatientDropdownOpen] = useState(false);
   const [filteredPatients, setFilteredPatients] = useState<FilteredPatient[]>([]);
   const [allPatients, setAllPatients] = useState<FilteredPatient[]>([]);
-  const [doctorInfo, setDoctorInfo] = useState("");
+  const [, setDoctorInfo] = useState("");
 
   const dropdownRefPatient = useRef<HTMLDivElement>(null);
 
@@ -1031,7 +1024,7 @@ export const DoctorSidebar = () => {
 
   //disease profile
   const [diseaseData, setDiseaseData] = useState<DiseaseResponse | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [, setError] = useState<string | null>(null);
 
   const fetchDiseaseDetails = async (patientId: number) => {
     try {
@@ -1069,7 +1062,7 @@ export const DoctorSidebar = () => {
     messageType: 1, // Assuming a default message type
   });
 
-  const [validationErrors, setValidationErrors] = useState<Partial<NotificationFormData>>({});
+  const [, setValidationErrors] = useState<Partial<NotificationFormData>>({});
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -1098,6 +1091,7 @@ export const DoctorSidebar = () => {
       });
     }
   }, []);
+
   const [loading, setLoading] = useState(false); // Loading state
 
 
@@ -1322,7 +1316,6 @@ export const DoctorSidebar = () => {
   };
 
   const [patient, setPatient] = useState<PatientsResponse | null>(null);
-  const [errorPatientInfo, setErrorPatientInfo] = useState<string | null>(null);
 
   const fetchPatient = async (patientId: number) => {
     try {

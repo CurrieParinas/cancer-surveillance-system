@@ -1,20 +1,15 @@
 "use client"
 
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import { Label } from '../ui/label';
 import { Input } from '../ui/input';
 import { Button } from '../ui/button';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
-import { title } from 'process';
 
 export const ForgotPasswordForm = () => {
   const [email, setEmail] = useState('');
   const router = useRouter();
-
-  useEffect(() => {
-    console.log(email)
-  })
 
   const { toast } = useToast();
 

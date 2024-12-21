@@ -128,7 +128,6 @@ const DiseaseProfile = () => {
   };
 
   useEffect(() => {
-    console.log(doctorInfo)
     setFormData(prevData => ({
       ...prevData,
       disease_encoder: doctorInfo,
@@ -284,7 +283,6 @@ const DiseaseProfile = () => {
     }
     if (Object.keys(formErrors).length > 0) {
       setErrors(formErrors);
-      console.log(formErrors)
       return;
     }
     setLoading(true);
@@ -356,7 +354,7 @@ const DiseaseProfile = () => {
         throw new Error("Network response was not ok");
       }
 
-      const result = await response.json();
+      // const result = await response.json();
       toast({ title: "Disease Profile Added Succesfully" })
 
       setFormData({
@@ -433,8 +431,6 @@ const DiseaseProfile = () => {
       return;
     }
 
-    console.log(formErrors)
-
     const convertDateFormat = (dateString: string) => {
       const [year, month, day] = dateString.split('-');
       return `${day}/${month}/${year}`;
@@ -500,7 +496,7 @@ const DiseaseProfile = () => {
         throw new Error("Network response was not ok");
       }
 
-      const result = await response.json();
+      // const result = await response.json();
       toast({ title: "Disease Profile Added Succesfully" })
 
       setFormData({
@@ -635,7 +631,7 @@ const DiseaseProfile = () => {
     fetchPatients();
   }, []);
 
-  const [error, setError] = useState<string | null>(null);
+  const [, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchPatientDetails = async () => {
@@ -675,7 +671,7 @@ const DiseaseProfile = () => {
     };
 
     fetchPatientDetails();
-  }, []);
+  }, [formData]);
 
   const handlePatientSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const search = e.target.value.toLowerCase();

@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { CloudUploadIcon, Upload } from 'lucide-react';
+import { CloudUploadIcon } from 'lucide-react';
 
 // Define the props expected by the Dropzone component
 interface DropzoneProps {
