@@ -14,6 +14,7 @@ const EnrollPatientSchema = z.object({
   addressCity: z.string().min(1, "City is required"),
   addressRegion: z.string().min(1, "Region is required"),
   addressZipcode: z.string().min(4, "Zipcode should be at least 4 characters"),
+  USER_CONTACTNO: z.string(),
 });
 
 export default EnrollPatientSchema;

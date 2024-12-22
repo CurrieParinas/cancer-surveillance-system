@@ -74,6 +74,7 @@ const DoctorRegistration: React.FC = () => {
     hospital_id: 1,
     department_id: 1,
     specialty_id: 1,
+    USER_CONTACTNO: ""
   });
 
   const [doctorESig, setDoctorESig] = useState<File | null>(null);
@@ -214,7 +215,8 @@ const DoctorRegistration: React.FC = () => {
         ADDRESS_STREET: formData.addressStreet,
         ADDRESS_CITY: formData.addressCity,
         ADDRESS_REGION: formData.addressRegion,
-        ADDRESS_ZIPCODE: formData.addressZipcode
+        ADDRESS_ZIPCODE: formData.addressZipcode,
+        USER_CONTACTNO: formData.USER_CONTACTNO
       };
 
       formDataToSend.append("addDoctorRequest", new Blob([JSON.stringify(requestBody)], { type: "application/json" }));
@@ -271,6 +273,7 @@ const DoctorRegistration: React.FC = () => {
           hospital_id: 1,
           department_id: 1,
           specialty_id: 1,
+          USER_CONTACTNO: "",
         });
         setDoctorESig(null);
       } catch (error) {
@@ -518,8 +521,20 @@ const DoctorRegistration: React.FC = () => {
                 </div>
               </div>
 
-              <div className="flex gap-3">
-                <div className="flex flex-col w-[32%]">
+              <div className="flex justify-between">
+                <div className="flex flex-col w-[23.5%]">
+                  <label htmlFor="USER_CONTACTNO" className="text-sm font-semibold text-gray-700">Contact Number</label>
+                  <input
+                    type="number"
+                    name="USER_CONTACTNO"
+                    value={formData.USER_CONTACTNO}
+                    onChange={handleChange}
+                    className="mt-1 p-2 border border-gray-300 rounded focus:outline-none focus:border-red-500 text-black"
+                    placeholder="9123456789"
+                  />
+                </div>
+
+                <div className="flex flex-col w-[23.5%]">
                   <label htmlFor="addressNumber" className="text-sm font-semibold text-gray-700">Address Number</label>
                   <input
                     type="text"
@@ -531,7 +546,7 @@ const DoctorRegistration: React.FC = () => {
                   />
                 </div>
 
-                <div className="flex flex-col w-[32%]">
+                <div className="flex flex-col w-[23.5%]">
                   <label htmlFor="addressStreet" className="text-sm font-semibold text-gray-700">Street Name</label>
                   <input
                     type="text"
@@ -543,7 +558,7 @@ const DoctorRegistration: React.FC = () => {
                   />
                 </div>
 
-                <div className="flex flex-col w-[32%]">
+                <div className="flex flex-col w-[23.5%]">
                   <label htmlFor="addressCity" className="text-sm font-semibold text-gray-700">City</label>
                   <input
                     type="text"

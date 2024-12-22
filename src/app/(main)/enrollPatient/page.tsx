@@ -27,7 +27,8 @@ const EnrollPatient: React.FC = () => {
     addressStreet: "",
     addressCity: "",
     addressRegion: "",
-    addressZipcode: ""
+    addressZipcode: "",
+    USER_CONTACTNO: ""
   });
 
   const [doctorInfo, setDoctorInfo] = useState({
@@ -129,6 +130,7 @@ const EnrollPatient: React.FC = () => {
         ADDRESS_REGION: formData.addressRegion,
         ADDRESS_ZIPCODE: formData.addressZipcode,
         USER_ENCODER: doctorInfo.userId,
+        USER_CONTACTNO: formData.USER_CONTACTNO
       })
 
 
@@ -157,7 +159,8 @@ const EnrollPatient: React.FC = () => {
             addressStreet: "",
             addressCity: "",
             addressRegion: "",
-            addressZipcode: ""
+            addressZipcode: "",
+            USER_CONTACTNO: ""
           })
         } else {
           console.error("Failed to add patient:", response.status);
@@ -265,7 +268,8 @@ const EnrollPatient: React.FC = () => {
             addressStreet: "",
             addressCity: "",
             addressRegion: "",
-            addressZipcode: ""
+            addressZipcode: "",
+            USER_CONTACTNO: "",
           })
           router.push("/diseaseProfile")
         } else {
@@ -329,19 +333,33 @@ const EnrollPatient: React.FC = () => {
               </div>
             </div>
 
-            <div className="flex flex-col">
-              <label htmlFor="email" className="text-sm font-semibold text-gray-700">Email Address</label>
-              <input
-                type="email"
-                name="email"
+            <div className="flex gap-4">
+              <div className="flex flex-col w-1/2">
+                <label htmlFor="email" className="text-sm font-semibold text-gray-700">Email Address</label>
+                <input
+                  type="email"
+                  name="email"
 
-                value={formData.email}
-                onChange={handleChange}
-                className={`mt-1 p-2 border ${errors.email ? "border-red-500" : "border-gray-300"} rounded focus:outline-none focus:border-red-500 text-black`}
-                placeholder="juandelacruz@mail.com"
-              />
-              {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
-              {errors.emailNotUnique && <p className="text-red-500 text-xs mt-1">{errors.emailNotUnique}</p>}
+                  value={formData.email}
+                  onChange={handleChange}
+                  className={`mt-1 p-2 border ${errors.email ? "border-red-500" : "border-gray-300"} rounded focus:outline-none focus:border-red-500 text-black`}
+                  placeholder="juandelacruz@mail.com"
+                />
+                {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
+                {errors.emailNotUnique && <p className="text-red-500 text-xs mt-1">{errors.emailNotUnique}</p>}
+              </div>
+
+              <div className="flex flex-col w-1/2">
+                <label htmlFor="USER_CONTACTNO" className="text-sm font-semibold text-gray-700">Contact Number</label>
+                <input
+                  type="number"
+                  name="USER_CONTACTNO"
+                  value={formData.USER_CONTACTNO}
+                  onChange={handleChange}
+                  className="mt-1 p-2 border border-gray-300 rounded focus:outline-none focus:border-red-500 text-black"
+                  placeholder="9123456789"
+                />
+              </div>
             </div>
 
             <div className="flex gap-3">
