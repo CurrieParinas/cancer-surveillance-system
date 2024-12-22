@@ -63,7 +63,7 @@ const SubmitLaboratoryPage = () => {
         const parsedUserData = JSON.parse(userData);
         try {
           const response = await fetch(
-            `http://localhost:8080/css/disease/getbypatientid?patientID=${parsedUserData.patientId}`
+            `${process.env.NEXT_PUBLIC_BACKEND_URL}css/disease/getbypatientid?patientID=${parsedUserData.patientId}`
           );
 
           if (!response.ok) {
@@ -95,7 +95,7 @@ const SubmitLaboratoryPage = () => {
     const fetchWorkups = async () => {
       try {
         const response = await fetch(
-          `http://localhost:8080/css/workup/fetchbycancertype?cancerType=${bodysiteId}`
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}css/workup/fetchbycancertype?cancerType=${bodysiteId}`
         );
         if (!response.ok) {
           throw new Error("Failed to fetch workup data.");
@@ -121,7 +121,7 @@ const SubmitLaboratoryPage = () => {
 
     try {
       const responseDoctorId = await fetch(
-        `http://localhost:8080/css/doctor/finddoctorsbypatient?patientID=${patientId}`
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}css/doctor/finddoctorsbypatient?patientID=${patientId}`
       );
 
       if (!responseDoctorId.ok) {
@@ -129,7 +129,7 @@ const SubmitLaboratoryPage = () => {
       }
 
       doctorData = await responseDoctorId.json();
-      const response = await fetch('http://localhost:8080/css/workup/all');
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}css/workup/all`);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -164,7 +164,7 @@ const SubmitLaboratoryPage = () => {
     }
 
     try {
-      const response = await fetch("http://localhost:8080/css/lab/submit/add", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}css/lab/submit/add`, {
         method: "POST",
         body: formDataToSend,
       });

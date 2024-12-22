@@ -50,7 +50,7 @@ const ReportSymptomsPage = () => {
     const fetchDoctorData = async () => {
       try {
         const response = await fetch(
-          `http://localhost:8080/css/doctor/finddoctorsbypatient?patientID=${patientId}`
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}css/doctor/finddoctorsbypatient?patientID=${patientId}`
         );
 
         if (!response.ok) {
@@ -76,7 +76,7 @@ const ReportSymptomsPage = () => {
         setPatientId(parsedUserData.patientId)
         try {
           const response = await fetch(
-            `http://localhost:8080/css/disease/getbypatientid?patientID=${parsedUserData.patientId}`
+            `${process.env.NEXT_PUBLIC_BACKEND_URL}css/disease/getbypatientid?patientID=${parsedUserData.patientId}`
           );
 
           if (!response.ok) {
@@ -122,19 +122,19 @@ const ReportSymptomsPage = () => {
 
     if (bodysiteId) {
       fetchSymptoms(
-        `http://localhost:8080/css/symptom/survey/symptomname/ls?cancerType=${bodysiteId}`,
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}css/symptom/survey/symptomname/ls?cancerType=${bodysiteId}`,
         setLocalSymptoms
       );
       fetchSymptoms(
-        `http://localhost:8080/css/symptom/survey/symptomname/ss?cancerType=${bodysiteId}`,
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}css/symptom/survey/symptomname/ss?cancerType=${bodysiteId}`,
         setSystemicSymptoms
       );
       fetchSymptoms(
-        `http://localhost:8080/css/symptom/survey/symptomname/qol?cancerType=${bodysiteId}`,
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}css/symptom/survey/symptomname/qol?cancerType=${bodysiteId}`,
         setQualitySymptoms
       );
       fetchSymptoms(
-        `http://localhost:8080/css/symptom/survey/symptomname/tse?cancerType=${bodysiteId}`,
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}css/symptom/survey/symptomname/tse?cancerType=${bodysiteId}`,
         setTreatmentEffectsSymptoms
       );
     }
@@ -202,7 +202,7 @@ const ReportSymptomsPage = () => {
 
     try {
       const responseDoctorId = await fetch(
-        `http://localhost:8080/css/doctor/finddoctorsbypatient?patientID=${patientId}`
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}css/doctor/finddoctorsbypatient?patientID=${patientId}`
       );
 
       if (!responseDoctorId.ok) {
@@ -218,7 +218,7 @@ const ReportSymptomsPage = () => {
       const doctorId = doctorData[0].doctorId;
 
       const response = await fetch(
-        `http://localhost:8080/css/surveyresponse/existing?patientID=${patientId}&doctorID=${doctorId}`
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}css/surveyresponse/existing?patientID=${patientId}&doctorID=${doctorId}`
       );
 
 
@@ -250,7 +250,7 @@ const ReportSymptomsPage = () => {
             "0"
           )}:${String(now.getSeconds()).padStart(2, "0")}`;
 
-          const addResponse = await fetch("http://localhost:8080/css/surveyresponse/add", {
+          const addResponse = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}css/surveyresponse/add`, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -283,7 +283,7 @@ const ReportSymptomsPage = () => {
         ];
 
         const submissionPromises = allSymptoms.map((symptom) =>
-          fetch(`http://localhost:8080/css/symptom/report/add`, {
+          fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}css/symptom/report/add`, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",

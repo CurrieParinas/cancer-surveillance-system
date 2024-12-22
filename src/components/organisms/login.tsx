@@ -80,7 +80,7 @@ export const LoginForm = () => {
     };
 
     try {
-      const response = await fetch('http://localhost:8080/css/login', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}css/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

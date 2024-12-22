@@ -17,7 +17,7 @@ export const ForgotPasswordForm = () => {
     e.preventDefault();
 
     try {
-      const response = await fetch(`http://localhost:8080/css/forgotpassword/createForgotPassword?email=${encodeURIComponent(email)}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}css/forgotpassword/createForgotPassword?email=${encodeURIComponent(email)}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',

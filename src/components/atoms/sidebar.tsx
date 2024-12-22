@@ -98,10 +98,6 @@ export const Sidebar = () => {
     }
   }, []);
 
-  useEffect(() => {
-    console.log(userInfo)
-  })
-
   const departmentIcons: Record<string, React.ReactNode> = {
     Medicine: <PillIcon size={20} strokeWidth={2} />,
     Surgery: <Slice size={20} strokeWidth={2} />,
@@ -659,7 +655,7 @@ export const DoctorSidebar = () => {
         if (userData) {
           const parsedUserData = JSON.parse(userData);
           const response = await fetch(
-            `http://localhost:8080/css/onboard/getPatientsByDoctor/${parsedUserData.doctorId}`
+            `${process.env.NEXT_PUBLIC_BACKEND_URL}css/onboard/getPatientsByDoctor/${parsedUserData.doctorId}`
           );
           const data = await response.json();
           const parsedData = PatientsResponseSchema.parse(data);
@@ -696,7 +692,7 @@ export const DoctorSidebar = () => {
 
   const fetchTreatmentData = async (patientId: number) => {
     try {
-      const response = await fetch(`http://localhost:8080/css/treatment/findbypatient/latest?patientID=${patientId}`);
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}css/treatment/findbypatient/latest?patientID=${patientId}`);
 
       if (!response.ok) {
         throw new Error("Failed to fetch treatment data");
@@ -728,7 +724,7 @@ export const DoctorSidebar = () => {
 
   const fetchSurgeryData = async (patientId: number) => {
     try {
-      const response = await fetch(`http://localhost:8080/css/surgery/findbypatient/latest?patientID=${patientId}`);
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}css/surgery/findbypatient/latest?patientID=${patientId}`);
 
       if (!response.ok) {
         throw new Error("Failed to fetch surgery data");
@@ -785,7 +781,7 @@ export const DoctorSidebar = () => {
 
   const fetchRadiotherapyData = async (patientId: number) => {
     try {
-      const response = await fetch(`http://localhost:8080/css/radiotherapy/findbypatient/latest?patientID=${patientId}`);
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}css/radiotherapy/findbypatient/latest?patientID=${patientId}`);
 
       if (!response.ok) {
         throw new Error("Failed to fetch radiotherapy data");
@@ -848,7 +844,7 @@ export const DoctorSidebar = () => {
 
   const fetchHormonalData = async (patientId: number) => {
     try {
-      const response = await fetch(`http://localhost:8080/css/hormonal/findbypatient/latest?patientID=${patientId}`);
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}css/hormonal/findbypatient/latest?patientID=${patientId}`);
 
       if (!response.ok) {
         throw new Error("Failed to fetch hormonal data");
@@ -903,7 +899,7 @@ export const DoctorSidebar = () => {
 
   const fetchImmunotherapyData = async (patientId: number) => {
     try {
-      const response = await fetch(`http://localhost:8080/css/immunotherapy/findbypatient/latest?patientID=${patientId}`);
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}css/immunotherapy/findbypatient/latest?patientID=${patientId}`);
 
       if (!response.ok) {
         throw new Error("Failed to fetch immunotherapy data");
@@ -961,7 +957,7 @@ export const DoctorSidebar = () => {
 
   const fetchChemotherapyData = async (patientId: number) => {
     try {
-      const response = await fetch(`http://localhost:8080/css/chemotherapy/findbypatient/latest?patientID=${patientId}`);
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}css/chemotherapy/findbypatient/latest?patientID=${patientId}`);
 
       if (!response.ok) {
         throw new Error("Failed to fetch chemotherapy data");
@@ -1029,7 +1025,7 @@ export const DoctorSidebar = () => {
   const fetchDiseaseDetails = async (patientId: number) => {
     try {
       const response = await fetch(
-        `http://localhost:8080/css/disease/getbypatientid?patientID=${patientId}`
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}css/disease/getbypatientid?patientID=${patientId}`
       );
       if (!response.ok) {
         throw new Error(`Error: ${response.status} ${response.statusText}`);
@@ -1109,7 +1105,7 @@ export const DoctorSidebar = () => {
       notificationType: notificationData.messageType,
     };
     try {
-      const response = await fetch("http://localhost:8080/css/email/send", {
+      const response = await fetch("${process.env.NEXT_PUBLIC_BACKEND_URL}css/email/send", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -1189,7 +1185,7 @@ export const DoctorSidebar = () => {
         checkup_status_id: scheduleConsultFormData.checkup_status_id,
       }
       console.log(JSON.stringify(requestBody))
-      const response = await fetch("http://localhost:8080/css/checkup/schedule/add", {
+      const response = await fetch("${process.env.NEXT_PUBLIC_BACKEND_URL}css/checkup/schedule/add", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -1284,7 +1280,7 @@ export const DoctorSidebar = () => {
     console.log(requestBody)
 
     try {
-      const response = await fetch("http://localhost:8080/css/consult/add", {
+      const response = await fetch("${process.env.NEXT_PUBLIC_BACKEND_URL}css/consult/add", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -1319,7 +1315,7 @@ export const DoctorSidebar = () => {
 
   const fetchPatient = async (patientId: number) => {
     try {
-      const response = await fetch(`http://localhost:8080/css/patient/find?patientID=${patientId}`);
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}css/patient/find?patientID=${patientId}`);
       if (!response.ok) {
         throw new Error('Failed to fetch patient data');
       }

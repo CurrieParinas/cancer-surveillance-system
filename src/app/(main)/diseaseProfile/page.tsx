@@ -154,7 +154,7 @@ const DiseaseProfile = () => {
   useEffect(() => {
     const fetchBodySites = async () => {
       try {
-        const response = await fetch("http://localhost:8080/css/bodysite/all");
+        const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}css/bodysite/all`);
         const data = await response.json();
         setBodySites(data);
         setFilteredSites(data);
@@ -340,7 +340,7 @@ const DiseaseProfile = () => {
     };
 
     try {
-      const response = await fetch("http://localhost:8080/css/disease/add", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}css/disease/add`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -483,7 +483,7 @@ const DiseaseProfile = () => {
     };
 
     try {
-      const response = await fetch("http://localhost:8080/css/disease/add", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}css/disease/add`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -564,7 +564,7 @@ const DiseaseProfile = () => {
   useEffect(() => {
     const fetchPathologies = async () => {
       try {
-        const response = await fetch("http://localhost:8080/css/pathologydim/all");
+        const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}css/pathologydim/all`);
         const data = await response.json();
         setPathologies(data);
         setFilteredPathologies(data);
@@ -605,7 +605,7 @@ const DiseaseProfile = () => {
         const userData = localStorage.getItem('user');
         if (userData) {
           const parsedUserData = JSON.parse(userData);
-          const response = await fetch(`http://localhost:8080/css/onboard/getPatientsByDoctor/${parsedUserData.doctorId}`);
+          const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}css/onboard/getPatientsByDoctor/${parsedUserData.doctorId}`);
           const data = await response.json();
 
           const parsedData = PatientsResponseSchema.parse(data);
@@ -639,7 +639,7 @@ const DiseaseProfile = () => {
         const userData = localStorage.getItem('user');
         if (userData) {
           const parsedUserData = JSON.parse(userData);
-          const apiUrl = `http://localhost:8080/css/patient/get/latest?doctorID=${parsedUserData.doctorId}`;
+          const apiUrl = `${process.env.NEXT_PUBLIC_BACKEND_URL}css/patient/get/latest?doctorID=${parsedUserData.doctorId}`;
 
           const response = await fetch(apiUrl);
           if (!response.ok) {

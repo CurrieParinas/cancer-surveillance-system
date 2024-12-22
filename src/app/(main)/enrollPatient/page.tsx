@@ -76,7 +76,7 @@ const EnrollPatient: React.FC = () => {
       setErrors({});
 
       try {
-        const response = await fetch('http://localhost:8080/css/user/allUsers');
+        const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}css/user/allUsers`);
         const data = await response.json();
 
         const users = UserSchema.array().parse(data);
@@ -133,7 +133,7 @@ const EnrollPatient: React.FC = () => {
 
 
       try {
-        const response = await fetch("http://localhost:8080/css/patient/add", {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}css/patient/add`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -185,7 +185,7 @@ const EnrollPatient: React.FC = () => {
       setErrors({});
 
       try {
-        const response = await fetch('http://localhost:8080/css/user/allUsers');
+        const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}css/user/allUsers`);
         const data = await response.json();
 
         const users = UserSchema.array().parse(data);
@@ -241,7 +241,7 @@ const EnrollPatient: React.FC = () => {
       })
 
       try {
-        const response = await fetch("http://localhost:8080/css/patient/add", {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}css/patient/add`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

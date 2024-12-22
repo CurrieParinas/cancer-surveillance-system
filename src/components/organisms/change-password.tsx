@@ -40,7 +40,7 @@ export const ChangePasswordForm = (userId: UserIdProps) => {
     }
 
     try {
-      const response = await fetch(`http://localhost:8080/css/forgotpassword/changePassword?userId=${userId.userId}&password=${newPassword}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}css/forgotpassword/changePassword?userId=${userId.userId}&password=${newPassword}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

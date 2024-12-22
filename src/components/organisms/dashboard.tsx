@@ -63,7 +63,7 @@ export const Dashboard = () => {
   const fetchPatients = async (doctorId: string) => {
     try {
       const response = await fetch(
-        `http://localhost:8080/css/onboard/getPatientsByDoctor/${doctorId}`
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}css/onboard/getPatientsByDoctor/${doctorId}`
       );
       if (response.ok) {
         const data = await response.json();
@@ -92,7 +92,7 @@ export const Dashboard = () => {
 
     try {
       const response = await fetch(
-        `http://localhost:8080/css/checkup/schedule/fetchbydoctoranddate?doctorID=${doctorId}&date=${selectedDate}`
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}css/checkup/schedule/fetchbydoctoranddate?doctorID=${doctorId}&date=${selectedDate}`
       );
       if (!response.ok) {
         throw new Error(`Failed to fetch: ${response.statusText}`);
@@ -125,7 +125,7 @@ export const Dashboard = () => {
         today = new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString().split("T")[0].toString();
       } // Get today's date in ISO format (YYYY-MM-DD)
       const response = await fetch(
-        `http://localhost:8080/css/checkup/schedule/fetchbydoctoranddate?doctorID=${doctorId}&date=${today}`
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}css/checkup/schedule/fetchbydoctoranddate?doctorID=${doctorId}&date=${today}`
       );
 
       if (!response.ok) {
@@ -171,7 +171,7 @@ export const Dashboard = () => {
     const fetchSchedule = async () => {
       try {
         const response = await fetch(
-          `http://localhost:8080/css/checkup/schedule/fetchbydoctor?doctorID=${doctorInfo.doctorId}`
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}css/checkup/schedule/fetchbydoctor?doctorID=${doctorInfo.doctorId}`
         );
 
         if (!response.ok) {
@@ -208,7 +208,7 @@ export const Dashboard = () => {
     setErrorWorkups(null);
 
     try {
-      const response = await fetch("http://localhost:8080/css/lab/submit/all");
+      const response = await fetch("${process.env.NEXT_PUBLIC_BACKEND_URL}css/lab/submit/all");
 
       if (!response.ok) {
         throw new Error(`Failed to fetch: ${response.statusText}`);

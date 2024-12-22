@@ -112,7 +112,7 @@ const MessagePage = () => {
         const parsedUserData = JSON.parse(userData);
         if ('patientId' in parsedUserData) {
           try {
-            const response = await fetch(`http://localhost:8080/css/doctor/finddoctorsbypatient?patientID=${parsedUserData.patientId}`);
+            const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}css/doctor/finddoctorsbypatient?patientID=${parsedUserData.patientId}`);
             const data = await response.json();
             if (data && data.length > 0) {
               const doctor = data[0];
@@ -175,7 +175,7 @@ const MessagePage = () => {
         const userData = localStorage.getItem('user');
         if (userData) {
           const parsedUserData = JSON.parse(userData);
-          const response = await fetch(`http://localhost:8080/css/onboard/getPatientsByDoctor/${parsedUserData.doctorId}`);
+          const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}css/onboard/getPatientsByDoctor/${parsedUserData.doctorId}`);
           const data = await response.json();
           const parsedData = PatientsResponseSchema.parse(data);
 
@@ -221,7 +221,7 @@ const MessagePage = () => {
     };
 
     try {
-      const response = await fetch('http://localhost:8080/css/email/send', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}css/email/send`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

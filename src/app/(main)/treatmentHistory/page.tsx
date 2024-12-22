@@ -300,7 +300,7 @@ const TreatmentHistoryForm = () => {
     };
 
     try {
-      const response = await fetch("http://localhost:8080/css/treatment/add", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}css/treatment/add`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -413,7 +413,7 @@ const TreatmentHistoryForm = () => {
     };
 
     try {
-      const response = await fetch("http://localhost:8080/css/surgery/add", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}css/surgery/add`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -509,7 +509,7 @@ const TreatmentHistoryForm = () => {
     console.log(JSON.stringify(requestBody))
 
     try {
-      const response = await fetch("http://localhost:8080/css/radiotherapy/add", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}css/radiotherapy/add`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -603,7 +603,7 @@ const TreatmentHistoryForm = () => {
     };
 
     try {
-      const response = await fetch("http://localhost:8080/css/hormonal/add", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}css/hormonal/add`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -699,7 +699,7 @@ const TreatmentHistoryForm = () => {
     };
 
     try {
-      const response = await fetch("http://localhost:8080/css/immunotherapy/add", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}css/immunotherapy/add`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -825,7 +825,7 @@ const TreatmentHistoryForm = () => {
     };
 
     try {
-      const response = await fetch("http://localhost:8080/css/chemotherapy/add", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}css/chemotherapy/add`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -908,7 +908,7 @@ const TreatmentHistoryForm = () => {
         const userData = localStorage.getItem('user');
         if (userData) {
           const parsedUserData = JSON.parse(userData);
-          const apiUrl = `http://localhost:8080/css/patient/get/latest?doctorID=${parsedUserData.doctorId}`;
+          const apiUrl = `${process.env.NEXT_PUBLIC_BACKEND_URL}css/patient/get/latest?doctorID=${parsedUserData.doctorId}`;
 
           const response = await fetch(apiUrl);
           if (!response.ok) {
@@ -961,7 +961,7 @@ const TreatmentHistoryForm = () => {
         const userData = localStorage.getItem('user');
         if (userData) {
           const parsedUserData = JSON.parse(userData);
-          const response = await fetch(`http://localhost:8080/css/onboard/getPatientsByDoctor/${parsedUserData.doctorId}`);
+          const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}css/onboard/getPatientsByDoctor/${parsedUserData.doctorId}`);
           const data = await response.json();
           const parsedData = PatientsResponseSchema.parse(data);
 
@@ -990,7 +990,7 @@ const TreatmentHistoryForm = () => {
   useEffect(() => {
     const fetchHospitals = async () => {
       try {
-        const response = await fetch('http://localhost:8080/css/hospital/all');
+        const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}css/hospital/all`);
         const data: Hospital[] = await response.json();
         setHospitals(data);
       } catch (error) {
@@ -1031,7 +1031,7 @@ const TreatmentHistoryForm = () => {
   useEffect(() => {
     const fetchDoctors = async () => {
       try {
-        const response = await fetch('http://localhost:8080/css/doctor/all');
+        const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}css/doctor/all`);
         const data = await response.json();
         setDoctors(data);
       } catch (error) {

@@ -167,7 +167,7 @@ const DoctorRegistration: React.FC = () => {
       }
 
       try {
-        const response = await fetch('http://localhost:8080/css/user/allUsers');
+        const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}css/user/allUsers`);
         const data = await response.json();
 
         const users = UserSchema.array().parse(data);
@@ -224,7 +224,7 @@ const DoctorRegistration: React.FC = () => {
       }
 
       try {
-        const response = await fetch('http://localhost:8080/css/doctor/add', {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}css/doctor/add`, {
           method: 'POST',
           body: formDataToSend,
         });
@@ -236,7 +236,7 @@ const DoctorRegistration: React.FC = () => {
         const result = await response.json();
         console.log("Form submitted successfully:", result);
 
-        const verificationResponse = await fetch(`http://localhost:8080/css/verification/createVerification?userId=${result.user.userId}`, {
+        const verificationResponse = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}css/verification/createVerification?userId=${result.user.userId}`, {
           method: 'GET',
         });
 
@@ -290,7 +290,7 @@ const DoctorRegistration: React.FC = () => {
   useEffect(() => {
     const fetchDepartments = async () => {
       try {
-        const response = await fetch('http://localhost:8080/css/department/all');
+        const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}css/department/all`);
         const data: Department[] = await response.json();
         setDepartments(data);
       } catch (error) {
@@ -320,7 +320,7 @@ const DoctorRegistration: React.FC = () => {
   useEffect(() => {
     const fetchSpecialties = async () => {
       try {
-        const response = await fetch('http://localhost:8080/css/specialty/all');
+        const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}css/specialty/all`);
         const data: Specialty[] = await response.json();
         setSpecialties(data);
       } catch (error) {
@@ -350,7 +350,7 @@ const DoctorRegistration: React.FC = () => {
   useEffect(() => {
     const fetchHospitals = async () => {
       try {
-        const response = await fetch('http://localhost:8080/css/hospital/all');
+        const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}css/hospital/all`);
         const data: Hospital[] = await response.json();
         setHospitals(data);
       } catch (error) {

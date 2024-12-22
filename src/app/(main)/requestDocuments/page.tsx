@@ -70,7 +70,7 @@ const RequestDocumentsPage = () => {
         const parsedUserData = JSON.parse(userData);
         try {
           const response = await fetch(
-            `http://localhost:8080/css/disease/getbypatientid?patientID=${parsedUserData.patientId}`
+            `${process.env.NEXT_PUBLIC_BACKEND_URL}css/disease/getbypatientid?patientID=${parsedUserData.patientId}`
           );
 
           if (!response.ok) {
@@ -261,7 +261,7 @@ const RequestDocumentsPage = () => {
     const fetchWorkups = async () => {
       try {
         const response = await fetch(
-          `http://localhost:8080/css/workup/fetchbycancertype?cancerType=${bodysiteId}`
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}css/workup/fetchbycancertype?cancerType=${bodysiteId}`
         );
         if (!response.ok) {
           throw new Error("Failed to fetch workup data.");

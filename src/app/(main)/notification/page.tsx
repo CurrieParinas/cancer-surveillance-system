@@ -41,7 +41,7 @@ const NotificationPage = () => {
         try {
           const parsedUserData = JSON.parse(userData);
           const response = await fetch(
-            `http://localhost:8080/css/notif/log/${parsedUserData.user.userId}/all`
+            `${process.env.NEXT_PUBLIC_BACKEND_URL}css/notif/log/${parsedUserData.user.userId}/all`
           );
           if (!response.ok) {
             throw new Error(`HTTP error! Status: ${response.status}`);

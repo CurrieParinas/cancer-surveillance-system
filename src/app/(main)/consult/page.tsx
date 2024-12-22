@@ -153,7 +153,7 @@ const ConsultPage = () => {
 		};
 
 		try {
-			const response = await fetch("http://localhost:8080/css/consult/add", {
+			const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}css/consult/add`, {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
@@ -175,7 +175,7 @@ const ConsultPage = () => {
 						.toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "numeric" }),
 				});
 				try {
-					const response = await fetch(`http://localhost:8080/css/patient/getConsultInfo/${Number(formData.PATIENT_ID)}`);
+					const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}css/patient/getConsultInfo/${Number(formData.PATIENT_ID)}`);
 					if (response.ok) {
 						const data = await response.json();
 						setPatientConsultInfo(data);
@@ -240,7 +240,7 @@ const ConsultPage = () => {
 		setPatientDropdownOpen(false);
 
 		try {
-			const response = await fetch(`http://localhost:8080/css/patient/getConsultInfo/${patientId}`);
+			const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}css/patient/getConsultInfo/${patientId}`);
 			if (response.ok) {
 				const data = await response.json();
 				setPatientConsultInfo(data);
@@ -273,7 +273,7 @@ const ConsultPage = () => {
 				const userData = localStorage.getItem('user');
 				if (userData) {
 					const parsedUserData = JSON.parse(userData);
-					const response = await fetch(`http://localhost:8080/css/onboard/getPatientsByDoctor/${parsedUserData.doctorId}`);
+					const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}css/onboard/getPatientsByDoctor/${parsedUserData.doctorId}`);
 					const data = await response.json();
 					const parsedData = PatientsResponseSchema.parse(data);
 
@@ -301,7 +301,7 @@ const ConsultPage = () => {
 				const userData = localStorage.getItem('user');
 				if (userData) {
 					const parsedUserData = JSON.parse(userData);
-					const apiUrl = `http://localhost:8080/css/patient/get/latest?doctorID=${parsedUserData.doctorId}`;
+					const apiUrl = `${process.env.NEXT_PUBLIC_BACKEND_URL}css/patient/get/latest?doctorID=${parsedUserData.doctorId}`;
 
 					const response = await fetch(apiUrl);
 					if (!response.ok) {
@@ -325,7 +325,7 @@ const ConsultPage = () => {
 						);
 
 						try {
-							const response = await fetch(`http://localhost:8080/css/patient/getConsultInfo/${patientData.patientId}`);
+							const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}css/patient/getConsultInfo/${patientData.patientId}`);
 							if (response.ok) {
 								const data = await response.json();
 								setPatientConsultInfo(data);
