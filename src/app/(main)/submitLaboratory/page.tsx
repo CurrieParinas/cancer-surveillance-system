@@ -95,7 +95,7 @@ const SubmitLaboratoryPage = () => {
     const fetchWorkups = async () => {
       try {
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_BACKEND_URL}css/workup/fetchbycancertype?cancerType=${bodysiteId}`
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}css/workup/fetchbycancertype?cancerType=${9}`
         );
         if (!response.ok) {
           throw new Error("Failed to fetch workup data.");
@@ -135,7 +135,8 @@ const SubmitLaboratoryPage = () => {
       }
 
       const data: Workup[] = await response.json();
-      const workup = data.find(item => item.workupName === selectedWorkup);
+      const [workupName] = selectedWorkup.split(" - ");
+      const workup = data.find(item => item.workupName === workupName);
 
       if (workup) {
         workup_id = workup.workupID;
@@ -214,8 +215,8 @@ const SubmitLaboratoryPage = () => {
                           type="radio"
                           name="workup"
                           value={workup.workup_NAME}
-                          checked={selectedWorkup === workup.workup_NAME}
-                          onChange={() => handleSelectionChange(workup.workup_NAME)}
+                          checked={selectedWorkup === (workup.workup_NAME + " - " + workup.workup_INDICATION)}
+                          onChange={() => handleSelectionChange((workup.workup_NAME + " - " + workup.workup_INDICATION))}
                           className="form-radio h-5 w-5 text-red-900 focus:ring focus:ring-red-200"
                         />
                         <div className="text-gray-800">

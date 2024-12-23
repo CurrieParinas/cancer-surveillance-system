@@ -312,7 +312,7 @@ const TreatmentHistoryForm = () => {
         console.log("Treatment information submitted successfully!");
         toast({ title: "Treatment information submitted successfully!" })
         setTreatmentFormData({
-          PATIENT_ID: treatmentFormData.PATIENT_ID,
+          PATIENT_ID: requestBody.PATIENT_ID.toString(),
           TREATMENT_PRIMARYRXTYPE: "",
           TREATMENT_PRIMARYRXNAME: "",
           TREATMENT_INITIALRXDATE: "",
@@ -425,7 +425,7 @@ const TreatmentHistoryForm = () => {
         console.log("Surgery information submitted successfully!");
         toast({ title: "Surgery information submitted successfully!" })
         setSurgeryFormData({
-          PATIENT_ID: surgeryFormData.PATIENT_ID,
+          PATIENT_ID: requestBody.PATIENT_ID.toString(),
           SURGERY_OPERATION: "",
           SURGERY_DATE: "",
           SURGERY_FINDINGS: "",
@@ -521,7 +521,7 @@ const TreatmentHistoryForm = () => {
         toast({ title: "Radiotherapy information submitted successfully!" })
         console.log("Radiotherapy information submitted successfully!");
         setRadiationFormData({
-          PATIENT_ID: radiationFormData.PATIENT_ID,
+          PATIENT_ID: requestBody.PATIENT_ID.toString(),
           RADRX_TYPE: "",
           RADRX_INITIALDATE: "",
           RADRX_LASTDATE: "",
@@ -615,7 +615,7 @@ const TreatmentHistoryForm = () => {
         toast({ title: "Hormonal treatment information submitted successfully!" })
         console.log("Hormonal treatment information submitted successfully!");
         setHormonalFormData({
-          patientId: hormonalFormData.patientId,
+          patientId: requestBody.patientId.toString(),
           hormonalDrug: "",
           hormonalDose: "",
           hormonalInitialDate: "",
@@ -711,7 +711,7 @@ const TreatmentHistoryForm = () => {
         toast({ title: "Immunotherapy information submitted successfully!" })
         console.log("Immunotherapy information submitted successfully!");
         setImmunorxFormData({
-          patientId: immunorxFormData.patientId,
+          patientId: requestBody.patientId.toString(),
           immunorxDrug: "",
           immunorxInitialDate: "",
           immunorxEndDate: "",
@@ -837,7 +837,7 @@ const TreatmentHistoryForm = () => {
         toast({ title: "Chemotherapy information submitted successfully!" })
         console.log("Chemotherapy information submitted successfully!");
         setChemoFormData({
-          PATIENT_ID: chemoFormData.PATIENT_ID,
+          PATIENT_ID: requestBody.PATIENT_ID.toString(),
           CHEMO_TYPE: "",
           CHEMO_PROTOCOL: "",
           CHEMO_INITIALDATE: "",
@@ -940,7 +940,7 @@ const TreatmentHistoryForm = () => {
     };
 
     fetchPatientDetails();
-  }, [formData]);
+  }, []);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {

@@ -265,9 +265,14 @@ const DiseaseProfile = () => {
 
   const { toast } = useToast();
   const [loading, setLoading] = useState(false); // Loading state
+  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    const submitter = (e.nativeEvent as SubmitEvent).submitter as HTMLButtonElement;
+    const action = submitter?.name; // Identify which button was clicked
+
     const formErrors = validateForm();
     try {
       const userData = localStorage.getItem('user');
@@ -413,151 +418,14 @@ const DiseaseProfile = () => {
       setPatientSearchTerm("");
       setSelectedStatuses([]);
       setSelectedMetastaticSites([])
+
+      if (action === "redirect") {
+        router.push("/diseaseProfile");
+      }
     } catch (error) {
       console.error("Error submitting form:", error);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const router = useRouter();
-
-  const handleSubmitRedirect = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    const formErrors = validateForm();
-    if (Object.keys(formErrors).length > 0) {
-      setErrors(formErrors);
-      return;
-    }
-
-    const convertDateFormat = (dateString: string) => {
-      const [year, month, day] = dateString.split('-');
-      return `${day}/${month}/${year}`;
-    };
-
-    const requestBody = {
-      PATIENT_ID: Number(formData.patientId),
-      DISEASE_PRIMARY_SITE: Number(formData.primary_site),
-      DISEASE_DIAGNOSIS_DATE: convertDateFormat(formData.date_of_diagnosis),
-      DISEASE_BASIS: Number(formData.basis_of_diagnosis),
-      DISEASE_LATERALITY: formData.laterality,
-      HISTO_PATHOLOGY: Number(formData.histo_pathology),
-      HISTO_TUMOR_SIZE: Number(formData.histo_tumorSize),
-      HISTO_TUMOR_EXTENSION: formData.histo_tumorExtension,
-      HISTO_GRADE: Number(formData.histo_tumorGrade),
-      HISTO_NODE_POSITIVE: Number(formData.histo_nodePositive),
-      HISTO_NODE_HARVEST: Number(formData.histo_nodeHarvest),
-      HISTO_MARGINS_NEGATIVE: formData.histo_negativeMargins,
-      HISTO_POSITIVE_MARGINS: formData.histo_positiveMargins,
-      HISTO_STAGE: formData.histo_stage,
-      DISEASE_EXTENT: formData.disease_extent,
-      DISEASE_TUMOR_SIZE: Number(formData.disease_tumor_size),
-      DISEASE_LYMPH_NODE: Number(formData.disease_lymph_node),
-      DISEASE_METASTATIC: formData.disease_metastatic,
-      METS_DISTANTLN: formData.metastatic_distant_ln,
-      METS_BONE: formData.metastatic_bone,
-      METS_LIVER: formData.metastatic_liver,
-      METS_LUNG: formData.metastatic_lung,
-      METS_BRAIN: formData.metastatic_brain,
-      METS_OVARY: formData.metastatic_ovary,
-      METS_SKIN: formData.metastatic_skin,
-      METS_INTESTINE: formData.metastatic_intestine,
-      METS_OTHERS: formData.metastatic_others,
-      METS_UNKNOWN: formData.metastatic_unknown,
-      METS_NOTES: formData.metastatic_notes,
-      DISEASE_MULTIPLE_PRIMARY: Number(formData.multiple_primaries?.length),
-      DISEASE_OTHER_SITES: formData.multiple_primaries?.map(Number),
-      DISEASE_TSTAGE: Number(formData.disease_tstage),
-      DISEASE_NSTAGE: Number(formData.disease_nstage),
-      DISEASE_MSTAGE: Number(formData.disease_mstage),
-      DISEASE_GSTAGE: Number(formData.disease_gstage),
-      DISEASE_STAGE: formData.stage,
-      DISEASE_STAGE_TYPE: formData.stage_type,
-      DXSTATUS_ALIVE: formData.dxstatus_alive,
-      DXSTATUS_SYMPTOMS: formData.dxstatus_symptoms,
-      DXSTATUS_RECURRENCE: formData.dxstatus_recurrence,
-      DXSTATUS_METASTATIC: formData.dxstatus_metastatic,
-      DXSTATUS_CURATIVE: formData.dxstatus_curative,
-      DISEASE_ENCODER: Number(formData.disease_encoder),
-    };
-
-    try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}css/disease/add`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(requestBody),
-      });
-
-      if (!response.ok) {
-        toast({ title: "Disease Profile submission failed." })
-        throw new Error("Network response was not ok");
-      }
-
-      // const result = await response.json();
-      toast({ title: "Disease Profile Added Succesfully" })
-
-      setFormData({
-        patientId: "",
-        lastname: "",
-        email: "",
-        primary_site: "",
-        date_of_diagnosis: "",
-        basis_of_diagnosis: "",
-        basis_of_diagnosis_option: "Non-Microscopic",
-        basis_of_diagnosis_suboption: "",
-        laterality: "1",
-        histo_pathology: "",
-        histo_tumorSize: "",
-        histo_tumorExtension: "",
-        histo_tumorGrade: "",
-        histo_nodePositive: "",
-        histo_nodeHarvest: "",
-        histo_negativeMargins: "",
-        histo_stage: "I",
-        histo_positiveMargins: "",
-        disease_extent: "1",
-        disease_tumor_size: "",
-        disease_lymph_node: "",
-        disease_metastatic: "",
-        metastatic_distant_ln: "N",
-        metastatic_bone: "N",
-        metastatic_liver: "N",
-        metastatic_lung: "N",
-        metastatic_brain: "N",
-        metastatic_ovary: "N",
-        metastatic_skin: "N",
-        metastatic_intestine: "N",
-        metastatic_others: "N",
-        metastatic_unknown: "N",
-        metastatic_notes: "",
-        multiple_primaries: [],
-        stage: "I",
-        stage_type: "",
-        disease_tstage: "",
-        disease_nstage: "",
-        disease_mstage: "",
-        disease_gstage: "",
-        dxstatus_alive: "N",
-        dxstatus_symptoms: "N",
-        dxstatus_recurrence: "N",
-        dxstatus_metastatic: "N",
-        dxstatus_curative: "N",
-        disease_encoder: "",
-      });
-      setErrors({});
-      setSelectedSites([]);
-      setPrimarySearchTerm("");
-      setMultipleSearchTerm("");
-      setPathologySearchTerm("");
-      setPatientSearchTerm("");
-      setSelectedStatuses([]);
-      setSelectedMetastaticSites([])
-      router.push("/treatmentHistory")
-    } catch (error) {
-      console.error("Error submitting form:", error);
     }
   };
 
@@ -671,7 +539,7 @@ const DiseaseProfile = () => {
     };
 
     fetchPatientDetails();
-  }, [formData]);
+  }, []);
 
   const handlePatientSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const search = e.target.value.toLowerCase();
@@ -1588,30 +1456,37 @@ const DiseaseProfile = () => {
 
             <div className="flex mt-20 mb-8">
               {loading ? (
-                <div className="w-32 py-2 bg-red-900 flex items-center justify-center rounded-3xl px-3 hover:cursor-not-allowed">
-                  <div
-                    className="inline-block h-5 w-5 animate-spin rounded-full border-[3px] border-solid border-current border-e-transparent align-[-0.125em] text-surface motion-reduce:animate-[spin_1.5s_linear_infinite] dark:text-white"
-                    role="status">
+                <div className="w-full justify-center flex">
+                  <div className="w-32 py-2 bg-red-900 flex items-center justify-center rounded-3xl px-3 hover:cursor-not-allowed">
+                    <div
+                      className="inline-block h-5 w-5 animate-spin rounded-full border-[3px] border-solid border-current border-e-transparent align-[-0.125em] text-surface motion-reduce:animate-[spin_1.5s_linear_infinite] dark:text-white"
+                      role="status">
+                    </div>
+                    <span className="ml-2 text-white font-semibold">Sending...</span>
                   </div>
-                  <span className="ml-2 text-white font-semibold">Sending...</span>
                 </div>
               ) : (
-                <div className="w-1/2 flex justify-center">
-                  <button type="submit"
-                    className={`bg-red-900 hover:bg-red-800 text-white py-2 px-6 rounded-3xl transition`}
-                  >
-                    Submit
-                  </button>
+                <div className="flex w-full">
+                  <div className="w-1/2 flex justify-center">
+                    <button
+                      type="submit"
+                      name="submit"
+                      className={`bg-red-900 hover:bg-red-800 text-white py-2 px-6 rounded-3xl transition`}
+                    >
+                      Submit
+                    </button>
+                  </div>
+                  <div className="w-1/2 flex justify-center">
+                    <button
+                      type="submit"
+                      name="redirect"
+                      className={`bg-red-900 hover:bg-red-800 text-white py-2 px-6 rounded-3xl transition text-nowrap`}
+                    >
+                      Submit & Add Treatment History
+                    </button>
+                  </div>
                 </div>
               )}
-              <div className="w-1/2 flex justify-center">
-                <button type="button"
-                  onClick={() => handleSubmitRedirect}
-                  className={`bg-red-900 hover:bg-red-800 text-white py-2 px-6 rounded-3xl transition`}
-                >
-                  Submit & Add Treatment History
-                </button>
-              </div>
             </div>
           </form>
         </div>

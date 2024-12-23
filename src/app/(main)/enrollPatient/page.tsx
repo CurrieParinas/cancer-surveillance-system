@@ -59,9 +59,13 @@ const EnrollPatient: React.FC = () => {
   };
 
   const router = useRouter();
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    const submitter = (e.nativeEvent as SubmitEvent).submitter as HTMLButtonElement;
+    const action = submitter?.name; // Identify which button was clicked
 
     const result = EnrollPatientSchema.safeParse(formData);
 
@@ -110,6 +114,8 @@ const EnrollPatient: React.FC = () => {
       } else {
         setErrors((prevErrors: Errors) => ({ ...prevErrors, birthdate: undefined }));
       }
+
+      setLoading(true);
 
       // Convert the birthdate format from yyyy-mm-dd to dd/mm/yyyy
       const dateParts = formData.birthdate.split("-");
@@ -162,122 +168,17 @@ const EnrollPatient: React.FC = () => {
             addressZipcode: "",
             USER_CONTACTNO: ""
           })
+
+          if (action === "redirect") {
+            router.push("/diseaseProfile");
+          }
         } else {
           console.error("Failed to add patient:", response.status);
         }
       } catch (error) {
         console.error("An error occurred:", error);
-      }
-    }
-  };
-
-  const handleSubmitRedirect = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-
-    const result = EnrollPatientSchema.safeParse(formData);
-
-    if (!result.success) {
-      const errorMap: Record<string, string> = {};
-      result.error.errors.forEach((error) => {
-        if (error.path[0]) {
-          errorMap[error.path[0]] = error.message;
-        }
-      });
-      setErrors(errorMap);
-    } else {
-      setErrors({});
-
-      try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}css/user/allUsers`);
-        const data = await response.json();
-
-        const users = UserSchema.array().parse(data);
-        const emailList = users.map((user) => user.userEmail);
-
-        if (emailList.includes(formData.email)) {
-          setErrors((prevErrors) => ({
-            ...prevErrors,
-            emailNotUnique: "The email must be unique. Please use a different email address."
-          }));
-          return;
-        } else {
-          setErrors((prevErrors) => ({ ...prevErrors, emailNotUnique: undefined }));
-        }
-      } catch (error) {
-        console.error("Email uniqueness check failed:", error);
-        return;
-      }
-
-      const today = new Date();
-      const [birthYear, birthMonth, birthDay] = formData.birthdate.split("-").map(Number);
-      const birthDate = new Date(birthYear, birthMonth - 1, birthDay); // Month is 0-based in JavaScript
-
-      if (birthDate >= today) {
-        setErrors((prevErrors: Errors) => ({
-          ...prevErrors,
-          birthdate: "The birthdate cannot be today or in the future."
-        }));
-        return;
-      } else {
-        setErrors((prevErrors: Errors) => ({ ...prevErrors, birthdate: undefined }));
-      }
-
-      // Convert the birthdate format from yyyy-mm-dd to dd/mm/yyyy
-      const dateParts = formData.birthdate.split("-");
-      const formattedBirthdate = `${dateParts[2]}/${dateParts[1]}/${dateParts[0]}`;
-
-      const requestBody = JSON.stringify({
-        USER_LASTNAME: formData.lastname,
-        USER_FIRSTNAME: formData.firstname,
-        USER_MIDDLENAME: formData.middle_name,
-        USER_EMAIL: formData.email,
-        USER_GENDER: formData.gender.charAt(0).toUpperCase() + formData.gender.slice(1),
-        USER_MARITAL_STATUS: formData.marital_status.charAt(0).toUpperCase() + formData.marital_status.slice(1),
-        USER_BIRTHDATE: formattedBirthdate,
-        USER_BIRTHPLACE: formData.birthplace,
-        ADDRESS_NUMBER: formData.addressNumber,
-        ADDRESS_STREET: formData.addressStreet,
-        ADDRESS_CITY: formData.addressCity,
-        ADDRESS_REGION: formData.addressRegion,
-        ADDRESS_ZIPCODE: formData.addressZipcode,
-        USER_ENCODER: doctorInfo.userId,
-        USER_CONTACTNO: formData.USER_CONTACTNO
-      })
-
-      try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}css/patient/add`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: requestBody
-        });
-
-        if (response.ok) {
-          // const data = await response.json();
-          toast({ title: "Patient added successfully!" });
-          setFormData({
-            lastname: "",
-            firstname: "",
-            middle_name: "",
-            email: "",
-            birthdate: "",
-            birthplace: "",
-            gender: "male",
-            marital_status: "single",
-            addressNumber: "",
-            addressStreet: "",
-            addressCity: "",
-            addressRegion: "",
-            addressZipcode: "",
-            USER_CONTACTNO: "",
-          })
-          router.push("/diseaseProfile")
-        } else {
-          console.error("Failed to add patient:", response.status);
-        }
-      } catch (error) {
-        console.error("An error occurred:", error);
+      } finally {
+        setLoading(false);
       }
     }
   };
@@ -500,23 +401,38 @@ const EnrollPatient: React.FC = () => {
             </div>
 
             <div className="flex justify-between mt-8 w-full">
-              <div className="w-1/2 flex justify-center">
-                <button
-                  type="submit"
-                  className={`bg-red-900 hover:bg-red-800 text-white py-2 px-6 rounded-3xl transition`}
-                >
-                  Submit
-                </button>
-              </div>
-              <div className="w-1/2 flex justify-center">
-                <button
-                  type="button"
-                  onClick={() => handleSubmitRedirect}
-                  className={`bg-red-900 hover:bg-red-800 text-white py-2 px-6 rounded-3xl transition`}
-                >
-                  Submit & Add Disease Profile
-                </button>
-              </div>
+              {loading ? (
+                <div className="w-full justify-center flex">
+                  <div className="w-32 py-2 bg-red-900 flex items-center justify-center rounded-3xl px-3 hover:cursor-not-allowed">
+                    <div
+                      className="inline-block h-5 w-5 animate-spin rounded-full border-[3px] border-solid border-current border-e-transparent align-[-0.125em] text-surface motion-reduce:animate-[spin_1.5s_linear_infinite] dark:text-white"
+                      role="status">
+                    </div>
+                    <span className="ml-2 text-white font-semibold">Sending...</span>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex w-full">
+                  <div className="w-1/2 flex justify-center">
+                    <button
+                      type="submit"
+                      name="submit"
+                      className={`bg-red-900 hover:bg-red-800 text-white py-2 px-6 rounded-3xl transition`}
+                    >
+                      Submit
+                    </button>
+                  </div>
+                  <div className="w-1/2 flex justify-center">
+                    <button
+                      type="submit"
+                      name="redirect"
+                      className={`bg-red-900 hover:bg-red-800 text-white py-2 px-6 rounded-3xl transition`}
+                    >
+                      Submit & Add Disease Profile
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </form>
         </div>

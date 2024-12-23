@@ -328,7 +328,7 @@ const RequestDocumentsPage = () => {
     setPdfUrl(pdfBlobUrl);
 
     document.body.removeChild(container);
-  }, [userInfo.firstName, selectedWorkup, selectedReferral, generatePDFContent]);
+  }, [userInfo.firstName, selectedWorkup, selectedReferral]);
 
   useEffect(() => {
     generatePDFPreview();
@@ -362,8 +362,8 @@ const RequestDocumentsPage = () => {
                           type="radio"
                           name="workup"
                           value={workup.workup_NAME}
-                          checked={selectedWorkup === workup.workup_NAME}
-                          onChange={() => handleSelectionChange(workup.workup_NAME, workup.workup_REFERRAL)}
+                          checked={selectedWorkup === (workup.workup_NAME + " - " + workup.workup_INDICATION)}
+                          onChange={() => handleSelectionChange((workup.workup_NAME + " - " + workup.workup_INDICATION), workup.workup_REFERRAL)}
                           className="form-radio h-5 w-5 text-red-900 focus:ring focus:ring-red-200"
                         />
                         <div className="text-gray-800">

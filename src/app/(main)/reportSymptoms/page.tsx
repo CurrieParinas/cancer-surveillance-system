@@ -67,6 +67,10 @@ const ReportSymptomsPage = () => {
     fetchDoctorData();
   }, [patientId]);
 
+  useEffect(() => {
+    console.log(patientId)
+    console.log(bodysiteId)
+  })
 
   useEffect(() => {
     const fetchDiseaseData = async () => {

@@ -345,7 +345,7 @@ const ConsultPage = () => {
 		};
 
 		fetchPatientDetails();
-	}, [searchFormData]);
+	}, []);
 
 	return (
 		<div className="w-5/6 bg-white flex flex-col items-center justify-center gap-4">
