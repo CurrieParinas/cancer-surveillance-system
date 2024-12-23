@@ -241,6 +241,7 @@ const EnrollPatient: React.FC = () => {
         ADDRESS_REGION: formData.addressRegion,
         ADDRESS_ZIPCODE: formData.addressZipcode,
         USER_ENCODER: doctorInfo.userId,
+        USER_CONTACTNO: formData.USER_CONTACTNO
       })
 
       try {
