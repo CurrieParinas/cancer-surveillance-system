@@ -1105,7 +1105,7 @@ export const DoctorSidebar = () => {
       notificationType: notificationData.messageType,
     };
     try {
-      const response = await fetch("${process.env.NEXT_PUBLIC_BACKEND_URL}css/email/send", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}css/email/send`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -1185,7 +1185,7 @@ export const DoctorSidebar = () => {
         checkup_status_id: scheduleConsultFormData.checkup_status_id,
       }
       console.log(JSON.stringify(requestBody))
-      const response = await fetch("${process.env.NEXT_PUBLIC_BACKEND_URL}css/checkup/schedule/add", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}css/checkup/schedule/add`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -1280,7 +1280,7 @@ export const DoctorSidebar = () => {
     console.log(requestBody)
 
     try {
-      const response = await fetch("${process.env.NEXT_PUBLIC_BACKEND_URL}css/consult/add", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}css/consult/add`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

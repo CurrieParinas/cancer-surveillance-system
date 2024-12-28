@@ -208,7 +208,7 @@ export const Dashboard = () => {
     setErrorWorkups(null);
 
     try {
-      const response = await fetch("${process.env.NEXT_PUBLIC_BACKEND_URL}css/lab/submit/all");
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}css/lab/submit/all`);
 
       if (!response.ok) {
         throw new Error(`Failed to fetch: ${response.statusText}`);

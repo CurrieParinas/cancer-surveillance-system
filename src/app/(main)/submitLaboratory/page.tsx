@@ -95,7 +95,7 @@ const SubmitLaboratoryPage = () => {
     const fetchWorkups = async () => {
       try {
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_BACKEND_URL}css/workup/fetchbycancertype?cancerType=${9}`
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}css/workup/fetchbycancertype?cancerType=${bodysiteId}`
         );
         if (!response.ok) {
           throw new Error("Failed to fetch workup data.");
