@@ -1,10 +1,7 @@
-import { Button } from '@/components/ui/button';
+
 import { Label } from '@/components/ui/label';
-import { CircleCheckBig } from 'lucide-react';
-import Image from 'next/image';
 import React from 'react';
-import bg from '../../../../public/background/4.jpg';
-import bg2 from '../../../../public/background/doctor.jpg';
+
 
 const Tutorial = () => {
   return (
@@ -20,12 +17,12 @@ const Tutorial = () => {
         </div>
       </div>
 
-      {/* Video Content*/}
+      {/* Video Content*/} 
       <div className="flex flex-col md:flex-row md:space-x-16 p-4 justify-center items-center">
         <div className="w-full md:w-1/2 ">
           <iframe
             width="100%"
-            height="550"
+            height="550" 
             src="https://www.youtube.com/embed/DFuVRNVgI7A"
             title="Landing Page"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -50,7 +47,7 @@ const Tutorial = () => {
           <iframe
             width="100%"
             height="550"
-            src="https://www.youtube.com/embed/4evlmlitjOk"
+            src="https://www.youtube.com/embed/2wXSqnkOJK8"
             title="Doctor Page"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowFullScreen
@@ -74,7 +71,7 @@ const Tutorial = () => {
           <iframe
             width="100%"
             height="550"
-            src="https://www.youtube.com/embed/gwP__a7DmQc"
+            src="https://www.youtube.com/embed/26uC4C0Xrgs"
             title="Patient Page"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowFullScreen
